@@ -94,21 +94,24 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
 }
 ```
 
-`schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`. For M0, `expected_status` is `processed` when there are no review flags and `needs_review` when there is at least one. Operational failures such as unreadable PDFs will use `failed` in a later milestone.
+`schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`. For M0, `expected_status` is `processed` when there are no review flags and `needs_review` when there is at least one. It is derived from `expected_flags`, so a label check must reject a contradictory status. Operational failures such as unreadable PDFs will use `failed` in a later milestone.
 
 For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. These examples are plans until the finished PDFs have been manually checked.
 
-The initial fixed `expected_flags` codes are:
+The initial fixed `expected_flags` codes are determined from the extracted fields, not from a hidden explanation of why the model returned `null`:
 
 | Code | Condition |
 | --- | --- |
-| `stated_days_mismatch` | Printed day count differs from inclusive date calculation. |
+| `current_bill_amount_missing` | `current_bill_amount` is `null`. |
+| `daily_supply_rate_missing` | `daily_supply_rate` is `null`, whatever the source reason. |
 | `period_end_before_start` | Both dates are known but in reverse order. |
-| `current_bill_amount_missing` | No unambiguous current-period amount is printed. |
-| `required_field_missing` | A required field other than `current_bill_amount` is unavailable. |
-| `supply_rate_gst_basis_unknown` | Rate and unit are known, but the printed rate's GST basis is not. |
-| `daily_supply_rate_unusable` | No single rate with a recognised unit can be identified. |
+| `period_end_missing` | `period_end` is `null`. |
+| `period_start_missing` | `period_start` is `null`. |
+| `retailer_missing` | `retailer` is `null`. |
+| `stated_days_mismatch` | Both dates form a valid period and the printed day count differs from inclusive date calculation. |
+| `supply_rate_gst_basis_unknown` | Rate and unit are known, but `gst_basis` is `unknown`. |
+| `total_usage_kwh_missing` | `total_usage_kwh` is `null`. |
 
-For a missing current bill amount, use `current_bill_amount_missing` instead of the generic `required_field_missing` code. Extend this list and the dataset schema deliberately when a new review condition is added. `expected_flags` is a set of reason codes, written as a sorted array in JSON for stable diffs. A stated day count of `null` by itself does not produce a flag.
+In particular, `daily_supply_rate_missing` does not say whether the bill omitted the rate, showed several rates, or used an unreadable unit. That reason is not available from the seven fields; do not infer it in Python. Extend the contract deliberately if that distinction later proves useful. `expected_flags` is a set of reason codes, written as a sorted array with no duplicates in JSON for stable diffs. A stated day count of `null` by itself does not produce a flag.
 
-Evaluation should compare numeric fields as `Decimal`, not text strings. Compare supply rates after unit conversion to AUD/day **and** compare `gst_basis` separately; different GST bases are not equivalent. Compare emitted review flags and status with `expected_flags` and `expected_status` independently of field accuracy. These rules define the intended checks; the evaluation harness is a later milestone.
+Evaluation should compare numeric fields as `Decimal`, not text strings. Compare supply rates after unit conversion to AUD/day **and** compare `gst_basis` separately; different GST bases are not equivalent. Report flag and status accuracy separately because they represent the review decision seen by a user, while recognising that those values are derived from extracted fields and their errors are therefore related. These rules define the intended checks; the evaluation harness is a later milestone.
