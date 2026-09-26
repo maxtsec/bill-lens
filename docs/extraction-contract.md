@@ -96,6 +96,8 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
 
 `schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`. For M0, `expected_status` is `processed` when there are no review flags and `needs_review` when there is at least one. It is derived from `expected_flags`, so a label check must reject a contradictory status. Operational failures such as unreadable PDFs will use `failed` in a later milestone.
 
+The human labeler records `expected_flags` from the PDF and these contract rules **independently of the application validator**. A later test must check `derive_flags(label.fields) == set(label.expected_flags)` and `label.expected_status == derive_status(label.expected_flags)`. Do not generate the label's expected flags by calling the same `derive_flags` implementation under test: that would let a flag-logic bug write its own expected answer.
+
 For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. These examples are plans until the finished PDFs have been manually checked.
 
 The initial fixed `expected_flags` codes are determined from the extracted fields, not from a hidden explanation of why the model returned `null`:
