@@ -8,4 +8,4 @@ The project is currently at **Milestone 0: extraction contract and golden datase
 - [Five-bill synthetic dataset plan](dataset/README.md)
 - [ADR-001: PDF extraction strategy](docs/adr/001-pdf-extraction-strategy.md)
 
-Next, create the synthetic PDFs and manually check their `expected.json` labels against the PDFs. The first application slice will then upload a PDF, extract and validate fields, persist the result, and return structured JSON.
+Next, create the synthetic PDFs, manually check their `expected.json` labels against the PDFs, and add pytest checks for label shape, flags, and decimal reconciliation. The first application slice will then upload a PDF, extract and validate fields, persist the result, and return structured JSON.
