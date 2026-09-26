@@ -18,7 +18,7 @@ PDF → pdfplumber text extraction → structured LLM extraction
     → schema validation → domain checks and deterministic calculations
 ```
 
-Inspect extracted text locally during development; do not commit text from real customer bills. If a PDF yields no usable text, report a processing failure or need for review instead of inventing field values. The model returns the fields and printed units in the contract; it does not calculate billing days, convert cents to dollars, reconcile charge lines, or decide that an account balance is the current bill amount.
+Inspect extracted text locally during development; do not commit text from real customer bills. If a PDF yields no usable text, report a processing failure or need for review instead of inventing field values. The model identifies fields, maps printed unit expressions to contract enums, and records the stated GST basis. It does not calculate billing days, convert cents to dollars, reconcile charge lines, or substitute an account balance for the current bill amount.
 
 This is a baseline for measurement, not a claim that plain text preserves every bill layout. Later implementation decisions about persistence and model integration belong in their own changes.
 
@@ -32,7 +32,7 @@ This is a baseline for measurement, not a claim that plain text preserves every 
 
 ## Trade-offs
 
-Text extraction is simple, inspectable, and easy to test against the golden dataset. It may scramble reading order, especially in tables and multiple columns, and it cannot recover text from an image-only scan without OCR. The deliberately awkward `bill_005` will test one layout failure mode, but five synthetic bills cannot establish real-world accuracy.
+Text extraction is simple, inspectable, and easy to test against the golden dataset. It may scramble reading order, especially in tables and multiple columns, and it cannot recover text from an image-only scan without OCR. The deliberately awkward `bill_005` will test one layout failure mode; `bill_002` will test whether an unstated amount is invented. Five synthetic bills cannot establish real-world accuracy.
 
 Separating text extraction from LLM interpretation makes failures easier to diagnose: we can inspect whether the source text omitted a value, reordered it, or contained it correctly while the model chose the wrong field. Structured output and validation constrain the shape of an answer; they do not prove the answer matches the PDF. Keep document text in a data role and treat any embedded commands as untrusted.
 

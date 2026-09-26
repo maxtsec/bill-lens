@@ -6,9 +6,13 @@ This document defines the initial fields extracted from a Victorian household el
 
 `retailer` is the electricity retailer named on the bill, as displayed to the customer. Preserve its displayed name; do not replace it with a parent company, distributor, or a guessed canonical name. A missing or ambiguous retailer is `null` and needs review.
 
+For evaluation, trim and collapse whitespace and compare without case sensitivity. Do not remove words or legal suffixes: `Example Energy` and `EXAMPLE ENERGY` match, but `Example Energy` and `Example Energy Pty Ltd` do not. A future retailer registry could support alias matching, but the first dataset will not guess aliases.
+
 ## Billing period
 
 `period_start` and `period_end` are the first and last calendar dates of the electricity service period shown on the bill. Both dates are **inclusive**. Store them in ISO 8601 date form (`YYYY-MM-DD`), without a time of day or timezone.
+
+Australian-style printed dates such as `05/06/2026` must be interpreted using the bill's stated date format or other unambiguous context, not a default US month/day assumption. If the order cannot be resolved, return `null` for the uncertain date and require review.
 
 `stated_billing_days` is the number of billing days explicitly printed on the bill. It is `null` when the bill does not state a number. It is an extracted field, not a value calculated by the model.
 
@@ -18,7 +22,7 @@ Python calculates `billing_days` from the dates:
 billing_days = (period_end - period_start).days + 1
 ```
 
-For example, 1 April through 30 April is 30 days. If `period_end` is before `period_start`, the period needs review. If `stated_billing_days` differs from `billing_days`, retain both values and raise a review warning; do not silently change either one. The difference could be an extraction error, an unusual billing convention, or a mistake on the source bill.
+For example, 1 April through 30 April is 30 days. If `period_end` is before `period_start`, emit `period_end_before_start` and do not calculate or compare billing days. Otherwise, if `stated_billing_days` differs from `billing_days`, retain both values and emit `stated_days_mismatch`; do not silently change either one. The difference could be an extraction error, an unusual billing convention, or a mistake on the source bill.
 
 ## Total usage
 
@@ -33,22 +37,26 @@ Represent usage as a decimal string in JSON, such as `"320.5"`, preserving the p
 `daily_supply_rate` is the unit price of the daily supply charge, **not** the total supply charge for the period. Extract its printed decimal value and unit separately:
 
 ```json
-{ "value": "110.23", "unit": "cents/day" }
+{ "value": "110.23", "unit": "cents/day", "gst_basis": "inclusive" }
 ```
 
-The initial recognised units are `cents/day` and `AUD/day`. Python converts the extracted value to canonical **AUD/day** with `Decimal`: divide a `cents/day` value by 100; leave an `AUD/day` value unchanged. For example, `110.23 cents/day` becomes `1.1023 AUD/day`. Do not round during conversion.
+The model maps printed expressions such as `c/day`, `c per day`, and `¢/day` to the `cents/day` enum; `$/day` and `AUD/day` map to `AUD/day` when the bill's currency is clearly Australian dollars. Python validates the enum and converts the extracted value to canonical **AUD/day** with `Decimal`: divide a `cents/day` value by 100; leave an `AUD/day` value unchanged. For example, `110.23 cents/day` becomes `1.1023 AUD/day`. Do not round during conversion.
 
-The first dataset will label rates as GST inclusive. The contract does not yet normalise GST basis across bills. If a bill has multiple supply rates, an unclear unit, or an unclear GST basis, return `null` and require review rather than selecting one arbitrarily. A daily supply rate must be nonnegative.
+`gst_basis` is `inclusive`, `exclusive`, or `unknown`, according to what the bill says about the **printed rate**. The model identifies this label from the document; it must not assume `inclusive` when the bill is silent. An `unknown` basis keeps a readable rate while raising the `supply_rate_gst_basis_unknown` review flag. Python's unit conversion does **not** change GST basis. Do not compare rates with different or unknown bases as equivalent; tax-basis normalisation is outside M0.
+
+If a bill has multiple supply rates with no single representative rate, or the printed rate's unit cannot be identified, set `daily_supply_rate` to `null` and require review rather than selecting one arbitrarily. A daily supply rate must be nonnegative.
 
 ## Current bill amount
 
 `current_bill_amount` is the net amount charged for **this billing period**, in Australian dollars (AUD). It includes current-period usage and supply charges, applicable current-period fees and adjustments, discounts already applied, solar feed-in credits, and GST. Preserve the sign: a net credit can make the value negative.
 
-It excludes previous balances and payments against the account. It is therefore distinct from `amount due`, which is the account balance requested for payment and may combine the current bill with earlier balances, payments, or credits. A conditional discount that has not yet been applied is not part of `current_bill_amount`.
+It excludes previous balances and payments against the account. It is therefore distinct from `amount due`, which is the account balance requested for payment and may combine the current bill with earlier balances, payments, or credits. Include a discount if the bill has already applied it to the stated current-period total. Exclude a possible future or conditional discount that has not yet been applied. If two alternative totals make that unclear, return `null` and require review.
 
 Extract the current-period amount stated on the bill when it can be identified. Do not ask the model to calculate it from line items. If the bill shows only an amount due and the current-period amount cannot be identified confidently, return `null` for `current_bill_amount` and flag the bill for review rather than copying the amount due.
 
 Represent monetary values as decimal strings in JSON, such as `"105.00"`; parse them with Python `Decimal`, not binary floating point.
+
+When the bill explicitly marks the current-period total as a credit, for example `AUD 4.00 CR`, the extracted signed value is `"-4.00"`. Recognising that `CR` is attached to the current-period total is document interpretation; Python can then validate the signed decimal value. Do not treat an account credit from an earlier period as a negative current bill.
 
 ### Worked example
 
@@ -63,7 +71,7 @@ amount_due          = 105.00 + 40.00 - 10.00 = AUD 135.00
 
 ## JSON shape and review rules
 
-Every extraction attempt returns all seven keys under `fields`. Use `null` for a value that is missing or cannot be identified confidently; do not omit its key or invent a value. `stated_billing_days` is optional by nature. Missing values for the other fields need review. The example below also shows the shape of a manually labelled `expected.json`; labels must be checked against the synthetic PDF by a human.
+Every extraction attempt returns all seven keys under `fields`. Use `null` for a value that is missing or cannot be identified confidently; do not omit its key or invent a value. `stated_billing_days` is optional by nature. Missing values for the other fields need review. An `expected.json` label also records the expected processing status and warning codes, checked against the synthetic PDF by a human. These label-only keys are not fields returned by the LLM.
 
 ```json
 {
@@ -73,14 +81,34 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
     "period_start": "2026-04-01",
     "period_end": "2026-04-30",
     "stated_billing_days": 30,
-    "total_usage_kwh": "320.5",
+    "total_usage_kwh": "250",
     "daily_supply_rate": {
       "value": "110.23",
-      "unit": "cents/day"
+      "unit": "cents/day",
+      "gst_basis": "inclusive"
     },
-    "current_bill_amount": "105.00"
-  }
+    "current_bill_amount": "108.07"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
 }
 ```
 
-`schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`.
+`schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`. For M0, `expected_status` is `processed` when there are no review flags and `needs_review` when there is at least one. Operational failures such as unreadable PDFs will use `failed` in a later milestone.
+
+For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. These examples are plans until the finished PDFs have been manually checked.
+
+The initial fixed `expected_flags` codes are:
+
+| Code | Condition |
+| --- | --- |
+| `stated_days_mismatch` | Printed day count differs from inclusive date calculation. |
+| `period_end_before_start` | Both dates are known but in reverse order. |
+| `current_bill_amount_missing` | No unambiguous current-period amount is printed. |
+| `required_field_missing` | A required field other than `current_bill_amount` is unavailable. |
+| `supply_rate_gst_basis_unknown` | Rate and unit are known, but the printed rate's GST basis is not. |
+| `daily_supply_rate_unusable` | No single rate with a recognised unit can be identified. |
+
+For a missing current bill amount, use `current_bill_amount_missing` instead of the generic `required_field_missing` code. Extend this list and the dataset schema deliberately when a new review condition is added. `expected_flags` is a set of reason codes, written as a sorted array in JSON for stable diffs. A stated day count of `null` by itself does not produce a flag.
+
+Evaluation should compare numeric fields as `Decimal`, not text strings. Compare supply rates after unit conversion to AUD/day **and** compare `gst_basis` separately; different GST bases are not equivalent. Compare emitted review flags and status with `expected_flags` and `expected_status` independently of field accuracy. These rules define the intended checks; the evaluation harness is a later milestone.
