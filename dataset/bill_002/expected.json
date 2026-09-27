@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Harbour Sample Power",
+    "period_start": "2026-05-01",
+    "period_end": "2026-05-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "320",
+    "daily_supply_rate": {"value": "1.00", "unit": "AUD/day", "gst_basis": "exclusive"},
+    "current_bill_amount": null
+  },
+  "expected_status": "needs_review",
+  "expected_flags": ["current_bill_amount_missing"]
+}

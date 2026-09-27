@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Lantern Sample Electricity",
+    "period_start": "2026-06-05",
+    "period_end": "2026-07-04",
+    "stated_billing_days": 30,
+    "total_usage_kwh": "300",
+    "daily_supply_rate": {"value": "98", "unit": "cents/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "113.40"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

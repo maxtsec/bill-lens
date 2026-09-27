@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Mallee Sample Energy",
+    "period_start": "2026-11-01",
+    "period_end": "2026-11-30",
+    "stated_billing_days": 30,
+    "total_usage_kwh": "100",
+    "daily_supply_rate": {"value": "1.00", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "-4.00"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}
