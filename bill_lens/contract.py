@@ -57,16 +57,39 @@ class ContractModel(BaseModel):
 
 
 class SupplyRate(ContractModel):
-    value: NonnegativeDecimal
-    unit: Literal["cents/day", "AUD/day"]
-    gst_basis: Literal["inclusive", "exclusive", "unknown"]
+    value: NonnegativeDecimal = Field(description=(
+        "Printed nonnegative daily unit price as a plain decimal string. Preserve "
+        "printed precision; do not convert units, change GST basis or use the period charge."
+    ))
+    unit: Literal["cents/day", "AUD/day"] = Field(description=(
+        "Map c/day, c per day and cents-symbol/day to cents/day. Map $/day and "
+        "AUD/day to AUD/day only when the currency is clearly Australian dollars."
+    ))
+    gst_basis: Literal["inclusive", "exclusive", "unknown"] = Field(description=(
+        "GST basis of the printed supply rate: inclusive or exclusive only when "
+        "supported by the bill; unknown when unstated or unclear. Never assume inclusive."
+    ))
 
 
 class ExtractionFields(ContractModel):
     # Nullable keys are still required: omission is a schema error.
-    retailer: StrictStr | None
-    period_start: ISODate | None
-    period_end: ISODate | None
+    retailer: StrictStr | None = Field(description=(
+        "Electricity retailer as displayed to the customer. Preserve its name and "
+        "legal suffix; do not substitute a distributor, parent company or guessed alias. "
+        "Use null if missing or ambiguous."
+    ))
+    period_start: ISODate | None = Field(description=(
+        "First inclusive date of the electricity service period, as YYYY-MM-DD. "
+        "Use the bill's stated date format or unambiguous context for Australian dates; "
+        "do not assume US month/day order. Use null if missing or unresolved. "
+        "Do not substitute the issue date or payment due date."
+    ))
+    period_end: ISODate | None = Field(description=(
+        "Last inclusive date of the electricity service period, as YYYY-MM-DD. "
+        "Use the bill's stated date format or unambiguous context for Australian dates; "
+        "do not assume US month/day order. Use null if missing or unresolved. "
+        "Preserve source dates even if reversed; Python checks their order."
+    ))
     stated_billing_days: Annotated[StrictInt, Field(gt=0)] | None = Field(
         description=(
             "The explicitly labelled billing-period day count, such as Billing days "
@@ -75,9 +98,27 @@ class ExtractionFields(ContractModel):
             "from dates or select a value because it agrees with the dates."
         )
     )
-    total_usage_kwh: NonnegativeDecimal | None
-    daily_supply_rate: SupplyRate | None
-    current_bill_amount: DecimalString | None
+    total_usage_kwh: NonnegativeDecimal | None = Field(description=(
+        "Explicitly printed total grid electricity imported during the period in kWh, "
+        "as a nonnegative plain decimal string preserving printed precision. Zero is valid. "
+        "Do not add tariff lines or subtract/include solar exports. Use null if no "
+        "unambiguous import total is printed."
+    ))
+    daily_supply_rate: SupplyRate | None = Field(description=(
+        "One printed daily supply unit price with its unit and GST basis, not the "
+        "period's total supply charge. Do not convert or average rates. Use null if "
+        "missing, if multiple rates have no single representative rate, or if the unit "
+        "cannot be identified. A readable rate with unstated GST basis uses unknown."
+    ))
+    current_bill_amount: DecimalString | None = Field(description=(
+        "Explicitly printed net current-period total in AUD as a signed plain decimal "
+        "string, preserving printed precision. Includes current charges, fees, adjustments, "
+        "already-applied discounts, solar credits and GST; excludes previous balances and "
+        "account payments. Exclude unapplied conditional discounts; use null if alternative "
+        "totals are ambiguous. A current-period 4.00 CR becomes -4.00. Do not copy amount "
+        "due or calculate a total from line items. Use null if no identifiable current "
+        "total is printed."
+    ))
 
     @field_validator("retailer")
     @classmethod

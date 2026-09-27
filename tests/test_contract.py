@@ -86,3 +86,21 @@ def test_label_version_is_exact(valid_fields, version):
             "schema_version": version, "fields": valid_fields,
             "expected_status": "processed", "expected_flags": [],
         })
+
+
+def test_generated_schema_keeps_described_fields_required_and_nullable():
+    schema = ExtractionFields.model_json_schema()
+    expected = {
+        "retailer", "period_start", "period_end", "stated_billing_days",
+        "total_usage_kwh", "daily_supply_rate", "current_bill_amount",
+    }
+    assert set(schema["properties"]) == set(schema["required"]) == expected
+    assert schema["additionalProperties"] is False
+    for field in schema["properties"].values():
+        assert field["description"].strip()
+        assert {"type": "null"} in field["anyOf"]
+        assert "default" not in field
+    rate = schema["$defs"]["SupplyRate"]
+    assert set(rate["required"]) == {"value", "unit", "gst_basis"}
+    assert rate["additionalProperties"] is False
+    assert all(field["description"].strip() for field in rate["properties"].values())

@@ -108,6 +108,8 @@ For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_sta
 
 Schema errors raise `ValidationError`. Valid-shaped fields then enter `bill_lens/validation.py`, which retains source disagreements and returns review flags. Operational handling of malformed model responses belongs to M1. The normalized supply-rate function converts units only; callers must retain and compare the source `gst_basis` separately.
 
+All seven extraction fields and all three supply-rate components include descriptions in the generated Pydantic JSON schema. Keep those descriptions consistent with this contract when changing field semantics: future structured model requests will use them as instructions. Their presence does not establish model accuracy or provider compatibility. The [M1 PDF text boundary](pdf-text-boundary.md) defines failures before a model is called.
+
 The current `ISODate` input validator accepts wire-format strings only, including when called from Python; it rejects a preconstructed `date` object. Before M1 constructs these models from database or internal Python values, revisit this boundary or add an explicit conversion. The M0 JSON-label path does not require that change.
 
 The initial fixed `expected_flags` codes are determined from the extracted fields, not from a hidden explanation of why the model returned `null`:
