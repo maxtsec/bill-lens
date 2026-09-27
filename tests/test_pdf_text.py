@@ -162,6 +162,7 @@ def test_missing_media_box_is_classified(case):
 
 @pytest.mark.parametrize("error_type", [
     TypeError, IndexError, KeyError, AssertionError, RecursionError, RuntimeError,
+    MemoryError,  # Deliberately unreadable_pdf for now; see docs/pdf-text-boundary.md.
 ])
 def test_parser_open_errors_keep_only_type_name(monkeypatch, error_type):
     def fail(*args, **kwargs):
