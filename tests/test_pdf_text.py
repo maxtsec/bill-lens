@@ -123,20 +123,23 @@ def test_parser_failure_on_later_page_does_not_return_partial_success(monkeypatc
 
     def fail_second(page):
         if page.page_number == 2:
-            raise pdf_text.PdfminerException("sensitive document fragment")
+            raise IndexError("sensitive document fragment")
         return original(page)
 
     monkeypatch.setattr(pdf_text.pdfplumber.page.Page, "extract_text", fail_second)
     with pytest.raises(PdfTextError, match="^unreadable_pdf$") as caught:
         extract_pdf_text(make_pdf("First page", "Second page"))
-    assert caught.value.__suppress_context__ is True
+    assert caught.value.parser_error == "IndexError"
+    assert caught.value.__context__ is None
+    assert caught.value.__cause__ is None
 
 
 def test_unexpected_programming_errors_are_not_disguised(monkeypatch):
     def bug(*args, **kwargs):
         raise RuntimeError("unexpected bug")
 
-    monkeypatch.setattr(pdf_text.pdfplumber, "open", bug)
+    # Constructing our own result is application logic, unlike pdfplumber.open.
+    monkeypatch.setattr(pdf_text, "PageText", bug)
     with pytest.raises(RuntimeError, match="unexpected bug"):
         extract_pdf_text(make_pdf("Page"))
 
@@ -144,3 +147,63 @@ def test_unexpected_programming_errors_are_not_disguised(monkeypatch):
 def test_input_must_be_bytes():
     with pytest.raises(TypeError, match="data must be bytes"):
         extract_pdf_text("bill.pdf")
+
+
+@pytest.mark.parametrize("case", CASES)
+def test_missing_media_box_is_classified(case):
+    data = (ROOT / "dataset" / case / "bill.pdf").read_bytes()
+    assert b"/MediaBox" in data
+    with pytest.raises(PdfTextError, match="^unreadable_pdf$") as caught:
+        extract_pdf_text(data.replace(b"/MediaBox", b"/MediaBoz"))
+    assert caught.value.parser_error == "TypeError"
+    assert caught.value.__context__ is None
+    assert caught.value.__cause__ is None
+
+
+@pytest.mark.parametrize("error_type", [
+    TypeError, IndexError, KeyError, AssertionError, RecursionError, RuntimeError,
+])
+def test_parser_open_errors_keep_only_type_name(monkeypatch, error_type):
+    def fail(*args, **kwargs):
+        raise error_type("sensitive parser diagnostic")
+
+    monkeypatch.setattr(pdf_text.pdfplumber, "open", fail)
+    with pytest.raises(PdfTextError, match="^unreadable_pdf$") as caught:
+        extract_pdf_text(make_pdf("Page"))
+    error = caught.value
+    assert error.parser_error == error_type.__name__
+    assert error.__context__ is None
+    assert error.__cause__ is None
+    assert "sensitive" not in repr(vars(error))
+
+
+def test_cleanup_failure_after_success_is_classified(monkeypatch):
+    def fail(pdf):
+        raise KeyError("sensitive cleanup diagnostic")
+
+    monkeypatch.setattr(pdf_text.pdfplumber.PDF, "close", fail)
+    with pytest.raises(PdfTextError, match="^unreadable_pdf$") as caught:
+        extract_pdf_text(make_pdf("Page"))
+    assert caught.value.parser_error == "KeyError"
+    assert caught.value.__context__ is None
+
+
+def test_cleanup_failure_preserves_primary_failure(monkeypatch):
+    def fail(pdf):
+        raise KeyError("cleanup diagnostic")
+
+    monkeypatch.setattr(pdf_text.pdfplumber.PDF, "close", fail)
+    with pytest.raises(PdfTextError, match="^page_without_text$") as caught:
+        extract_pdf_text(make_pdf(None))
+    assert caught.value.parser_error is None
+    assert caught.value.__context__ is None
+
+
+@pytest.mark.parametrize("interrupt", [KeyboardInterrupt, SystemExit])
+def test_process_control_exceptions_propagate(monkeypatch, interrupt):
+    def stop(*args, **kwargs):
+        raise interrupt()
+
+    monkeypatch.setattr(pdf_text.pdfplumber, "open", stop)
+    with pytest.raises(interrupt):
+        extract_pdf_text(make_pdf("Page"))

@@ -33,9 +33,14 @@ not a scan detector. Multi-column ordering remains a known limitation (bill_005)
 
 ## Failures
 
-Expected failures raise `PdfTextError` with a stable `code` and an optional
-one-based `page_number`. No partial result is returned. The exception message
-contains only the code, never raw parser diagnostics or extracted text.
+Expected failures raise `PdfTextError` with a stable `code`, an optional
+one-based `page_number`, and an optional `parser_error` containing only the
+exception class name (for example, `TypeError`). No partial result is returned.
+The exception message contains only the code. Parser messages are not copied,
+and translation raises outside the exception handler so the original parser
+exception is not attached as `__context__` or `__cause__`. This does not sanitize
+traceback frame locals or library logs; error reporting must not capture document
+bytes, text or parser objects from locals.
 
 | Code | Meaning |
 | --- | --- |
@@ -44,15 +49,26 @@ contains only the code, never raw parser diagnostics or extracted text.
 | `invalid_pdf_signature` | Missing required prefix |
 | `unreadable_pdf` | Parser failure, including a password required at open |
 | `encrypted_pdf` | Parser opened the document, but detected encryption |
-| `no_pages` | Parser found no pages |
+| `no_pages` | Parser found no pages, whether genuinely empty or damaged beyond recovery |
 | `too_many_pages` | Page count exceeds the limit |
 | `page_without_text` | A page has no non-whitespace text; page number included |
 | `text_too_long` | Combined text exceeds the limit; page number included |
 
-An incorrect Python input type raises `TypeError`. Unexpected programming errors
-are not converted wholesale into document failures. The future processing layer
-will map these errors to operational failure responses; these are not the domain
-review flags in `expected.json`, and no HTTP status mapping is defined yet.
+An incorrect Python input type raises `TypeError`. Each parser operation (open,
+metadata/page access, text extraction and cleanup) catches `Exception`, including
+builtin types such as `TypeError` and `IndexError` raised by malformed inputs.
+Checks, text-length accounting and result construction run outside those catch
+blocks, so application bugs there propagate. A library bug inside a guarded call
+is indistinguishable from malformed-input failure and is also classified; the
+class name is retained for diagnosis. `KeyboardInterrupt` and `SystemExit` are
+not caught. Cleanup failures cannot replace an earlier failure; a cleanup-only
+failure becomes `unreadable_pdf`.
+
+The future processing layer will map these errors to operational failure
+responses; these are not the domain review flags in `expected.json`, and no HTTP
+status mapping is defined yet. `no_pages` describes the parser's observation, not
+a diagnosis that the source was a valid empty PDF. There is no separate PDF
+conformance validator here.
 
 ## Remaining work and limits
 
@@ -73,6 +89,9 @@ review flags in `expected.json`, and no HTTP status mapping is defined yet.
   input to future prompt construction, not a provider integration or measured
   model behavior. Required nullable keys and the string-only ISO date boundary
   remain unchanged. Provider schema compatibility still needs verification.
+- The extraction contract is the semantic authority; schema descriptions are a
+  manually maintained projection. Future semantic changes must review both in
+  the same PR. A generated single source may be worth exploring if drift occurs.
 
 ## Verify locally
 
@@ -81,3 +100,6 @@ development environment. Tests exercise all five golden PDFs against the existin
 independent pdfplumber baseline, page ordering, encrypted/invalid/textless PDFs,
 inclusive limits, partial failure, and schema descriptions/required keys. Test
 PDFs are generated in memory; the five owner-verified PDFs and labels are unchanged.
+
+The [fuzzing learning note](learning/pdf-boundary-fuzzing.md) separates the
+reviewer's reported experiment from locally reproduced regressions.
