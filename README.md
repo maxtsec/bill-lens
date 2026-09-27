@@ -8,6 +8,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [Five-bill synthetic dataset and review checklist](dataset/README.md)
 - [ADR-001: PDF extraction strategy](docs/adr/001-pdf-extraction-strategy.md)
 - [M1 PDF text boundary and failure policy](docs/pdf-text-boundary.md)
+- [ADR-002: Extraction port and deterministic fake](docs/adr/002-extraction-port.md)
 
 ## Run locally
 
@@ -37,4 +38,31 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 
 - Added contract-aligned Pydantic descriptions to all seven extraction fields and the supply-rate components, preserving required nullable keys.
 - Added `extract_pdf_text(bytes)` with page provenance, a file hash, acceptance limits and explicit failures. The inspection script now uses it.
-- Next: choose the LLM provider/model and connect structured extraction with a versioned prompt; then add the upload, persistence and JSON response path in reviewable changes.
+- Added the provider-independent `BillExtractor` port, recordable `ExtractionAttempt`, one shared raw-response validation helper, and a deterministic `FakeExtractor`. All five PDFs now exercise the pipeline through domain flags without a model or API key. This tests plumbing, not extraction accuracy.
+- Next: build the upload, persistence and JSON response path using the fake in reviewable changes. Real adapters, prompts and retries are deferred.
+
+### Exercise the extraction port locally
+
+From the repository root in the installed development environment:
+
+```python
+from pathlib import Path
+from bill_lens.extraction import FakeExtractor
+from bill_lens.pdf_text import extract_pdf_text
+from bill_lens.validation import derive_flags, derive_status
+
+document = extract_pdf_text(Path("dataset/bill_002/bill.pdf").read_bytes())
+attempt = FakeExtractor.from_dataset(Path("dataset")).extract(document)
+if attempt.error_code is not None:
+    print(attempt.error_code)  # Later: persist failed attempts too.
+else:
+    flags = derive_flags(attempt.fields)
+    print(derive_status(flags), sorted(flags))
+# needs_review ['current_bill_amount_missing']
+```
+
+To script an expected provider failure, construct a mapping entry such as
+`ScriptedResponse(raw_response=None, error_code="timeout", latency_ms=1000)`
+under the document's `file_sha256` and pass the mapping to `FakeExtractor`.
+Unknown hashes raise `KeyError` as missing fixture setup; other scripted outcomes
+and invariants are documented in ADR-002. No real model is called.
