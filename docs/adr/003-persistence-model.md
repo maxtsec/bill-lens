@@ -1,6 +1,6 @@
 # ADR-003: Bill identity and historical extraction runs in PostgreSQL
 
-- Status: Proposed for Phase 1; pending Claude review and owner approval
+- Status: Accepted for Phase 1 after Claude review of commit b669941 and owner approval
 - Scope: Persistence foundation only; no HTTP or upload orchestration
 
 ## Context
