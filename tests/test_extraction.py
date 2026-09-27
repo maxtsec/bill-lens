@@ -66,14 +66,14 @@ def test_shared_gate_rejects_invalid_model_output_and_keeps_raw(valid_fields, ki
 
 @pytest.mark.parametrize("kind", [
     "deep_nesting", "huge_integer", "bom", "markdown", "nan", "surrogate",
-    "trailing_text", "duplicate_amount",
+    "escaped_surrogate", "trailing_text", "duplicate_amount",
 ])
 def test_review_json_edge_cases_are_invalid_output(valid_fields, kind):
     raw = json.dumps(valid_fields)
     if kind == "deep_nesting":
         raw = "[" * 100_000 + "0" + "]" * 100_000
     elif kind == "huge_integer":
-        raw = raw.replace('"108.07"', "9" * 5_000)
+        raw = raw.replace('"stated_billing_days": 30', '"stated_billing_days": ' + "9" * 5_000)
     elif kind == "bom":
         raw = "\ufeff" + raw
     elif kind == "markdown":
@@ -82,10 +82,36 @@ def test_review_json_edge_cases_are_invalid_output(valid_fields, kind):
         raw = raw.replace('"108.07"', "NaN")
     elif kind == "surrogate":
         raw = raw.replace("Example Energy", "\ud800")
+    elif kind == "escaped_surrogate":
+        raw = raw.replace("Example Energy", r"\ud800")
     elif kind == "trailing_text":
         raw += " extra response text"
     elif kind == "duplicate_amount":
         raw = raw[:-1] + ', "current_bill_amount": "999.99"}'
+    attempt = build_attempt(
+        provider="test", model="m", prompt_version="v", raw_response=raw, latency_ms=0,
+    )
+    assert attempt.error_code == "invalid_output"
+    assert attempt.fields is None
+    assert attempt.raw_response == raw
+
+
+@pytest.mark.parametrize("digits", [4300, 4301])
+def test_duplicate_keys_at_integer_parser_boundary(valid_fields, digits):
+    raw = json.dumps(valid_fields).replace(
+        '"stated_billing_days": 30', '"stated_billing_days": ' + "9" * digits,
+    )
+    # The 4300-digit control must be schema-valid: otherwise rejection could
+    # conceal a duplicate-check regression. At 4301 both parsers reject it.
+    if digits == 4300:
+        assert json.loads(raw)["stated_billing_days"] > 0
+        assert ExtractionFields.model_validate_json(raw).stated_billing_days > 0
+    else:
+        with pytest.raises(ValueError):
+            json.loads(raw)
+        with pytest.raises(ValidationError):
+            ExtractionFields.model_validate_json(raw)
+    raw = raw[:-1] + ', "current_bill_amount": "999.99"}'
     attempt = build_attempt(
         provider="test", model="m", prompt_version="v", raw_response=raw, latency_ms=0,
     )
