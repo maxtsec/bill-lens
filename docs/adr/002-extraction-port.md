@@ -28,6 +28,10 @@ provider, model, prompt version, raw response, validated fields or error code,
 optional input/output token counts, and nonnegative integer latency in ms.
 No `PromptSpec` or real prompt is introduced yet.
 
+`build_attempt` requires an explicit `latency_ms` argument. Real adapters must
+provide their measured latency rather than silently recording a default zero;
+the fake explicitly supplies its configured synthetic latency (zero by default).
+
 ### Returned failures and raised mistakes
 
 Expected provider/model failures return an attempt with `fields=None` and one
@@ -50,9 +54,18 @@ Every adapter uses `build_attempt(...)`. When there is no explicit provider
 error, it validates the raw JSON object directly with `ExtractionFields` and
 returns success or `invalid_output`. The object contains the seven extraction
 keys directly; it is not an `expected.json` label or a `{"fields": ...}` wrapper.
+Before schema validation, a standard-library JSON pass inspects object pairs
+and rejects duplicate keys at any nesting level, including repeated identical
+values and escaped spellings of the same key. Otherwise JSON parsers can discard
+earlier values and silently choose the last one. The original raw response is
+preserved even when rejected. This preflight never supplies decoded values to
+Pydantic: malformed JSON, integer-limit `ValueError` and depth `RecursionError`
+fall through to validation of the original text. Only duplicate detection adds
+a rejection rule; the existing Pydantic JSON behavior remains the final schema gate.
+
 The helper neither repairs JSON nor strips response text, calculates totals,
-or runs domain checks. It catches only Pydantic `ValidationError`; programming
-errors propagate.
+or runs domain checks. Schema validation catches Pydantic `ValidationError`;
+programming errors propagate.
 
 An explicit failure takes precedence over any apparently valid JSON in its raw
 response. A truncated or refused reply must not become a success just because
@@ -121,3 +134,10 @@ capture when that adapter is implemented. Revisit immutable nested models and
 attempt serialization when persistence is added. Extend metadata only when
 evaluation or operational evidence needs it; schema-valid outputs will still
 require accuracy evaluation against independent human labels.
+
+Add static type checking when adapters are introduced: the current test's
+`BillExtractor` annotation is not an automated compatibility check. A runtime
+protocol check alone would not verify method signatures or return types. Before
+exposing the fake through HTTP, decide how dev mode reports an unknown fixture
+hash so an expected unsupported upload does not become an unexplained HTTP 500.
+Update this ADR to Accepted after review and owner approval, before merge.
