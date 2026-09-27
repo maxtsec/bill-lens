@@ -1,6 +1,6 @@
 # Milestone 0 synthetic dataset
 
-This directory contains five **synthetic** Victorian household electricity bills and independently authored candidate labels. Codex generated the PDFs, authored the labels separately, checked the rendered pages, and ran the deterministic tests. **Owner label review is still pending; these are not yet human-verified ground truth.** The five cases are deliberately small; they test distinct interpretation failures rather than trying to represent every retailer or tariff.
+This directory contains five **synthetic** Victorian household electricity bills and independently authored candidate labels. Codex generated the PDFs, authored the labels separately, checked the rendered pages, and ran the deterministic tests. **The owner verified `bill_002` and `bill_005` on 2026-09-27; the other three remain pending, so the full dataset is not yet human-verified ground truth.** The five cases are deliberately small; they test distinct interpretation failures rather than trying to represent every retailer or tariff.
 
 Each case has this structure:
 
@@ -64,9 +64,9 @@ The owner should compare every field, rate unit, GST basis, status and flag agai
 | Case | Owner review | Particular check |
 | --- | --- | --- |
 | `bill_001` | Pending | Preserve 110.23 cents/day, converting to 1.1023 AUD/day without rounding. |
-| `bill_002` | Pending | 162.66 is amount due; no current total is printed, so keep that field null. Supply rate is exclusive of GST. |
+| `bill_002` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | 162.66 is amount due; no current total is printed, so keep that field null. Supply rate is exclusive of GST. |
 | `bill_003` | Pending | DD/MM/YYYY means 5 June to 4 July; current total 113.40 differs from amount due 163.40. |
 | `bill_004` | Pending | Import is 100 kWh, export is 800 kWh; 4.00 CR means a current amount of -4.00. |
-| `bill_005` | Pending | Keep the printed 30 days, while the dates imply 31; retain the mismatch flag. |
+| `bill_005` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | Keep the printed 30 days, while the dates imply 31; retain the mismatch flag. |
 
-The owner must independently re-read at least `bill_002` and `bill_005` because one agent authored both PDFs and candidate labels. This reduces, but does not eliminate, shared-author bias. No extraction accuracy is claimed.
+The owner independently re-read `bill_002` and `bill_005` and confirmed that they match the labels. This reduces, but does not eliminate, shared-author bias: one agent authored both PDFs and candidate labels. The other three cases still need owner verification. No extraction accuracy is claimed.
