@@ -14,7 +14,9 @@ For evaluation, trim and collapse whitespace and compare without case sensitivit
 
 Australian-style printed dates such as `05/06/2026` must be interpreted using the bill's stated date format or other unambiguous context, not a default US month/day assumption. If the order cannot be resolved, return `null` for the uncertain date and require review.
 
-`stated_billing_days` is the number of billing days explicitly printed on the bill. It is `null` when the bill does not state a number. It is an extracted field, not a value calculated by the model.
+`stated_billing_days` is the day count explicitly labelled as applying to the **billing period**, for example `Billing days` or `Days in period` in the account summary. Quantities on charge lines, including the number of days used to calculate a supply charge, are excluded. If no unambiguous period-level count is printed, return `null`, even when a supply line states a number of days. It is an extracted field, not a value calculated by the model; never select a number because it agrees with the dates.
+
+For example, `bill_005` prints `Billing days: 30` in its account summary and `Supply: 31 days at 95¢/day` in the charge details. Extract `stated_billing_days: 30`. The 31 is a charge-line quantity and cannot replace the summary's stated count. Python separately derives 31 from the period dates and emits `stated_days_mismatch`.
 
 Python calculates `billing_days` from the dates:
 
@@ -105,6 +107,8 @@ For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_sta
 `bill_lens/contract.py` validates the wire format with Pydantic. Decimal strings must be plain decimal notation (optional leading minus, digits, optional fractional digits); JSON numbers, currency symbols, whitespace, exponents, NaN and Infinity are rejected. Zero usage and negative current amounts remain valid. Dates must be exact `YYYY-MM-DD` strings representing real calendar dates. A stated day count must be a positive integer, or null. Blank retailer strings are rejected in favor of explicit null. Unknown keys and omitted keys are rejected, including in the supply-rate object; printed unit aliases must already have been mapped to the contract enums.
 
 Schema errors raise `ValidationError`. Valid-shaped fields then enter `bill_lens/validation.py`, which retains source disagreements and returns review flags. Operational handling of malformed model responses belongs to M1. The normalized supply-rate function converts units only; callers must retain and compare the source `gst_basis` separately.
+
+The current `ISODate` input validator accepts wire-format strings only, including when called from Python; it rejects a preconstructed `date` object. Before M1 constructs these models from database or internal Python values, revisit this boundary or add an explicit conversion. The M0 JSON-label path does not require that change.
 
 The initial fixed `expected_flags` codes are determined from the extracted fields, not from a hidden explanation of why the model returned `null`:
 

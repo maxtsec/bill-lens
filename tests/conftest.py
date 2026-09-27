@@ -1,10 +1,7 @@
-from pathlib import Path
-
 import pdfplumber
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-CASES = [f"bill_{number:03}" for number in range(1, 6)]
+from tests.helpers import CASES, ROOT
 
 
 @pytest.fixture
