@@ -2,11 +2,12 @@
 
 Bill Lens is a portfolio project for turning Victorian household electricity bill PDFs into structured, explainable, and verifiable data. The engineering rule is to use an LLM where a document is ambiguous and deterministic Python code for calculations, units, and validation.
 
-The project is currently at **Milestone 0: synthetic dataset and contract validation**. Five PDFs and owner-verified labels now exist, together with Pydantic schemas and deterministic Python checks. There is no application or measured LLM extraction accuracy yet.
+**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. M1 starts with a reusable PDF text boundary and schema descriptions. The upload-to-JSON application and measured LLM extraction accuracy are still pending.
 
 - [Initial extraction contract](docs/extraction-contract.md)
 - [Five-bill synthetic dataset and review checklist](dataset/README.md)
 - [ADR-001: PDF extraction strategy](docs/adr/001-pdf-extraction-strategy.md)
+- [M1 PDF text boundary and failure policy](docs/pdf-text-boundary.md)
 
 ## Run locally
 
@@ -32,6 +33,8 @@ Rebuild the synthetic PDFs with `python scripts/generate_dataset.py` using that 
 
 The [text baseline inspection](dataset/text-baseline.md) records the observed reading order. The owner has verified all five PDFs against their labels. In the re-review supplied by the owner on 2026-09-27, Claude approved commit `f4e5cd1`, confirming both must-fix issues were resolved and all 91 tests passed through three pytest entry points. The owner completed verification of `bill_001`, `bill_003`, and `bill_004` on 2026-09-27 and authorized rebase merge. Next, the first application slice will upload a PDF, extract and validate fields, persist the result, and return structured JSON.
 
-## M1 follow-up
+## M1 progress and next steps
 
-- Add contract-aligned Pydantic descriptions to the other six extraction fields before generating the LLM-facing JSON schema. Descriptions become part of the model's instructions, so keep them consistent with the extraction contract and preserve all seven required nullable keys. `stated_billing_days` already has its description.
+- Added contract-aligned Pydantic descriptions to all seven extraction fields and the supply-rate components, preserving required nullable keys.
+- Added `extract_pdf_text(bytes)` with page provenance, a file hash, acceptance limits and explicit failures. The inspection script now uses it.
+- Next: choose the LLM provider/model and connect structured extraction with a versioned prompt; then add the upload, persistence and JSON response path in reviewable changes.
