@@ -30,8 +30,9 @@ preserves the original random-call order and reproduces both runs on `b40411d`.
 The owner subsequently supplied the script and both full baseline CSVs through
 `tmp/fuzz/`, plus `escaped_cases.csv` (59 data rows). The escaped-case file was
 checked against the two baseline files. These artifacts are now preserved below.
-The original baseline has not been independently rerun locally; the post-fix
-replay and input identity comparison have.
+Codex did not rerun the original baseline locally; it reran the post-fix replay
+and compared input identity. The review of `4346400` then cross-verified both
+sides (see below).
 
 ## Post-fix replay results
 
@@ -57,6 +58,30 @@ this replay. Both runs finished, but a future fuzz campaign still needs isolated
 workers and resource limits. Zero escapes in this finite sample does not prove
 all malformed PDFs are handled, that successful parses preserve all content,
 or that the parser is safe for public uploads.
+
+### Cross-verification
+
+Claude's review of `4346400` checked both sides of the comparison independently:
+
+- The decompressed baseline CSVs and `escaped_cases.csv` are byte-identical to
+  the reviewer's original outputs from `b40411d`.
+- An independent re-run of both seeds at `4346400` produced after-CSVs
+  byte-identical to the committed `after_seed1.csv.gz` and `after_seed7.csv.gz`.
+- A per-case comparison keyed by `(seed, case)` confirmed that the set of changed
+  outcomes equals the set of 59 originally escaped cases.
+
+Each side of the before/after table is therefore backed by two independent runs.
+
+### Cleanup can fail too
+
+In the `/MediaBox` → `/MediaBoz` case, `pdf.close()` also raises `TypeError`
+after the page-construction failure. The `finally` cleanup in `extract_pdf_text`
+catches that secondary failure and does not let it replace the primary one; a
+cleanup error is reported only when extraction otherwise succeeded. The caller
+still sees `unreadable_pdf` with `parser_error="TypeError"` from page
+construction. Without that ordering, the reported error would come from cleanup
+rather than the actual cause. Error handling at an untrusted-input boundary
+covers cleanup order, not only which exceptions to catch.
 
 ### Preserved artifacts
 

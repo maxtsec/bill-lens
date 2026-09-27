@@ -78,7 +78,11 @@ conformance validator here.
 - Page counts are checked after pdfplumber enumerates pages; text length is
   checked after each page is extracted. These limits do not cap parser CPU, peak
   memory or decompressed stream size. Process isolation/timeouts belong before
-  exposing this parser to untrusted public uploads. A signature is not proof of
+  exposing this parser to untrusted public uploads. Resource exhaustion inside
+  the parser (`MemoryError`, `RecursionError`) is currently classified as
+  `unreadable_pdf`; only `parser_error` distinguishes it from a malformed file.
+  Revisit whether it needs its own code alongside isolation and timeouts
+  (M6). A signature is not proof of
   safety or validity. Library logs may include PDF metadata or diagnostics and
   need a separate logging policy before handling real customer documents.
 - No OCR, layout repair, file storage, server-generated filenames, HTTP endpoint,

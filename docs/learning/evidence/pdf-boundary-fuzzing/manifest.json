@@ -4,6 +4,7 @@
   "before_provenance": "Reviewer baseline supplied by owner; not independently rerun locally.",
   "after_revision": "4296867af1b4c93427a24e114a83d57db1a484b4",
   "after_provenance": "Codex ran supplied script locally; compared every input hash and outcome.",
+  "cross_verification": "Claude review of 4346400: decompressed baseline CSVs and escaped_cases.csv are byte-identical to the reviewer's original b40411d outputs; an independent Claude re-run of both seeds at 4346400 produced after-CSVs byte-identical to the committed ones.",
   "python": "3.12.14",
   "platform": "Windows-11-10.0.26200-SP0",
   "packages": {
