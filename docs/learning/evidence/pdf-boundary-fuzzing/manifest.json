@@ -1,0 +1,56 @@
+{
+  "run_date": "2026-09-27",
+  "before_revision": "b40411d56311f7ac2bd92bf48ca1924ab76b896e",
+  "before_provenance": "Reviewer baseline supplied by owner; not independently rerun locally.",
+  "after_revision": "4296867af1b4c93427a24e114a83d57db1a484b4",
+  "after_provenance": "Codex ran supplied script locally; compared every input hash and outcome.",
+  "python": "3.12.14",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "packages": {
+    "pdfplumber": "0.11.10",
+    "pdfminer.six": "20260107"
+  },
+  "requirements_sha256_lf": "8dfa08bf09fb469193d805f5a26ccb8156f03441aa1f65faf3e2290b5440d8c8",
+  "script": {
+    "path": "scripts/fuzz_pdf_boundary.py",
+    "sha256_lf": "a6ae92474630902b55c6ed08bfaa836d88b6259ed77c4e7d0e9ede696b8ca1b1",
+    "source": "Owner-supplied script; only line endings normalized to LF."
+  },
+  "source_pdf_sha256": {
+    "dataset/bill_001/bill.pdf": "af2f18acbbabf86d86e82b86a87c166c83c6c0211e6b3ad70bf7328f72c5b31d",
+    "dataset/bill_002/bill.pdf": "0f4454f45e4b5af36322714f600dad12e2f500c4800c4e1601f888c1647b5d54",
+    "dataset/bill_003/bill.pdf": "f3ec62b4bab93009c064e47afc7459976d59af85e14baecd6bade30b68163400",
+    "dataset/bill_004/bill.pdf": "b863a7a1a95f1f69db2bdacf3aba71b68ab4ad94088925b91c70ae3755517147",
+    "dataset/bill_005/bill.pdf": "defab59e9dfcc21b2b4fc1fa8c2ae030124796dce33deaf0a47a8d6f1d365d06"
+  },
+  "runs": [
+    {
+      "seed": 1,
+      "cases": 3000
+    },
+    {
+      "seed": 7,
+      "cases": 6000
+    }
+  ],
+  "csv_files": {
+    "baseline_seed1.csv.gz": {
+      "decompressed_sha256": "40919afa2267d6b06d24760101ea564a0288fb48c16a2bac15c96b5c5c6d06a0",
+      "rows": 3000
+    },
+    "baseline_seed7.csv.gz": {
+      "decompressed_sha256": "6884e0d435b193f6ac078557e2443f0957abfc96ae99dae4f6890f88d0e0c0a5",
+      "rows": 6000
+    },
+    "after_seed1.csv.gz": {
+      "decompressed_sha256": "44d1211c12850103beebf94cc485ce79e5bb963712a16b38dd435f5b284cde76",
+      "rows": 3000
+    },
+    "after_seed7.csv.gz": {
+      "decompressed_sha256": "160c499c5e9b7d93c84731cb63985577bd5b4ef5c0e00e5e32aa8d1a5d5affd2",
+      "rows": 6000
+    }
+  },
+  "escaped_cases_sha256_lf": "e7c454a7a918b376d3c4657b76d55802b7bb7fbf64c48ce69ef9cee19fdc5b67",
+  "scope": "Finite deterministic replay; no per-case timeout or memory instrumentation. Not a security or accuracy guarantee."
+}

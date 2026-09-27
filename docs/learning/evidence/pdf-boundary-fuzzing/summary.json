@@ -1,0 +1,32 @@
+{
+  "verified_cases": 9000,
+  "matching_input_hashes_and_modes": 9000,
+  "before": {
+    "ESCAPED builtins.IndexError": 1,
+    "ESCAPED builtins.TypeError": 58,
+    "PdfTextError:no_pages": 436,
+    "PdfTextError:page_without_text": 497,
+    "PdfTextError:unreadable_pdf": 6794,
+    "ok": 1214
+  },
+  "after": {
+    "PdfTextError:no_pages": 436,
+    "PdfTextError:page_without_text": 497,
+    "PdfTextError:unreadable_pdf": 6853,
+    "ok": 1214
+  },
+  "changed_outcomes": [
+    {
+      "before": "ESCAPED builtins.IndexError",
+      "after": "PdfTextError:unreadable_pdf",
+      "count": 1
+    },
+    {
+      "before": "ESCAPED builtins.TypeError",
+      "after": "PdfTextError:unreadable_pdf",
+      "count": 58
+    }
+  ],
+  "previously_non_escaped_outcomes_changed": 0,
+  "escaped_after": 0
+}
