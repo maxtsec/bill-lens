@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Example Energy",
+    "period_start": "2026-04-01",
+    "period_end": "2026-04-30",
+    "stated_billing_days": 30,
+    "total_usage_kwh": "250",
+    "daily_supply_rate": {"value": "110.23", "unit": "cents/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "108.07"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

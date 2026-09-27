@@ -98,7 +98,13 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
 
 The human labeler records `expected_flags` from the PDF and these contract rules **independently of the application validator**. A later test must check `derive_flags(label.fields) == set(label.expected_flags)` and `label.expected_status == derive_status(label.expected_flags)`. Do not generate the label's expected flags by calling the same `derive_flags` implementation under test: that would let a flag-logic bug write its own expected answer.
 
-For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. These examples are plans until the finished PDFs have been manually checked.
+For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. The PDFs and candidate labels now exist; owner verification is recorded separately in the dataset README.
+
+### Implemented schema boundary
+
+`bill_lens/contract.py` validates the wire format with Pydantic. Decimal strings must be plain decimal notation (optional leading minus, digits, optional fractional digits); JSON numbers, currency symbols, whitespace, exponents, NaN and Infinity are rejected. Zero usage and negative current amounts remain valid. Dates must be exact `YYYY-MM-DD` strings representing real calendar dates. A stated day count must be a positive integer, or null. Blank retailer strings are rejected in favor of explicit null. Unknown keys and omitted keys are rejected, including in the supply-rate object; printed unit aliases must already have been mapped to the contract enums.
+
+Schema errors raise `ValidationError`. Valid-shaped fields then enter `bill_lens/validation.py`, which retains source disagreements and returns review flags. Operational handling of malformed model responses belongs to M1. The normalized supply-rate function converts units only; callers must retain and compare the source `gst_basis` separately.
 
 The initial fixed `expected_flags` codes are determined from the extracted fields, not from a hidden explanation of why the model returned `null`:
 
