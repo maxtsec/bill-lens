@@ -58,10 +58,66 @@ def test_shared_gate_rejects_invalid_model_output_and_keeps_raw(valid_fields, ki
         "non_json": "sensitive non-JSON reply", "empty": "", "null": "null", "array": "[]",
         "wrapper": json.dumps({"fields": valid_fields}),
     }.get(kind, json.dumps(valid_fields))
-    attempt = build_attempt(provider="test", model="m", prompt_version="v", raw_response=raw)
+    attempt = build_attempt(provider="test", model="m", prompt_version="v", raw_response=raw, latency_ms=0)
     assert attempt.error_code == "invalid_output"
     assert attempt.fields is None
     assert attempt.raw_response == raw
+
+
+@pytest.mark.parametrize("kind", [
+    "deep_nesting", "huge_integer", "bom", "markdown", "nan", "surrogate",
+    "trailing_text", "duplicate_amount",
+])
+def test_review_json_edge_cases_are_invalid_output(valid_fields, kind):
+    raw = json.dumps(valid_fields)
+    if kind == "deep_nesting":
+        raw = "[" * 100_000 + "0" + "]" * 100_000
+    elif kind == "huge_integer":
+        raw = raw.replace('"108.07"', "9" * 5_000)
+    elif kind == "bom":
+        raw = "\ufeff" + raw
+    elif kind == "markdown":
+        raw = "```json\n" + raw + "\n```"
+    elif kind == "nan":
+        raw = raw.replace('"108.07"', "NaN")
+    elif kind == "surrogate":
+        raw = raw.replace("Example Energy", "\ud800")
+    elif kind == "trailing_text":
+        raw += " extra response text"
+    elif kind == "duplicate_amount":
+        raw = raw[:-1] + ', "current_bill_amount": "999.99"}'
+    attempt = build_attempt(
+        provider="test", model="m", prompt_version="v", raw_response=raw, latency_ms=0,
+    )
+    assert attempt.error_code == "invalid_output"
+    assert attempt.fields is None
+    assert attempt.raw_response == raw
+
+
+@pytest.mark.parametrize("kind", ["nested_rate", "escaped_key", "same_value"])
+def test_duplicate_keys_are_rejected_at_every_object_level(valid_fields, kind):
+    raw = json.dumps(valid_fields)
+    if kind == "nested_rate":
+        raw = raw.replace('"value": "110.23"', '"value": "110.23", "value": "999"')
+    elif kind == "escaped_key":
+        raw = raw[:-1] + r', "current_bill_\u0061mount": "999.99"}'
+    else:
+        raw = raw[:-1] + ', "current_bill_amount": "108.07"}'
+    attempt = build_attempt(
+        provider="test", model="m", prompt_version="v", raw_response=raw, latency_ms=0,
+    )
+    assert attempt.error_code == "invalid_output"
+    assert attempt.fields is None
+    assert attempt.raw_response == raw
+
+
+@pytest.mark.parametrize("error_code", [None, "timeout"])
+def test_helper_requires_explicit_latency(valid_fields, error_code):
+    with pytest.raises(TypeError, match="latency_ms"):
+        build_attempt(
+            provider="test", model="m", prompt_version="v",
+            raw_response=json.dumps(valid_fields), error_code=error_code,
+        )
 
 
 @pytest.mark.parametrize("code,has_response", [
@@ -167,7 +223,7 @@ def test_attempt_is_frozen(attempt_args):
 @pytest.mark.parametrize("raw,error_code", [(None, None), (None, "invalid_output"), (b"{}", None)])
 def test_helper_rejects_invalid_arguments(raw, error_code):
     with pytest.raises((TypeError, ValueError)):
-        build_attempt(provider="test", model="m", prompt_version="v", raw_response=raw, error_code=error_code)
+        build_attempt(provider="test", model="m", prompt_version="v", raw_response=raw, error_code=error_code, latency_ms=0)
 
 
 def test_helper_does_not_hide_programming_errors(monkeypatch):
@@ -176,7 +232,7 @@ def test_helper_does_not_hide_programming_errors(monkeypatch):
 
     monkeypatch.setattr(ExtractionFields, "model_validate_json", bug)
     with pytest.raises(RuntimeError, match="implementation defect"):
-        build_attempt(provider="test", model="m", prompt_version="v", raw_response="{}")
+        build_attempt(provider="test", model="m", prompt_version="v", raw_response="{}", latency_ms=0)
 
 
 def test_unknown_hash_and_wrong_input_are_setup_errors():
