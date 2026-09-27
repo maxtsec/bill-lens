@@ -1,6 +1,6 @@
 # Milestone 0 synthetic dataset
 
-This directory contains five **synthetic** Victorian household electricity bills and independently authored candidate labels. Codex generated the PDFs, authored the labels separately, checked the rendered pages, and ran the deterministic tests. **The owner verified `bill_002` and `bill_005` on 2026-09-27; the other three remain pending, so the full dataset is not yet human-verified ground truth.** The five cases are deliberately small; they test distinct interpretation failures rather than trying to represent every retailer or tariff.
+This directory contains five **synthetic** Victorian household electricity bills and independently authored, owner-verified labels. Codex generated the PDFs, authored the labels separately, checked the rendered pages, and ran the deterministic tests. **The owner verified all five PDFs against their labels on 2026-09-27, including every field, rate unit, GST basis, status and flag.** The five cases are deliberately small; they test distinct interpretation failures rather than trying to represent every retailer or tariff.
 
 Each case has this structure:
 
@@ -57,7 +57,7 @@ The left account-summary column explicitly says `Billing days: 30`. The right ch
 
 For each case, manually compare all seven values in `expected.json` with the finished PDF. Check `gst_basis`, `expected_status`, and `expected_flags` too. Parse every JSON file, check required keys and units against the contract, and reconcile displayed charge lines with `Decimal`; for `bill_002`, reconcile the amount due without copying an unstated current-period subtotal into the label. Verify that the PDFs contain no genuine personal information. Have the project owner independently re-read at least `bill_002` and `bill_005` after another agent creates them, so the PDF author is not the only label checker. Record deliberate contradictions, such as the day count in `bill_005`, here so later evaluation does not mistake them for labelling errors.
 
-The pytest suite now automates JSON parsing, schema and flag checks, including sorted, unique flags, `derive_flags(label.fields) == set(label.expected_flags)`, and `label.expected_status == derive_status(label.expected_flags)`, plus decimal reconciliations of printed PDF values. The expected flags are authored separately from the validator and await human review; computing them with the validator under test would make that test circular. The [text baseline inspection](text-baseline.md) records the actual reading order before any LLM is called. These five synthetic cases are a starting benchmark, not evidence of real-world accuracy. They do not yet test a PDF that leaves GST basis unstated; that flag is covered by a Python unit test only.
+The pytest suite now automates JSON parsing, schema and flag checks, including sorted, unique flags, `derive_flags(label.fields) == set(label.expected_flags)`, and `label.expected_status == derive_status(label.expected_flags)`, plus decimal reconciliations of printed PDF values. The expected flags are authored separately from the validator and have been verified by the owner; computing them with the validator under test would make that test circular. The [text baseline inspection](text-baseline.md) records the actual reading order before any LLM is called. These five synthetic cases are a starting benchmark, not evidence of real-world accuracy. They do not yet test a PDF that leaves GST basis unstated; that flag is covered by a Python unit test only.
 
 ## Owner review record
 
@@ -65,10 +65,10 @@ The owner should compare every field, rate unit, GST basis, status and flag agai
 
 | Case | Owner review | Particular check |
 | --- | --- | --- |
-| `bill_001` | Pending | Preserve 110.23 cents/day, converting to 1.1023 AUD/day without rounding. |
+| `bill_001` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | Preserve 110.23 cents/day, converting to 1.1023 AUD/day without rounding. |
 | `bill_002` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | 162.66 is amount due; no current total is printed, so keep that field null. Supply rate is exclusive of GST. |
-| `bill_003` | Pending | DD/MM/YYYY means 5 June to 4 July; current total 113.40 differs from amount due 163.40. |
-| `bill_004` | Pending | Import is 100 kWh, export is 800 kWh; 4.00 CR means a current amount of -4.00. |
+| `bill_003` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | DD/MM/YYYY means 5 June to 4 July; current total 113.40 differs from amount due 163.40. |
+| `bill_004` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | Import is 100 kWh, export is 800 kWh; 4.00 CR means a current amount of -4.00. |
 | `bill_005` | Owner (maxtsec), 2026-09-27: all fields, status and flags match | Keep the printed 30 days, while the dates imply 31; retain the mismatch flag. |
 
-The owner independently re-read `bill_002` and `bill_005` and confirmed that they match the labels. This reduces, but does not eliminate, shared-author bias: one agent authored both PDFs and candidate labels. The other three cases still need owner verification. No extraction accuracy is claimed.
+The owner independently re-read all five PDFs and confirmed that they match the labels. This reduces, but does not eliminate, shared-author bias: one agent authored both PDFs and candidate labels. No extraction accuracy is claimed.
