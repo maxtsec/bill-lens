@@ -5,11 +5,13 @@ import pytest
 
 from bill_lens.contract import ExpectedLabel
 from bill_lens.validation import derive_flags, derive_status
-from conftest import CASES, ROOT
+from tests.helpers import CASES, ROOT
 
 
 def label_for(case):
-    return ExpectedLabel.model_validate_json((ROOT / "dataset" / case / "expected.json").read_text())
+    return ExpectedLabel.model_validate_json(
+        (ROOT / "dataset" / case / "expected.json").read_text(encoding="utf-8")
+    )
 
 
 def numbers(pattern, text):
@@ -49,12 +51,23 @@ def test_pdf_has_extractable_core_values(case, pdf_texts):
     }[case]
     (rate,) = numbers(rate_pattern, text)
     assert rate == Decimal(fields.daily_supply_rate.value)
-    assert fields.daily_supply_rate.unit == ("AUD/day" if case in {"bill_002", "bill_004"} else "cents/day")
-    assert fields.daily_supply_rate.gst_basis == ("exclusive" if case == "bill_002" else "inclusive")
-    assert ("rates exclude GST" if case == "bill_002" else "GST inclusive") in text
+    printed_rate = re.search(rate_pattern, text).group(0)
+    # Map source expressions, rather than duplicate each bill's label by case ID.
+    if any(alias in printed_rate for alias in ("c/day", "c per day", "¢/day")):
+        printed_unit = "cents/day"
+    else:
+        assert re.search(r"(?:\$|AUD )[0-9.]+/day", printed_rate)
+        printed_unit = "AUD/day"
+    assert fields.daily_supply_rate.unit == printed_unit
+    gst_statements = {
+        "inclusive": "GST inclusive" in text,
+        "exclusive": "rates exclude GST" in text,
+    }
+    printed_bases = {basis for basis, present in gst_statements.items() if present}
+    assert printed_bases == {fields.daily_supply_rate.gst_basis}
 
 
-def test_all_displayed_charge_lines_reconcile(pdf_texts):
+def test_bill_001_displayed_charge_lines_reconcile(pdf_texts):
     # Read quantities, unit rates and charges from PDFs, not the generator.
     t = pdf_texts["bill_001"]
     q, r, usage = numbers(r"Usage: ([0-9.]+) kWh at AUD ([0-9.]+)/kWh AUD ([0-9.]+)", t)
@@ -65,6 +78,8 @@ def test_all_displayed_charge_lines_reconcile(pdf_texts):
     assert total == usage + supply == Decimal(label_for("bill_001").fields.current_bill_amount)
     assert numbers(r"Amount due: AUD ([0-9.]+)", t) == (total,)
 
+
+def test_bill_002_displayed_charge_lines_reconcile(pdf_texts):
     t = pdf_texts["bill_002"]
     usage, q, r = numbers(r"AUD ([0-9.]+) Usage: ([0-9.]+) kWh at AUD ([0-9.]+)/kWh", t)
     assert money(q * r) == usage
@@ -80,6 +95,8 @@ def test_all_displayed_charge_lines_reconcile(pdf_texts):
     assert "current bill amount" not in t.lower()
     assert label_for("bill_002").fields.current_bill_amount is None
 
+
+def test_bill_003_displayed_charge_lines_reconcile(pdf_texts):
     t = pdf_texts["bill_003"]
     pq, pr, peak = numbers(r"Peak ([0-9.]+) kWh AUD ([0-9.]+)/kWh AUD ([0-9.]+)", t)
     oq, rate, off_peak = numbers(r"Off-peak ([0-9.]+) kWh AUD ([0-9.]+)/kWh AUD ([0-9.]+)", t)
@@ -95,6 +112,8 @@ def test_all_displayed_charge_lines_reconcile(pdf_texts):
     assert due == total + previous
     assert due != total
 
+
+def test_bill_004_displayed_charge_lines_reconcile(pdf_texts):
     t = pdf_texts["bill_004"]
     q, r, usage = numbers(r"Usage: ([0-9.]+) kWh at AUD ([0-9.]+)/kWh = AUD ([0-9.]+)", t)
     assert money(q * r) == usage
@@ -105,6 +124,8 @@ def test_all_displayed_charge_lines_reconcile(pdf_texts):
     (printed_credit,) = numbers(r"AUD ([0-9.]+) CR", t)
     assert usage + supply - credit == -printed_credit == Decimal(label_for("bill_004").fields.current_bill_amount)
 
+
+def test_bill_005_displayed_charge_lines_reconcile(pdf_texts):
     t = pdf_texts["bill_005"]
     q, r = numbers(r"Usage: ([0-9.]+) kWh at AUD ([0-9.]+)/kWh", t)
     (usage,) = numbers(r"Usage charge: AUD ([0-9.]+)", t)
@@ -113,6 +134,9 @@ def test_all_displayed_charge_lines_reconcile(pdf_texts):
     (supply,) = numbers(r"Supply charge: AUD ([0-9.]+)", t)
     assert money(q * r / 100) == supply
     assert q == 31  # Preserve the deliberate conflict with the summary's 30 days.
+    (summary_days,) = numbers(r"Billing days: ([0-9]+)", t)
+    assert label_for("bill_005").fields.stated_billing_days == summary_days == 30
+    assert summary_days != q  # Charge-line quantity is not stated_billing_days.
     (total,) = numbers(r"Current bill amount Supply charge: AUD [0-9.]+\nAUD ([0-9.]+)", t)
     assert usage + supply == total == Decimal(label_for("bill_005").fields.current_bill_amount)
     assert numbers(r"Amount due: AUD ([0-9.]+)", t) == (total,)

@@ -67,7 +67,14 @@ class ExtractionFields(ContractModel):
     retailer: StrictStr | None
     period_start: ISODate | None
     period_end: ISODate | None
-    stated_billing_days: Annotated[StrictInt, Field(gt=0)] | None
+    stated_billing_days: Annotated[StrictInt, Field(gt=0)] | None = Field(
+        description=(
+            "The explicitly labelled billing-period day count, such as Billing days "
+            "or Days in period. Exclude quantities on charge lines, including supply days. "
+            "Use null if no unambiguous period-level count is printed. Never calculate it "
+            "from dates or select a value because it agrees with the dates."
+        )
+    )
     total_usage_kwh: NonnegativeDecimal | None
     daily_supply_rate: SupplyRate | None
     current_bill_amount: DecimalString | None
