@@ -1,6 +1,6 @@
 # ADR-002: A bill extraction port with recordable attempts
 
-- Status: Proposed for M1; pending Claude review and owner approval
+- Status: Accepted for M1 after Claude re-review of commit 06c4d82
 - Scope: Provider-independent extraction and a deterministic local fake
 
 ## Context
@@ -140,4 +140,8 @@ Add static type checking when adapters are introduced: the current test's
 protocol check alone would not verify method signatures or return types. Before
 exposing the fake through HTTP, decide how dev mode reports an unknown fixture
 hash so an expected unsupported upload does not become an unexplained HTTP 500.
-Update this ADR to Accepted after review and owner approval, before merge.
+The contract currently gives `stated_billing_days` a positive lower bound only.
+Revisit a realistic upper bound with billing-period evidence before changing the
+contract; an arbitrary 366-day cap could reject legitimate longer adjustments.
+Regression tests cover the current JSON integer-parser boundary at 4300/4301
+digits so changes in Python or Pydantic parsing limits require investigation.
