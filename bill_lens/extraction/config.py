@@ -1,4 +1,4 @@
-"""Select the adapter at startup; constructing the SDK does not send requests."""
+"""Standalone adapter selection; create_app does not use this helper yet."""
 
 import os
 from pathlib import Path

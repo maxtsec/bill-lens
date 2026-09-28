@@ -46,7 +46,7 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
 - Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
 - Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake.
-- Added an opt-in OpenAI Responses adapter and versioned prompt, verified with offline stubs. Fake remains the default. Live compatibility and extraction accuracy are unverified; retries and M2 evaluation remain deferred.
+- Added a standalone OpenAI Responses adapter and versioned prompt, verified with offline stubs. The API still uses fake regardless of BILL_EXTRACTOR. A separate M1 PR will add retryable-failure recovery before wiring in OpenAI. Live compatibility and extraction accuracy are unverified; M2 evaluation remains deferred.
 
 ### Exercise the extraction port locally
 
@@ -178,11 +178,15 @@ call cost, and the crash window between file rename and DB commit.
 .\.venv\Scripts\python.exe -m pytest tests/db/test_upload_api.py -q
 ```
 
-### OpenAI adapter (opt-in)
+### OpenAI adapter (standalone; API wiring deferred)
 
-Install the updated requirements first. Keep `BILL_EXTRACTOR=fake` for normal
-development. To opt in, set these in your ignored `.env` (then import it using
-the PowerShell snippet above), or set process environment variables:
+Install the updated requirements first. `create_app` still constructs the fake,
+even if `BILL_EXTRACTOR=openai` is set. Before enabling real extraction in the API,
+a follow-up PR will let re-uploads retry transient failures and append a run while
+preserving history (owner-selected option A in ADR-006).
+
+The standalone `configured_extractor()` helper remains available for explicit
+Python callers. It reads these settings from the process environment:
 
 ```text
 BILL_EXTRACTOR=openai
@@ -191,17 +195,18 @@ OPENAI_API_KEY=<your-secret-key>
 ```
 
 Do not paste the key into chat, commit it, or include it in terminal output.
-Start the same Uvicorn factory command. Startup checks configuration locally;
-**uploading a new PDF in OpenAI mode makes a paid API call**. It sends extracted
-page text, not the original PDF. There are no SDK retries, the HTTP timeout is
-60 seconds, and the output cap is 4096 tokens (including reasoning). Success,
-refusal, truncation and provider failures follow the existing persistence path.
-See ADR-006 for exact error mapping and raw-response handling.
+Constructing the helper checks local configuration and sends no request; calling
+its OpenAI adapter's `extract()` makes a paid call. Call `close()` when finished.
+The adapter sends extracted page text, not the original PDF. SDK retries are zero,
+HTTP timeout is 60 seconds, reasoning effort is explicitly `low`, and the output
+cap is 4096 tokens including reasoning. `extract-v2` identifies this fixed profile.
+Authentication, permission, missing model and schema/parameter rejections raise a
+safe `OpenAIConfigurationError`; document-specific context/content rejections
+remain failed attempts. See ADR-006 for the complete mapping.
 
-Existing hashes return the stored result even after switching provider/model.
-Use a separate local database/storage pair to exercise the HTTP path afresh;
-changing the provider is not a re-extraction operation. The smoke script below
-does not use the database and can check all five PDFs independently.
+The current HTTP duplicate path still returns saved failures without retrying.
+The standalone smoke script below bypasses persistence and checks all five PDFs
+independently; API integration is not needed to run it.
 
 ### Manual live smoke check (spends credit)
 
@@ -218,7 +223,7 @@ try {
 }
 ```
 
-It prints per-bill status/error/flags, field-match booleans, model names, token
+It prints per-bill status/error/flags, field-match booleans, model names, explicit reasoning effort, token
 usage and latency, followed by known token totals and estimated USD cost using
 the dated [ADR-006 price table](docs/adr/006-first-provider.md). Cached savings
 are excluded; missing usage makes the full estimate unknown. It prints no raw
