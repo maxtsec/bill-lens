@@ -173,6 +173,15 @@ are intentional comparison dimensions; dirty/missing code provenance produces a
 loud warning. Inputs are local run summaries, not signed evidence: do not edit
 artifacts and then treat them as original measurements.
 
+The `extract-v3` retailer clarification changes the prompt and retailer schema
+description, but keeps dataset bytes and scoring semantics unchanged. Preserve
+the original v2 run; compare a separately authorised v3 run with the same model,
+effort and repeats. The header will warn about both prompt and code changing:
+review that code diff when interpreting results. Do not claim that offline
+request tests prove improved extraction accuracy. To reproduce v2, use its
+original code/schema commit; loading only the old prompt with today's schema
+would not recreate the original model input.
+
 ## Tests
 
 ```powershell

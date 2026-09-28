@@ -17,6 +17,8 @@ from bill_lens.extraction import config
 from bill_lens.extraction import openai_adapter as module
 from bill_lens.extraction.openai_adapter import OpenAIConfigurationError, OpenAIExtractor, structured_schema
 from bill_lens.pdf_text import PageText, PdfText, extract_pdf_text
+from bill_lens.validation import derive_flags
+from evals.scoring import score_fields
 from tests.helpers import CASES, ROOT
 
 
@@ -59,7 +61,7 @@ def test_success_preserves_raw_text_and_metadata(case):
     attempt = adapter(stub).extract(extract_pdf_text((ROOT / "dataset" / case / "bill.pdf").read_bytes()))
     assert attempt.fields == label.fields and attempt.error_code is None
     assert attempt.raw_response == raw
-    assert (attempt.provider, attempt.model, attempt.prompt_version) == ("openai", "model-snapshot", "extract-v2")
+    assert (attempt.provider, attempt.model, attempt.prompt_version) == ("openai", "model-snapshot", "extract-v3")
     assert (attempt.input_tokens, attempt.output_tokens, attempt.latency_ms) == (100, 30, 123)
     assert len(stub.calls) == 1
     request = stub.calls[0]
@@ -67,7 +69,7 @@ def test_success_preserves_raw_text_and_metadata(case):
     assert request["text"]["format"] == {"type": "json_schema", "name": "bill_fields", "strict": True, "schema": structured_schema()}
     assert request["tools"] == [] and request["store"] is False and request["stream"] is False
     assert request["max_output_tokens"] == 4096 and request["service_tier"] == "default"
-    assert request["reasoning"] == {"effort": "low"}  # Fixed profile for extract-v2.
+    assert request["reasoning"] == {"effort": "low"}  # Unchanged v2 execution settings.
 
 
 def api_error(kind, status=None, **body):
@@ -96,6 +98,7 @@ def test_sdk_errors_are_safe_attempts(error, code, caplog):
     attempt = adapter(stub).extract(DOCUMENT)
     assert attempt.error_code == code and attempt.raw_response is None and attempt.fields is None
     assert attempt.model == "requested-alias"
+    assert attempt.prompt_version == "extract-v3"
     assert attempt.input_tokens is None and attempt.output_tokens is None and attempt.latency_ms == 123
     assert "PRIVATE" not in repr(attempt) and "PRIVATE" not in caplog.text
     assert len(stub.calls) == 1
@@ -204,6 +207,7 @@ def test_document_marker_is_regenerated_on_source_collision(monkeypatch):
 @pytest.mark.parametrize("version,digest", [
     (1, "d943dcf8a9edbe3376d54eca893904f6ca00510964b63db4caebb7dfec75601c"),
     (2, "ffa5eefc3c74c2cb678ea91a41cdf7a64796bb0e2f04416b7a4811b1e526493b"),
+    (3, "49f17b7f3292e60e419f3ba1bdcd0b21eb00dbee32b22d91fdf8ef3313bf4bad"),
 ])
 def test_published_prompt_versions_are_immutable(version, digest):
     # Canonical LF text, as loaded by the adapter, also works with CRLF checkouts.
@@ -222,6 +226,51 @@ def test_schema_preserves_contract_constraints_and_descriptions():
     assert schema["properties"]["stated_billing_days"]["anyOf"][0]["exclusiveMinimum"] == 0
     assert schema["properties"]["period_start"]["anyOf"][0]["format"] == "date"
     assert all(value.get("description") for value in schema["properties"].values())
+
+
+def test_v3_request_carries_retailer_rules_in_instructions_and_schema():
+    stub = Stub(response('{}'))
+    adapter(stub).extract(DOCUMENT)
+    request = stub.calls[0]
+    assert request["instructions"].startswith("Prompt-Version: extract-v3\n")
+    description = request["text"]["format"]["schema"]["properties"]["retailer"]["description"]
+    for text in (request["instructions"], description):
+        words = " ".join(text.split())
+        assert "extract the printed full name" in words
+        assert "If only the brand abbreviation is printed and unambiguously identifies" in words
+        assert "never expand it from memory or outside data" in words
+        assert "Do not choose a name merely because it is longer" in words
+        assert "If several companies are named and the retailer cannot be identified unambiguously, return null" in words
+        assert "parent company" in words and "distributor" in words
+    # Prevent the request's instructions and metadata drifting to different versions.
+    assert request["instructions"] == files("bill_lens.extraction").joinpath("prompts/extract_v3.md").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("document_text,expected_name,returned_name,outcome", [
+    ("LANTERN\nLantern Sample Electricity", "Lantern Sample Electricity", "Lantern Sample Electricity", "correct"),
+    ("LANTERN\nLantern Sample Electricity", "Lantern Sample Electricity", "LANTERN", "wrong_value"),
+    ("LANTERN\nLantern Sample Electricity", "Lantern Sample Electricity", None, "missing"),
+    ("Retailer: LANTERN", "LANTERN", "LANTERN", "correct"),
+    ("Retailer: LANTERN", "LANTERN", "Lantern Sample Electricity", "wrong_value"),
+    ("Harbour Sample Power", "Harbour Sample Power", None, "missing"),
+    ("Account contacts: North Energy; South Energy", None, None, "correct"),
+    ("Account contacts: North Energy; South Energy", None, "North Energy", "false_extraction"),
+    ("Retailer: Oak Energy Pty Ltd\nDistributor: Long Regional Distribution Company",
+     "Oak Energy Pty Ltd", "Long Regional Distribution Company", "wrong_value"),
+])
+def test_retailer_outputs_are_scored_without_python_name_repair(
+        valid_fields, document_text, expected_name, returned_name, outcome):
+    # These are hand-built output oracles, NOT tests of a model choosing a name.
+    # A bad model answer must remain visible to evals, even under the v3 prompt.
+    expected = ExtractionFields.model_validate(valid_fields | {"retailer": expected_name})
+    raw = json.dumps(valid_fields | {"retailer": returned_name})
+    stub = Stub(response(raw))
+    attempt = adapter(stub).extract(PdfText("c" * 64, (PageText(1, document_text),)))
+    assert attempt.error_code is None and attempt.raw_response == raw
+    assert attempt.fields.retailer == returned_name
+    assert ("retailer_missing" in derive_flags(attempt.fields)) == (returned_name is None)
+    assert score_fields(attempt.fields, expected)["field_outcomes"]["retailer"] == outcome
+    assert document_text in stub.calls[0]["input"][0]["content"]
 
 
 def test_unexpected_programming_errors_propagate():
@@ -333,6 +382,9 @@ def test_real_sdk_with_mock_transport_never_network(status, code, valid_fields):
                 http_client=httpx2.Client(transport=httpx2.MockTransport(handle))) as client:
         attempt = OpenAIExtractor(model="test-model", client=client).extract(DOCUMENT)
     assert attempt.error_code == code and len(sent) == 1
+    assert attempt.prompt_version == "extract-v3"
+    assert sent[0]["instructions"].startswith("Prompt-Version: extract-v3\n")
+    assert "extract the printed full name" in sent[0]["text"]["format"]["schema"]["properties"]["retailer"]["description"]
     if status == 200:
         assert attempt.raw_response == raw and attempt.fields is not None and attempt.model == "resolved-model"
     else:

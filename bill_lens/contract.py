@@ -77,6 +77,12 @@ class ExtractionFields(ContractModel):
     retailer: StrictStr | None = Field(description=(
         "Electricity retailer as displayed to the customer. Preserve its name and "
         "legal suffix; do not substitute a distributor, parent company or guessed alias. "
+        "When a brand abbreviation and a full name clearly identify the same retailer, "
+        "extract the printed full name. If only the brand abbreviation is printed and "
+        "unambiguously identifies the retailer, keep it; never expand it from memory "
+        "or outside data. Do not choose a name merely because it is longer. "
+        "If several companies are named and the retailer cannot be identified "
+        "unambiguously, return null. "
         "Use null if missing or ambiguous. Control characters (Unicode Cc) and "
         "surrogate code points (Cs) are invalid; never include them in a name."
     ))

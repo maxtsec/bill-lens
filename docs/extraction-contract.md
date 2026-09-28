@@ -6,6 +6,22 @@ This document defines the initial fields extracted from a Victorian household el
 
 `retailer` is the electricity retailer named on the bill, as displayed to the customer. Preserve its displayed name; do not replace it with a parent company, distributor, or a guessed canonical name. A missing or ambiguous retailer is `null` and needs review.
 
+When both a brand abbreviation and a full name clearly identify the same
+electricity retailer, extract the printed full name, including any legal suffix.
+If only the brand abbreviation is printed and it unambiguously identifies the
+retailer, keep that abbreviation; never expand it from memory or outside data.
+Do not choose a name merely because it is longer: a parent company or distributor
+is not the retailer. If several companies are named and the retailer cannot be
+identified unambiguously, return `null`.
+
+For example, `bill_003` prints the brand heading `LANTERN` above
+`Lantern Sample Electricity`. Both identify the same retailer, so the expected
+value is `Lantern Sample Electricity`. If a different bill printed only `LANTERN`
+as its unambiguous retailer name, its expected value would be `LANTERN`.
+This clarification is carried by prompt `extract-v3` and the retailer schema
+description. Existing dataset labels and evaluation matching rules are unchanged;
+Python does not expand or rewrite extracted retailer names.
+
 A retailer name must not contain Unicode control characters (category `Cc`,
 including NUL, tab, newline, DEL and C1 controls) or surrogate code points
 (category `Cs`). Such output fails schema validation and becomes `invalid_output`;
