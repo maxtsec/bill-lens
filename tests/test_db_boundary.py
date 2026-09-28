@@ -1,5 +1,6 @@
 import json
 import re
+from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
@@ -7,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from bill_lens.db.config import database_url
 from bill_lens.db.models import ExtractionRun
-from bill_lens.db.repository import create_bill_with_run, load_fields, new_storage_key
+from bill_lens.db.repository import append_extraction_run, create_bill_with_run, load_fields, new_storage_key
 from bill_lens.extraction import build_attempt
 
 
@@ -29,21 +30,25 @@ def test_storage_keys_are_generated_relative_and_unique():
     assert re.fullmatch(r"bills/[0-9a-f]{32}\.pdf", first)
 
 
-def test_repository_requires_explicit_transaction(valid_fields):
+@pytest.mark.parametrize("append", [False, True])
+def test_repository_requires_explicit_transaction(valid_fields, append):
     attempt = build_attempt(provider="fake", model="m", prompt_version="v",
                             raw_response=json.dumps(valid_fields), latency_ms=0)
     with Session() as session, pytest.raises(ValueError, match="active transaction"):
-        create_bill_with_run(session, file_sha256="a" * 64, storage_key=new_storage_key(),
-                             size_bytes=1, attempt=attempt, flags=[], status="processed")
+        writer = append_extraction_run if append else create_bill_with_run
+        identity = {"bill_id": uuid4()} if append else dict(file_sha256="a" * 64, storage_key=new_storage_key(), size_bytes=1)
+        writer(session, **identity, attempt=attempt, flags=[], status="processed")
 
 
 @pytest.mark.parametrize("flags,status", [([], "failed"), (["retailer_missing"], "needs_review"), (["typo"], "needs_review")])
-def test_repository_rejects_inconsistent_domain_decisions(valid_fields, flags, status):
+@pytest.mark.parametrize("append", [False, True])
+def test_repository_rejects_inconsistent_domain_decisions(valid_fields, flags, status, append):
     attempt = build_attempt(provider="fake", model="m", prompt_version="v",
                             raw_response=json.dumps(valid_fields), latency_ms=0)
     with Session() as session, session.begin(), pytest.raises(ValueError):
-        create_bill_with_run(session, file_sha256="a" * 64, storage_key=new_storage_key(),
-                             size_bytes=1, attempt=attempt, flags=flags, status=status)
+        writer = append_extraction_run if append else create_bill_with_run
+        identity = {"bill_id": uuid4()} if append else dict(file_sha256="a" * 64, storage_key=new_storage_key(), size_bytes=1)
+        writer(session, **identity, attempt=attempt, flags=flags, status=status)
 
 
 def test_load_fields_rejects_unknown_versions_and_bad_json(valid_fields):

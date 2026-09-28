@@ -1,4 +1,4 @@
-"""Standalone adapter selection; create_app does not use this helper yet."""
+"""Select the app or standalone adapter without making a provider request."""
 
 import os
 from pathlib import Path

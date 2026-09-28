@@ -247,8 +247,8 @@ def test_standalone_config_errors_raise_locally(env, monkeypatch):
         config.configured_extractor()
 
 
-@pytest.mark.parametrize("provider", [None, "fake", "openai", "typo"])
-def test_app_uses_fake_even_if_openai_config_is_set(provider, monkeypatch):
+@pytest.mark.parametrize("provider", [None, "fake"])
+def test_app_defaults_to_fake_even_with_key(provider, monkeypatch):
     if provider is not None:
         monkeypatch.setenv("BILL_EXTRACTOR", provider)
     monkeypatch.setenv("OPENAI_MODEL", "configured-model")
@@ -261,6 +261,41 @@ def test_app_uses_fake_even_if_openai_config_is_set(provider, monkeypatch):
         with TestClient(create_app(engine=engine)) as client:
             assert isinstance(client.app.state.extractor, FakeExtractor)
     finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("env", [
+    {"BILL_EXTRACTOR": "typo"}, {"BILL_EXTRACTOR": "openai"},
+    {"BILL_EXTRACTOR": "openai", "OPENAI_MODEL": "model"},
+])
+def test_api_config_errors_raise_at_startup(env, monkeypatch):
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    engine = create_engine("postgresql+psycopg://unused")
+    try:
+        with pytest.raises(ValueError):
+            create_app(engine=engine)
+    finally:
+        engine.dispose()
+
+
+@pytest.mark.parametrize("injected", [False, True])
+def test_app_closes_only_its_own_openai_adapter(injected, monkeypatch):
+    closed = []
+    monkeypatch.setattr(module, "OpenAI", lambda **kwargs: SimpleNamespace(close=lambda: closed.append(True)))
+    monkeypatch.setenv("BILL_EXTRACTOR", "openai")
+    monkeypatch.setenv("OPENAI_MODEL", "configured-model")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-only-key")
+    supplied = config.configured_extractor() if injected else None
+    engine = create_engine("postgresql+psycopg://unused")
+    try:
+        with TestClient(create_app(engine=engine, extractor=supplied)) as client:
+            assert isinstance(client.app.state.extractor, OpenAIExtractor)
+            assert client.app.state.extractor.model == "configured-model"
+        assert closed == ([] if injected else [True])
+    finally:
+        if supplied:
+            supplied.close()
         engine.dispose()
 
 

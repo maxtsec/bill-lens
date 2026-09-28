@@ -125,7 +125,9 @@ def test_failed_attempt_is_a_created_record(code, app, client, db_engine, tmp_pa
     assert client.get(response.headers["Location"]).json() == body
     assert post(client, data).status_code == 200
     with Session(db_engine) as session:
-        assert session.scalars(select(ExtractionRun)).one().raw_response == raw
+        runs = session.scalars(select(ExtractionRun)).all()
+        assert len(runs) == (2 if code in service.RETRYABLE_ERRORS else 1)
+        assert all(run.raw_response == raw for run in runs)
         assert session.scalars(select(Bill)).one().processing_status == "failed"
     assert len(list(tmp_path.rglob("*.pdf"))) == 1
 
