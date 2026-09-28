@@ -56,8 +56,7 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
 
     @app.exception_handler(UploadError)
     async def upload_error(request, error):
-        headers = {"Retry-After": "1"} if error.code == "upload_in_progress" else None
-        return JSONResponse({"error": error.code}, error.status_code, headers=headers)
+        return JSONResponse({"error": error.code}, error.status_code)
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request, error):
@@ -73,7 +72,7 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
         return JSONResponse({"error": "internal_error"}, 500)
 
     @app.post("/bills", response_model=BillResponse, status_code=201,
-              responses={200: {"model": BillResponse}, 409: {"description": "Upload in progress"}})
+              responses={200: {"model": BillResponse}})
     def post_bill(file: UploadFile, response: Response,
                   extractor: Annotated[BillExtractor, Depends(get_extractor)]):
         result, created = upload_bill(read_pdf(file.file), engine=database,

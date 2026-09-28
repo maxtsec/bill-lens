@@ -1,6 +1,6 @@
 # ADR-005: Synchronous upload API and local PDF storage
 
-Status: Proposed (Phase 2; awaiting review)
+Status: Accepted (owner selected option B after PR #7 review)
 
 ## Context
 
@@ -41,7 +41,6 @@ PDF errors precede an extraction attempt and create no stored PDF, bill or run:
 | `invalid_pdf_signature` | 415 | Bytes do not identify a supported PDF |
 | Other `PdfTextError` codes | 422 | PDF cannot satisfy our extraction requirements |
 | `unsupported_fixture` | 422 | Valid PDF has no answer in the development fake |
-| `upload_in_progress` | 409 + Retry-After: 1 | Same hash is being processed; retry later |
 
 All error responses have a fixed `{"error": code}` shape. Framework validation
 errors never echo input or filenames. Unhandled infrastructure/programming errors
@@ -76,28 +75,37 @@ authentication and public deployment are outside this local slice.
 ### Idempotency and transaction scope
 
 1. Validate PDF and compute SHA-256; query an existing bill in a short session.
-2. For a new hash, acquire a **session-level PostgreSQL advisory lock** using a
-   dedicated AUTOCOMMIT connection; recheck the full hash after locking.
-3. Call the extractor with **no open database transaction**. The lock connection
-   stays checked out, so this costs a connection per in-flight extraction.
-4. Derive flags/status; write the PDF to a temporary file under the configured
+2. Close that session and return its connection to the pool. For a new hash,
+   call the extractor with **no held DB connection or open transaction**.
+3. Derive flags/status; write the PDF to a temporary file under the configured
    storage root, flush/fsync, close, and atomically rename on the same filesystem
    to a server-generated `bills/{uuid}.pdf` key.
-5. In one transaction, write Bill and ExtractionRun and build a validated response.
-   Return 201 only after commit. Release the advisory lock on all exit paths.
+4. In one transaction, write Bill and ExtractionRun and build a validated response.
+   Return 201 only after commit. The full SHA-256 UNIQUE constraint arbitrates
+   simultaneous identical uploads. On `BillAlreadyExists`, roll back the losing
+   transaction, remove only its file, and return the committed winning bill (200).
 
-Concurrent requests for an uncommitted hash receive 409, then a retry returns the
-existing bill without another extraction. This avoids waiting indefinitely and
-works across local API workers. A 64-bit prefix is used for the advisory key;
-prefix collisions can cause temporary 409s only. Lookups and database uniqueness
-always use the complete SHA-256. Failed attempts are also idempotent; retrying a
-provider/prompt is a separate future operation. Validation/parsing itself may repeat.
+The owner chose **option B: remove the advisory lock** in response to
+[Claude's PR #7 review](https://github.com/maxtsec/bill-lens/pull/7#issuecomment-5861692033).
+The original session advisory lock held one pooled connection while `_existing`
+and the insert needed a second. With enough concurrent distinct uploads, each
+request held a connection and waited for another until pool timeout. Avoiding an
+idle transaction was insufficient: the checked-out connection still consumed a
+bounded resource during a slow model call.
 
-The hash UNIQUE constraint remains the final defence for writers outside this
-API's locking protocol. If such a writer wins, remove only this request's file
-and return the winning bill. Lock release failure invalidates the connection so
-it cannot re-enter the pool holding a lock. Session pooling/proxies that don't
-preserve PostgreSQL sessions are incompatible with this design.
+Option B keeps connection ownership confined to short lookups and persistence.
+The pre-extraction lookup still avoids another model call for a committed hash.
+For the rare simultaneous identical upload, both requests may call the model:
+this costs an extra call, and only the winner's attempt is stored. UNIQUE and
+the atomic Bill/ExtractionRun transaction still guarantee data integrity: one
+bill, one run, and one retained PDF. The loser returns the winner's result even
+if the two model outputs differ. There is no 409 `upload_in_progress` response or
+`Retry-After` header. Removing the lock also removes its unlock path, so unlock
+failure cannot mask an original exception (review should-consider 2).
+
+Committed failed attempts are also idempotent; retrying a provider/prompt is a
+separate future operation. Validation/parsing itself may repeat. Writers outside
+the HTTP API are subject to the same UNIQUE constraint and loser cleanup path.
 
 ### Files and database cannot commit atomically
 
@@ -117,10 +125,16 @@ same filesystem; object storage is deferred.
 
 ## Alternatives and revisit triggers
 
-- UNIQUE alone prevents duplicate rows but cannot prevent duplicate extractor
-  calls. A transaction lock around extraction would hold an idle transaction.
-- In-memory locks would work for one worker only. A durable job/reservation table
-  would support queued requests and crash recovery but expands this milestone.
+- Option A (reuse the advisory-lock connection for lookups/inserts) avoids nested
+  checkout but still pins a connection throughout extraction and can starve GET.
+  A transaction lock would additionally hold an idle transaction. Neither was chosen.
+- Option B (chosen) accepts a possible duplicate model call for simultaneous
+  identical uploads in exchange for releasing all DB resources during extraction.
+- Option C, **claim-then-work**, is deferred to **M6**: commit a `processing`
+  claim, release the connection, extract, then complete the claim. It needs a
+  migration, processing status, ownership and recovery of abandoned claims.
+  Revisit duplicate-call cost and recording every concurrent attempt there.
+- In-memory locks would work for one worker only.
 - Object storage plus a reconciliation worker is appropriate when deployment,
   asynchronous jobs or multi-host operation is required.
 - The default fake accepts only known fixture hashes. It never invents a default
@@ -132,6 +146,12 @@ TestClient tests run over migrated real PostgreSQL: five golden PDFs, duplicate
 and concurrent uploads, all PDF error codes, all extraction error codes, unknown
 fixtures, 404, JSONB read validation, lossless NUL/surrogate failure persistence,
 file/DB failure cleanup, an external writer race, and lost commit acknowledgement.
+Concurrent identical requests are held at extraction until both pass the initial
+lookup; they return one 201 and one 200 with identical results and no loser file.
+Small-pool tests use `pool_size=2, max_overflow=0, pool_timeout=1` with two and three
+distinct uploads. While all extractors block, zero connections are checked out
+and GET still completes. Releasing them yields one bill/run/file per upload,
+all 201 responses and no pool timeout.
 Separate ASGI tests exercise absent/false/oversized lengths and prove multipart
 temporary files close when a later chunk crosses the limit. No accuracy claim is
 derived from fixture-backed responses.
