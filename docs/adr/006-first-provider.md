@@ -1,6 +1,6 @@
 # ADR-006: First real extraction provider
 
-Status: Proposed (awaiting review)
+Status: Accepted after Claude review of 8893b39 and owner approval
 
 ## Context
 
