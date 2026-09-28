@@ -6,6 +6,16 @@ This document defines the initial fields extracted from a Victorian household el
 
 `retailer` is the electricity retailer named on the bill, as displayed to the customer. Preserve its displayed name; do not replace it with a parent company, distributor, or a guessed canonical name. A missing or ambiguous retailer is `null` and needs review.
 
+A retailer name must not contain Unicode control characters (category `Cc`,
+including NUL, tab, newline, DEL and C1 controls) or surrogate code points
+(category `Cs`). Such output fails schema validation and becomes `invalid_output`;
+do not strip the characters or change the value to null to manufacture a success.
+Ordinary Unicode names, accents, emoji and non-control spaces remain valid.
+A literal backslash sequence such as `\\u0000` in a decoded name is distinct from
+an actual NUL. The raw model response is retained unchanged as evidence, including
+when its characters are unsuitable for PostgreSQL text; see
+[ADR-004](adr/004-lossless-raw-response.md).
+
 For evaluation, trim and collapse whitespace and compare without case sensitivity. Do not remove words or legal suffixes: `Example Energy` and `EXAMPLE ENERGY` match, but `Example Energy` and `Example Energy Pty Ltd` do not. A future retailer registry could support alias matching, but the first dataset will not guess aliases.
 
 ## Billing period

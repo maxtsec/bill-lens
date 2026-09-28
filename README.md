@@ -10,6 +10,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [M1 PDF text boundary and failure policy](docs/pdf-text-boundary.md)
 - [ADR-002: Extraction port and deterministic fake](docs/adr/002-extraction-port.md)
 - [ADR-003: PostgreSQL persistence model](docs/adr/003-persistence-model.md)
+- [ADR-004: Lossless raw-response storage](docs/adr/004-lossless-raw-response.md)
 
 ## Run locally
 
@@ -41,6 +42,7 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added `extract_pdf_text(bytes)` with page provenance, a file hash, acceptance limits and explicit failures. The inspection script now uses it.
 - Added the provider-independent `BillExtractor` port, recordable `ExtractionAttempt`, one shared raw-response validation helper, and a deterministic `FakeExtractor`. All five PDFs now exercise the pipeline through domain flags without a model or API key. This tests plumbing, not extraction accuracy.
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
+- Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
 - Next, **after Phase 1 is reviewed and merged**: Phase 2 upload and JSON response path using the fake. Real adapters, prompts and retries are deferred.
 
 ### Exercise the extraction port locally
@@ -119,3 +121,9 @@ ORM/migration drift. No test uses `metadata.create_all`.
 The persistence helper flushes within a SAVEPOINT and the caller commits the
 outer transaction. See ADR-003 for the transaction pattern and duplicate outcome.
 No upload endpoint, file writing or HTTP application is included in Phase 1.
+
+Migration `0002` converts raw responses from text to BYTEA (UTF-8 with
+`surrogatepass`); ORM callers still read/write `str | None`. Stop application
+processes before applying it. Existing text and NULL values are preserved.
+A downgrade to `0001` aborts without deleting evidence if NUL/surrogate data
+cannot fit the old text column. See ADR-004 for decoding and rollback details.

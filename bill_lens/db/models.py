@@ -6,6 +6,8 @@ from sqlalchemy import BigInteger, CHAR, CheckConstraint, DateTime, ForeignKey, 
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from bill_lens.db.raw_response import RawResponseText
+
 
 class Base(DeclarativeBase):
     pass
@@ -56,7 +58,7 @@ class ExtractionRun(Base):
     provider: Mapped[str] = mapped_column(Text)
     model: Mapped[str] = mapped_column(Text)
     prompt_version: Mapped[str] = mapped_column(Text)
-    raw_response: Mapped[str | None] = mapped_column(Text)
+    raw_response: Mapped[str | None] = mapped_column(RawResponseText())
     fields: Mapped[dict[str, Any] | None] = mapped_column(JSONB(none_as_null=True))
     fields_schema_version: Mapped[int | None] = mapped_column(Integer)
     error_code: Mapped[str | None] = mapped_column(Text)
