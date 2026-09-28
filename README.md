@@ -49,7 +49,7 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
 - Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
 - Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake.
-- Added the OpenAI Responses adapter and versioned prompt, opt-in API configuration, and user-driven retries for transient failures. Every completed retry is retained; concurrent late failures cannot downgrade a validated result. M2 evaluation remains deferred.
+- Added the OpenAI Responses adapter and versioned prompt, opt-in API configuration, and user-driven retries for transient failures. Every completed retry is retained; concurrent late failures cannot downgrade a validated result. The M2 harness and first v4 live evidence are now available below.
 
 ### Exercise the extraction port locally
 
@@ -215,7 +215,9 @@ settings and defines [retailer as the customer-facing brand](docs/extraction-con
 prefer the most complete printed brand over its logo abbreviation; a legal entity
 is used only when no brand is printed. A sole unambiguous abbreviation is kept.
 Never substitute a distributor, network operator, parent or group. Existing dev
-labels and scoring rules are unchanged; v4 model accuracy has not been measured.
+labels and scoring rules are unchanged. The [first v4 evaluation](docs/learning/retailer-brand-evaluation.md)
+measured retailer 15/15 on dev and 18/18 on holdout, but one dev amount-due
+false extraction was incorrectly marked processed. Real-bill accuracy remains unmeasured.
 Authentication, permission, missing model and schema/parameter rejections raise a
 safe `OpenAIConfigurationError`; document-specific context/content rejections
 remain failed attempts. HTTP maps raised errors to safe 500 internal_error,

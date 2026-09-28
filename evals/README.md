@@ -1,5 +1,10 @@
 # Evaluation harness (M2)
 
+The [first v4 live evidence](../docs/learning/retailer-brand-evaluation.md)
+preserves the v2 dev baseline, v4 dev comparison and first retailer holdout run.
+It includes a dev false acceptance despite improved retailer scores. Further
+live calls still require explicit authorisation.
+
 Ask whether a prompt/model/extraction change improves measured outcomes on the
 same labelled inputs. Scores are deterministic Python comparisons, never an LLM
 judge. Results from the five dev or six holdout synthetic bills are descriptive; they do not establish
@@ -202,4 +207,4 @@ Tests cover all outcomes, the five dataset traps, supply components, repeated
 fake runs, scripted failures, JSON round trips, a hand-authored report snapshot,
 comparability, live gates and early termination using a stub. The default suite
 clears credentials and blocks real HTTP transports. **No live API call was made
-in CI/tests.** The first live evaluation remains a separately authorised step.
+in CI/tests.** Further live evaluations remain separately authorised steps.

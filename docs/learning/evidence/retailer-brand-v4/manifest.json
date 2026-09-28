@@ -1,0 +1,52 @@
+{
+  "recorded_on": "2026-09-29",
+  "run_ids": {
+    "v2-dev": "20260928T212834Z-11548f32c4b3",
+    "v4-dev": "20260928T224629Z-d833f7fb2248",
+    "v4-holdout": "20260928T224659Z-206893300747"
+  },
+  "new_authorised_calls": 33,
+  "historical_baseline_calls": 15,
+  "artifact_hashes": {
+    "v2-dev/attempts.jsonl": {
+      "sha256": "28903e5805793836b3bd5e8da00f5af3d656e18b0a0b2ca7a9a82b6e4741034d",
+      "bytes": 28898
+    },
+    "v2-dev/summary.json": {
+      "sha256": "50c3f6f74b57d3db62d69641062b29bf400d691f50ba9d1df67b9ce7126f529f",
+      "bytes": 31578
+    },
+    "v2-dev/report.md": {
+      "sha256": "563c28e987c2e039a65882602b8ce2e8cd2873ac53e63619e5e4dc7bd3bbf5fd",
+      "bytes": 3332
+    },
+    "v4-dev/attempts.jsonl": {
+      "sha256": "658dbb1f312d4b6866914fc090898b8f5c969de119dae1585d8f602ee577a1f5",
+      "bytes": 28973
+    },
+    "v4-dev/summary.json": {
+      "sha256": "297460baec0adc794b96e68e63af38e5dc9aff17869084ba470f125ebd3616e7",
+      "bytes": 31608
+    },
+    "v4-dev/report.md": {
+      "sha256": "6804a15be5d7de9054f48e4769b176f7a731cffe9f9091e29f194acd259da60a",
+      "bytes": 3341
+    },
+    "v4-holdout/attempts.jsonl": {
+      "sha256": "b718f7dd58b2c919560e17ea41b02379da26276858b6ed47181ffef6ca4c4843",
+      "bytes": 34596
+    },
+    "v4-holdout/summary.json": {
+      "sha256": "71b3f1f4aafd2099bd612e5bd24291223c4f550aa310f96a0dc75ad17d7d96d2",
+      "bytes": 36666
+    },
+    "v4-holdout/report.md": {
+      "sha256": "9f452558334829efc617f8e9a7e8a97d9335929994bfd769625dd7fa4e0851ca",
+      "bytes": 3601
+    },
+    "v2-vs-v4-dev.md": {
+      "sha256": "57c6b88e44778d50695bacb293be7321bafb2bf82fe320e1916c7653e3b00438",
+      "bytes": 8640
+    }
+  }
+}
