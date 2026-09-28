@@ -27,7 +27,8 @@ Any further live use requires separate explicit owner authorisation.**
   the run, date and affected cases here, reclassify them as development data,
   and add fresh held-out bills before claiming generalisation.
 - This is a purpose-built synthetic set sharing an author with its labels,
-  not a blind real-world sample. Owner verification reduces shared-author bias;
+  not a blind real-world sample. Owner verification reduces labelling mistakes
+  but does not remove shared-author bias;
   fake accuracy and six synthetic bills cannot establish real-world accuracy.
 - Promotion record: **none**. First live run: `20260928T224659Z-206893300747`,
   2026-09-29 Australia/Sydney (2026-09-28 UTC), extract-v4 on clean commit

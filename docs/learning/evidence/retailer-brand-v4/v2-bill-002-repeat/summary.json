@@ -1,0 +1,534 @@
+{
+  "run_id": "20260928T232541Z-2b18b62e60bf",
+  "harness_version": "1",
+  "scoring_version": "1",
+  "started_at": "2026-09-28T23:25:41.607236+00:00",
+  "git": {
+    "commit": "1ecad8057dd29695d5ceca23722c0b959607dd21",
+    "dirty": false
+  },
+  "dataset_git": {
+    "commit": "424c0493740f14d03fd71ec6c8d20e5ce1b5a819",
+    "dirty": false
+  },
+  "dataset": {
+    "bill_002": {
+      "pdf_sha256": "0f4454f45e4b5af36322714f600dad12e2f500c4800c4e1601f888c1647b5d54",
+      "label_sha256": "d9025f5d87088545ba4cfb2476de917d2b7965066ff047476b04371109b3c63d"
+    }
+  },
+  "bill_count": 1,
+  "repeats": 20,
+  "planned_attempts": 20,
+  "provider": "openai",
+  "requested_model": "gpt-5.4-mini",
+  "configured_prompt_version": "extract-v2",
+  "reasoning_effort": "low",
+  "price_date": "2026-09-29",
+  "plan": {
+    "price_date": "2026-09-29",
+    "currency": "USD",
+    "models": 1,
+    "planned_calls": 20,
+    "estimated_cost_usd": "0.40096500",
+    "assumptions": "UTF-8 text bytes/4 + 2000 input tokens per bill; 4096 output tokens per call; uncached standard prices. Planning estimate, NOT a spending cap."
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "packages": {
+      "pydantic": "2.13.5",
+      "pdfplumber": "0.11.10",
+      "pdfminer.six": "20260107",
+      "openai": "3.20.0"
+    }
+  },
+  "completed": true,
+  "abort_reason": null,
+  "completed_attempts": {
+    "count": 20,
+    "total": 20
+  },
+  "metrics": {
+    "attempts": 20,
+    "fields": {
+      "retailer": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "period_start": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "period_end": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "stated_billing_days": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "total_usage_kwh": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "daily_supply_rate": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "current_bill_amount": {
+        "correct": {
+          "count": 20,
+          "total": 20
+        },
+        "wrong_value": {
+          "count": 0,
+          "total": 20
+        },
+        "missing": {
+          "count": 0,
+          "total": 20
+        },
+        "false_extraction": {
+          "count": 0,
+          "total": 20
+        },
+        "no_fields": {
+          "count": 0,
+          "total": 20
+        }
+      }
+    },
+    "supply_components": {
+      "rate_value": {
+        "matched": {
+          "count": 20,
+          "total": 20
+        },
+        "unavailable": {
+          "count": 0,
+          "total": 20
+        }
+      },
+      "gst_basis": {
+        "matched": {
+          "count": 20,
+          "total": 20
+        },
+        "unavailable": {
+          "count": 0,
+          "total": 20
+        }
+      }
+    },
+    "exact_bill_match": {
+      "count": 20,
+      "total": 20
+    },
+    "flags_match": {
+      "count": 20,
+      "total": 20
+    },
+    "status_match": {
+      "count": 20,
+      "total": 20
+    },
+    "attempt_outcomes": {
+      "none": {
+        "count": 20,
+        "total": 20
+      },
+      "rate_limited": {
+        "count": 0,
+        "total": 20
+      },
+      "timeout": {
+        "count": 0,
+        "total": 20
+      },
+      "refused": {
+        "count": 0,
+        "total": 20
+      },
+      "truncated": {
+        "count": 0,
+        "total": 20
+      },
+      "invalid_output": {
+        "count": 0,
+        "total": 20
+      },
+      "provider_error": {
+        "count": 0,
+        "total": 20
+      }
+    }
+  },
+  "limitation": "Synthetic bills only; descriptive results, not evidence of real-world accuracy or statistical significance.",
+  "resolved_models": [
+    "gpt-5.4-mini-2026-03-17"
+  ],
+  "prompt_versions": [
+    "extract-v2"
+  ],
+  "per_bill": {
+    "bill_002": {
+      "attempts": 20,
+      "fields": {
+        "retailer": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "period_start": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "period_end": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "stated_billing_days": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "total_usage_kwh": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "daily_supply_rate": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "current_bill_amount": {
+          "correct": {
+            "count": 20,
+            "total": 20
+          },
+          "wrong_value": {
+            "count": 0,
+            "total": 20
+          },
+          "missing": {
+            "count": 0,
+            "total": 20
+          },
+          "false_extraction": {
+            "count": 0,
+            "total": 20
+          },
+          "no_fields": {
+            "count": 0,
+            "total": 20
+          }
+        }
+      },
+      "supply_components": {
+        "rate_value": {
+          "matched": {
+            "count": 20,
+            "total": 20
+          },
+          "unavailable": {
+            "count": 0,
+            "total": 20
+          }
+        },
+        "gst_basis": {
+          "matched": {
+            "count": 20,
+            "total": 20
+          },
+          "unavailable": {
+            "count": 0,
+            "total": 20
+          }
+        }
+      },
+      "exact_bill_match": {
+        "count": 20,
+        "total": 20
+      },
+      "flags_match": {
+        "count": 20,
+        "total": 20
+      },
+      "status_match": {
+        "count": 20,
+        "total": 20
+      },
+      "attempt_outcomes": {
+        "none": {
+          "count": 20,
+          "total": 20
+        },
+        "rate_limited": {
+          "count": 0,
+          "total": 20
+        },
+        "timeout": {
+          "count": 0,
+          "total": 20
+        },
+        "refused": {
+          "count": 0,
+          "total": 20
+        },
+        "truncated": {
+          "count": 0,
+          "total": 20
+        },
+        "invalid_output": {
+          "count": 0,
+          "total": 20
+        },
+        "provider_error": {
+          "count": 0,
+          "total": 20
+        }
+      }
+    }
+  },
+  "input_tokens": {
+    "known_total": 25852,
+    "calls_with_usage": {
+      "count": 20,
+      "total": 20
+    },
+    "total": 25852
+  },
+  "output_tokens": {
+    "known_total": 4759,
+    "calls_with_usage": {
+      "count": 20,
+      "total": 20
+    },
+    "total": 4759
+  },
+  "cost": {
+    "known_estimated_usd": "0.0408045",
+    "calls_with_estimate": {
+      "count": 20,
+      "total": 20
+    },
+    "total_estimated_usd": "0.0408045"
+  },
+  "latency_ms": {
+    "median": 2218.5,
+    "max": 3174
+  }
+}

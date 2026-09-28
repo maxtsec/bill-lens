@@ -1,0 +1,81 @@
+{
+  "v2": {
+    "n": 20,
+    "current_bill_amount_outcomes": {
+      "correct": 20
+    },
+    "false_extraction_count": 0,
+    "false_extraction_wilson_95": [
+      0.0,
+      0.1611251580528193
+    ],
+    "distinct_wrong_values": {},
+    "false_extractions": [],
+    "flags_outcomes": {
+      "[\"current_bill_amount_missing\"]": 20
+    },
+    "status_outcomes": {
+      "needs_review": 20
+    },
+    "input_tokens": 25852,
+    "output_tokens": 4759,
+    "latency_ms": {
+      "median": 2218.5,
+      "max": 3174,
+      "total": 45562
+    },
+    "cost_usd": "0.0408045",
+    "correct_count": 20,
+    "other_amount_outcome_count": 0
+  },
+  "v4": {
+    "n": 20,
+    "current_bill_amount_outcomes": {
+      "correct": 18,
+      "false_extraction": 2
+    },
+    "false_extraction_count": 2,
+    "false_extraction_wilson_95": [
+      0.027866481213768224,
+      0.30103364522848725
+    ],
+    "distinct_wrong_values": {
+      "162.66": 1,
+      "132.66": 1
+    },
+    "false_extractions": [
+      {
+        "repeat": 3,
+        "value": "162.66",
+        "flags": [],
+        "status": "processed",
+        "output_tokens": 138
+      },
+      {
+        "repeat": 13,
+        "value": "132.66",
+        "flags": [],
+        "status": "processed",
+        "output_tokens": 258
+      }
+    ],
+    "flags_outcomes": {
+      "[\"current_bill_amount_missing\"]": 18,
+      "[]": 2
+    },
+    "status_outcomes": {
+      "needs_review": 18,
+      "processed": 2
+    },
+    "input_tokens": 32448,
+    "output_tokens": 5437,
+    "latency_ms": {
+      "median": 2484.5,
+      "max": 3156,
+      "total": 49008
+    },
+    "cost_usd": "0.0488025",
+    "correct_count": 18,
+    "other_amount_outcome_count": 0
+  }
+}
