@@ -11,8 +11,10 @@ regression guard, not a comprehensive registry of all organisations.
 2026-09-29, and re-verified the revised holdout_001 and holdout_006 PDFs on
 2026-09-29 after the answer-hint removal. Owner verification of all six PDFs is
 complete.
-No live evaluation has been run on this set; live use still requires separate
-explicit owner authorisation after PR review and merge.**
+The first owner-authorised live evaluation completed on 2026-09-29: six bills
+x three repeats, retailer and exact match 18/18. This is a small synthetic sample;
+see the [evidence and limitations](../../docs/learning/retailer-brand-evaluation.md).
+Any further live use requires separate explicit owner authorisation.**
 
 ## Holdout discipline
 
@@ -27,8 +29,12 @@ explicit owner authorisation after PR review and merge.**
 - This is a purpose-built synthetic set sharing an author with its labels,
   not a blind real-world sample. Owner verification reduces shared-author bias;
   fake accuracy and six synthetic bills cannot establish real-world accuracy.
-- Promotion record: **none**. First live run: **not performed**. Store future
-  run IDs and any reclassification decisions here when separately authorised.
+- Promotion record: **none**. First live run: `20260928T224659Z-206893300747`,
+  2026-09-29 Australia/Sydney (2026-09-28 UTC), extract-v4 on clean commit
+  `b1fdef0009504c44e19b13d9f957e2143d3447b6`, gpt-5.4-mini resolved to
+  gpt-5.4-mini-2026-03-17, low effort, three repeats. All 18 attempts completed;
+  no prompt/rule changes followed the results. The team has now seen this set's
+  results. Record promotion and replace the holdout if future tuning uses them.
 
 ## Cases and retailer answers
 

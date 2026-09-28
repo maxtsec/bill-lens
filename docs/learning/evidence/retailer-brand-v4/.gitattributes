@@ -1,0 +1,2 @@
+# Preserve original artifact bytes, including Windows CRLF, while checking other whitespace.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
