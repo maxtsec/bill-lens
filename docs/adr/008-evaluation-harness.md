@@ -1,6 +1,6 @@
 # ADR-008: Deterministic, file-based extraction evaluation
 
-Status: Proposed (awaiting Claude review)
+Status: Accepted
 
 ## Context
 
@@ -77,6 +77,14 @@ Compare per-field/per-bill correct fractions and field-outcome counts. Refuse
 different input/label hashes, repeat counts, harness/scoring versions, incomplete
 runs and invalid field denominators. Different model/prompt/code commits are
 intentional experimental changes. Warn on dirty/unavailable code provenance.
+The comparison header shows both runs' provider, requested/resolved model,
+configured/observed prompt versions, effort and code commit. List changed
+dimensions and warn when more than one differs: a score change cannot then be
+attributed to a single variable. Requested/resolved model count as one model
+dimension; configured/observed prompt versions count as one prompt dimension.
+Per-bill rows show each field's outcome counts A -> B even when correctness is
+unchanged. These compare distributions across repeats, not paired attempts or
+an assertion that one error type is universally better than another.
 Harness/scoring semantic changes require version bumps in evals/__init__.py.
 Comparison is descriptive; repeated calls on the same five documents are not
 independent new bills and do not establish significance.

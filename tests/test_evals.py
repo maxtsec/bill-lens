@@ -266,6 +266,78 @@ def test_compare_improvement_regression_and_unchanged(cases, tmp_path):
     assert "WARNING: dirty" in compare.compare_runs(a, b)
 
 
+def test_compare_header_identifies_both_runs_and_multiple_changes(cases, tmp_path):
+    a = run.evaluate(cases[:1], fake(cases[:1]), tmp_path / "a", metadata(cases[:1]))
+    b = deepcopy(a)
+    b.update(provider="openai", requested_model="requested-b", resolved_models=["resolved-b"],
+             configured_prompt_version="configured-b", prompt_versions=["observed-b"], reasoning_effort="low",
+             git={"commit": "commit-b", "dirty": False})
+    report = compare.compare_runs(a, b)
+    header = report.split("## Per-field correctness")[0]
+    assert "| A | fake | fake-v1 | fake-v1 | fixture-v1 | fixture-v1 | None | code-revision |" in header
+    assert "| B | openai | requested-b | resolved-b | configured-b | observed-b | low | commit-b |" in header
+    assert "Changed dimensions: provider, model, prompt version, effort, commit." in header
+    assert "WARNING: multiple configuration dimensions differ" in header
+    assert "cannot be attributed to a single variable" in header
+    identical = compare.compare_runs(a, a)
+    assert "Changed dimensions: none." in identical
+    assert "WARNING: multiple" not in identical
+
+
+@pytest.mark.parametrize("updates,dimension", [
+    ({"provider": "other"}, "provider"),
+    ({"requested_model": "other"}, "model"),
+    ({"resolved_models": ["other"]}, "model"),
+    ({"requested_model": "other", "resolved_models": ["other-snapshot"]}, "model"),
+    ({"configured_prompt_version": "other"}, "prompt version"),
+    ({"prompt_versions": ["other"]}, "prompt version"),
+    ({"configured_prompt_version": "other", "prompt_versions": ["other"]}, "prompt version"),
+    ({"reasoning_effort": "high"}, "effort"),
+    ({"git": {"commit": "other", "dirty": False}}, "commit"),
+])
+def test_compare_warns_only_after_a_second_dimension_changes(cases, tmp_path, updates, dimension):
+    a = run.evaluate(cases[:1], fake(cases[:1]), tmp_path / "a", metadata(cases[:1]))
+    b = deepcopy(a)
+    b.update(updates)
+    report = compare.compare_runs(a, b)
+    assert f"Changed dimensions: {dimension}." in report
+    assert "WARNING: multiple" not in report
+    # Exactly two dimensions cross the warning threshold, even if correctness
+    # is identical. Model/prompt configured+observed pairs count only once.
+    b.update({"reasoning_effort": "other"} if dimension != "effort" else {"provider": "other"})
+    assert "WARNING: multiple configuration dimensions differ" in compare.compare_runs(a, b)
+
+
+def test_compare_per_bill_error_changes_survive_equal_aggregate_scores(cases, tmp_path):
+    cases = [cases[0], cases[2]]  # Both expect processed, with no review flags.
+    def replies(values):
+        return {case.name: ScriptedResponse(json.dumps(case.label.fields.model_dump(mode="json") | {"retailer": value}))
+                for case, value in zip(cases, values)}
+    a = run.evaluate(cases, fake(cases, replies([None, "Wrong Retailer"])), tmp_path / "a", metadata(cases, repeats=3))
+    b = run.evaluate(cases, fake(cases, replies(["Wrong Retailer", None])), tmp_path / "b", metadata(cases, repeats=3))
+    assert a["metrics"] == b["metrics"]  # Aggregate counts hide the swap.
+    report = compare.compare_runs(a, b)
+    first = next(line for line in report.splitlines() if line.startswith("| bill_001 | retailer |"))
+    second = next(line for line in report.splitlines() if line.startswith("| bill_003 | retailer |"))
+    assert "| 0/3 | 0/3 | unchanged |" in first and "| 0/3 | 0/3 | unchanged |" in second
+    assert "wrong_value: 0/3 -> 3/3; missing: 3/3 -> 0/3" in first
+    assert "wrong_value: 3/3 -> 0/3; missing: 0/3 -> 3/3" in second
+    assert "not paired attempt transitions" in report
+
+
+def test_compare_per_bill_false_extraction_and_no_fields_counts(cases, tmp_path):
+    cases = cases[1:2]
+    invented = cases[0].label.fields.model_dump(mode="json") | {"current_bill_amount": "132.66"}
+    a = run.evaluate(cases, fake(cases, {"bill_002": ScriptedResponse(json.dumps(invented))}),
+                     tmp_path / "a", metadata(cases, repeats=3))
+    b = run.evaluate(cases, fake(cases, {"bill_002": ScriptedResponse("", error_code="timeout")}),
+                     tmp_path / "b", metadata(cases, repeats=3))
+    row = next(line for line in compare.compare_runs(a, b).splitlines()
+               if line.startswith("| bill_002 | current_bill_amount |"))
+    assert "| 0/3 | 0/3 | unchanged |" in row
+    assert "false_extraction: 3/3 -> 0/3; no_fields: 0/3 -> 3/3" in row
+
+
 @pytest.mark.parametrize("difference", ["pdf", "label", "scoring_version", "harness_version", "repeats"])
 def test_compare_refuses_incomparable_runs(cases, tmp_path, difference):
     a = run.evaluate(cases, fake(cases), tmp_path / "a", metadata(cases))

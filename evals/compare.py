@@ -38,27 +38,55 @@ def change(left: dict, right: dict) -> str:
     return "improved" if b > a else "regressed" if b < a else "unchanged"
 
 
+def configuration(summary: dict) -> dict:
+    # Requested/resolved values describe one model variable, not two independent
+    # interventions. Likewise keep configured/observed prompt versions together.
+    return {"provider": summary["provider"],
+            "model": (summary["requested_model"], sorted(summary["resolved_models"])),
+            "prompt version": (summary["configured_prompt_version"], sorted(summary["prompt_versions"])),
+            "effort": summary["reasoning_effort"], "commit": summary["git"]["commit"]}
+
+
+def outcome_changes(left: dict, right: dict) -> str:
+    return "; ".join(f"{o}: {fraction(left[o])} -> {fraction(right[o])}" for o in OUTCOMES[1:])
+
+
 def compare_runs(left: dict, right: dict) -> str:
     for key in ("dataset", "harness_version", "scoring_version", "repeats"):
         if left[key] != right[key]:
             raise ValueError(f"incomparable: different {key}")
     lines = [f"# Compare {left['run_id']} -> {right['run_id']}", "", LIMITATION,
              f"Dataset: {len(left['dataset'])} bills; repeats: {left['repeats']} each.", ""]
+    lines += ["| Run | Provider | Requested model | Resolved models | Configured prompt | Observed prompts | Effort | Code commit |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for label, summary in (("A", left), ("B", right)):
+        lines.append(f"| {label} | {summary['provider']} | {summary['requested_model']} | "
+                     f"{', '.join(sorted(summary['resolved_models'])) or 'none'} | {summary['configured_prompt_version']} | "
+                     f"{', '.join(sorted(summary['prompt_versions'])) or 'none'} | {summary['reasoning_effort']} | {summary['git']['commit']} |")
+    a_config, b_config = configuration(left), configuration(right)
+    changed = [key for key in a_config if a_config[key] != b_config[key]]
+    lines += ["", "Changed dimensions: " + (", ".join(changed) or "none") + ".", ""]
+    if len(changed) > 1:
+        lines += ["WARNING: multiple configuration dimensions differ; score changes cannot be attributed to a single variable.", ""]
     if left["git"]["dirty"] or right["git"]["dirty"] or not left["git"]["commit"] or not right["git"]["commit"]:
         lines += ["WARNING: dirty or unavailable Git provenance; commit IDs alone cannot reproduce these runs.", ""]
     lines += ["## Per-field correctness", "", "| Field | A | B | Change | Other outcome counts A -> B |",
               "| --- | --- | --- | --- | --- |"]
     for field in FIELDS:
         a, b = left["metrics"]["fields"][field], right["metrics"]["fields"][field]
-        details = "; ".join(f"{o}: {fraction(a[o])} -> {fraction(b[o])}" for o in OUTCOMES[1:])
+        details = outcome_changes(a, b)
         lines.append(f"| {field} | {fraction(a['correct'])} | {fraction(b['correct'])} | {change(a['correct'], b['correct'])} | {details} |")
-    lines += ["", "## Per-bill changes", "", "| Bill | Metric | A | B | Change |", "| --- | --- | --- | --- | --- |"]
+    lines += ["", "## Per-bill changes", "",
+              "Change describes correctness only; outcome counts can change even when correctness is unchanged.",
+              "Counts compare distributions across repeats, not paired attempt transitions.", "",
+              "| Bill | Metric | A | B | Change | Other outcome counts A -> B |", "| --- | --- | --- | --- | --- | --- |"]
     for bill in left["dataset"]:
         a, b = left["per_bill"][bill], right["per_bill"][bill]
         for key in ("exact_bill_match", "flags_match", "status_match", *FIELDS):
             x = a[key] if key not in FIELDS else a["fields"][key]["correct"]
             y = b[key] if key not in FIELDS else b["fields"][key]["correct"]
-            lines.append(f"| {bill} | {key} | {fraction(x)} | {fraction(y)} | {change(x, y)} |")
+            details = outcome_changes(a["fields"][key], b["fields"][key]) if key in FIELDS else "—"
+            lines.append(f"| {bill} | {key} | {fraction(x)} | {fraction(y)} | {change(x, y)} | {details} |")
     return "\n".join(lines) + "\n"
 
 
