@@ -7,7 +7,7 @@ there are no customer or contact details. Every PDF is marked
 placeholders, not real identifiers. A small explicit real-name deny-list is a
 regression guard, not a comprehensive registry of all organisations.
 
-**Status: candidate labels authored; owner verification pending for all six.
+**Status: owner verified holdout_001; holdout_002-006 remain pending.
 No live evaluation has been run on this set. Do not merge or run it live until
 the owner has checked every PDF against all seven fields, flags and status.**
 
@@ -86,7 +86,7 @@ Check the PDF visually against all seven labelled fields, supply unit/GST basis,
 expected flags and status. Do not approve on passing tests alone. Record reviewer
 and date after verification; later PDF/label edits invalidate the affected review.
 
-- [ ] Owner verifies holdout_001: all fields, flags and status.
+- [x] Owner (maxtsec), 2026-09-29: holdout_001 all seven fields, supply unit/GST basis, flags and status match the PDF.
 - [ ] Owner verifies holdout_002: all fields, flags and status.
 - [ ] Owner verifies holdout_003: all fields, flags and status.
 - [ ] Owner verifies holdout_004: all fields, flags and status.
