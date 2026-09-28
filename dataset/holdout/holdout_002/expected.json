@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "QVX",
+    "period_start": "2026-02-01",
+    "period_end": "2026-02-28",
+    "stated_billing_days": 28,
+    "total_usage_kwh": "210",
+    "daily_supply_rate": {"value": "0.96", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "87.78"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

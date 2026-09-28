@@ -28,6 +28,7 @@ def now() -> str:
 def make_metadata(cases, dataset, extractor, *, provider, model, repeats, run_id, plan):
     return {"run_id": run_id, "harness_version": HARNESS_VERSION, "scoring_version": SCORING_VERSION,
             "started_at": now(), "git": git_revision(ROOT), "dataset_git": git_revision(dataset),
+            "dataset_name": Path(dataset).resolve().name,
             "dataset": manifest(cases), "bill_count": len(cases), "repeats": repeats,
             "planned_attempts": len(cases) * repeats, "provider": provider, "requested_model": model,
             "configured_prompt_version": extractor.prompt_version,
@@ -116,7 +117,7 @@ def main(argv=None) -> int:
     plan = (planned_cost(cases, args.repeats, model) if args.extractor == "openai" else
             {"planned_calls": 0, "planned_attempts": len(cases) * args.repeats, "estimated_cost_usd": "0", "price_date": PRICE_DATE})
     print(LIMITATION, flush=True)
-    print(json.dumps({"provider": args.extractor, "model": model, "bills": len(cases),
+    print(json.dumps({"provider": args.extractor, "model": model, "dataset_name": args.dataset.resolve().name, "bills": len(cases),
                       "repeats": args.repeats, "output": str(output), **plan}), flush=True)
     # Plan and both live gates precede client construction. Use the frozen labels
     # for fake responses so changes on disk cannot escape the recorded hashes.

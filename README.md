@@ -210,12 +210,12 @@ The app closes its client on shutdown. Standalone configured_extractor() callers
 must call close() themselves.
 The adapter sends extracted page text, not the original PDF. SDK retries are zero,
 HTTP timeout is 60 seconds, reasoning effort is explicitly `low`, and the output
-cap is 4096 tokens including reasoning. `extract-v3` retains these execution
-settings and clarifies [retailer name selection](docs/extraction-contract.md#retailer):
-prefer the printed full name over a brand abbreviation only when both clearly
-identify the same retailer. A sole unambiguous abbreviation is kept as printed.
-Existing dataset labels and scoring rules are unchanged; improved model accuracy
-has not yet been established by a live evaluation of v3.
+cap is 4096 tokens including reasoning. `extract-v4` retains these execution
+settings and defines [retailer as the customer-facing brand](docs/extraction-contract.md#retailer):
+prefer the most complete printed brand over its logo abbreviation; a legal entity
+is used only when no brand is printed. A sole unambiguous abbreviation is kept.
+Never substitute a distributor, network operator, parent or group. Existing dev
+labels and scoring rules are unchanged; v4 model accuracy has not been measured.
 Authentication, permission, missing model and schema/parameter rejections raise a
 safe `OpenAIConfigurationError`; document-specific context/content rejections
 remain failed attempts. HTTP maps raised errors to safe 500 internal_error,
@@ -263,8 +263,14 @@ authorised owner-run steps; ordinary tests do not spend credit.
 
 ## M2 evaluation (offline first)
 
+The five original bills are development data. A separate
+[six-bill retailer-brand holdout](dataset/holdout/README.md) covers logo/brand,
+abbreviation-only, distributor, legal-entity and parent/group distinctions.
+Owner verification of every new PDF/label is required before merge or live use.
+
 ```powershell
 .\.venv\Scripts\python.exe -m evals.run --extractor fake --repeats 3
+.\.venv\Scripts\python.exe -m evals.run --extractor fake --dataset dataset/holdout --repeats 3
 .\.venv\Scripts\python.exe -m evals.compare evals/results/<run-a> evals/results/<run-b>
 ```
 
@@ -275,5 +281,5 @@ not model accuracy. The existing live smoke script now shares the same scoring.
 Results are git-ignored and include raw model output for this synthetic dataset;
 do not use real bills without revisiting privacy and retention. See the
 [evaluation guide](evals/README.md) for opt-in live gates, cost assumptions,
-comparability rules and the limits of five synthetic bills. No live evaluation
+comparability rules and the limits of these small synthetic sets. No live evaluation
 is part of ordinary tests or this implementation.

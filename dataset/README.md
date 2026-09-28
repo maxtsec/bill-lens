@@ -13,6 +13,33 @@ Repeat through `bill_005`. Use the seven fields and JSON shape in [`docs/extract
 
 ## Shared conventions
 
+### Development versus holdout
+
+These five cases are **development data**: their model failures informed prompt
+changes, including the retailer rule. The separate [retailer-brand holdout](holdout/README.md)
+is not used to develop prompts or rules. Its labels must be written and
+owner-verified before any live run. If prompt/rule changes follow inspection of
+held-out results, record that promotion to development data and add fresh holdout
+bills before making generalisation claims. The default harness reads only the
+five direct `bill_*` directories; it never recurses into `holdout/`.
+
+For extract-v4, the implementer checked every existing retailer label against
+the extracted PDF text and the new brand-first rule; all five remain valid:
+
+| Dev bill | Existing retailer label | Why still valid |
+| --- | --- | --- |
+| bill_001 | Example Energy | Printed customer-facing brand; no competing legal entity. |
+| bill_002 | Harbour Sample Power | Printed customer-facing brand; the amount-due trap does not change retailer identity. |
+| bill_003 | Lantern Sample Electricity | Complete printed brand accompanying the stylised LANTERN abbreviation. |
+| bill_004 | Mallee Sample Energy | Printed customer-facing brand; solar credits do not change retailer identity. |
+| bill_005 | Bluegum Sample Electric | Printed customer-facing brand; the day-count conflict does not change retailer identity. |
+
+No dev PDF or label was changed for this clarification; the existing owner
+verification record below remains intact. The implementer's rule check is not a
+substitute for owner verification of the newly authored holdout set.
+
+### Bill conventions
+
 - Dates are inclusive. All five PDFs explicitly state the imported usage total and one daily supply rate, so the initial contract can represent them without asking an LLM to add tariff lines. `bill_003` prints dates as `DD/MM/YYYY`, including `05/06/2026`.
 - Clearly label whether each printed rate includes GST. Four cases use GST-inclusive rates; `bill_002` uses GST-exclusive rates. Show the current-period total separately from any account balance or amount due **except** in `bill_002`, where its absence is the test.
 - Calculate line charges with decimal arithmetic and round displayed line amounts to cents. Where a current bill amount is displayed, it is the sum of the displayed current-period line amounts. `bill_002` deliberately omits that total. Keep printed rate precision; do not replace `110.23 cents/day` with a rounded AUD figure on the PDF.

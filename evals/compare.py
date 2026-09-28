@@ -56,6 +56,7 @@ def compare_runs(left: dict, right: dict) -> str:
         if left[key] != right[key]:
             raise ValueError(f"incomparable: different {key}")
     lines = [f"# Compare {left['run_id']} -> {right['run_id']}", "", LIMITATION,
+             f"Dataset names: A={left.get('dataset_name', 'legacy (name not recorded)')}; B={right.get('dataset_name', 'legacy (name not recorded)')}",
              f"Dataset: {len(left['dataset'])} bills; repeats: {left['repeats']} each.", ""]
     lines += ["| Run | Provider | Requested model | Resolved models | Configured prompt | Observed prompts | Effort | Code commit |",
               "| --- | --- | --- | --- | --- | --- | --- | --- |"]

@@ -75,15 +75,18 @@ class SupplyRate(ContractModel):
 class ExtractionFields(ContractModel):
     # Nullable keys are still required: omission is a schema error.
     retailer: StrictStr | None = Field(description=(
-        "Electricity retailer as displayed to the customer. Preserve its name and "
-        "legal suffix; do not substitute a distributor, parent company or guessed alias. "
-        "When a brand abbreviation and a full name clearly identify the same retailer, "
-        "extract the printed full name. If only the brand abbreviation is printed and "
-        "unambiguously identifies the retailer, keep it; never expand it from memory "
-        "or outside data. Do not choose a name merely because it is longer. "
-        "If several companies are named and the retailer cannot be identified "
-        "unambiguously, return null. "
-        "Use null if missing or ambiguous. Control characters (Unicode Cc) and "
+        "Retailer selection in priority order: (1) Extract the most complete "
+        "customer-facing brand name as printed, over a stylised logo abbreviation "
+        "when both clearly identify the same retailer. (2) A legal-entity name "
+        "(Pty Ltd, Limited, ABN/ACN in fine print or a legal notice) does not replace "
+        "a printed brand name. (3) If only a legal-entity name identifies the retailer, "
+        "extract it exactly as printed, including its suffix; exclude ABN/ACN labels "
+        "and identifier numbers from the name. (4) If only an unambiguous abbreviation "
+        "is printed, keep it; never expand it from memory or outside data. "
+        "(5) Never substitute a distributor, network operator, parent or group company. "
+        "(6) If missing or not unambiguously identifiable, return null. Use context; "
+        "do not choose the longest name or blindly strip suffixes. "
+        "Control characters (Unicode Cc) and "
         "surrogate code points (Cs) are invalid; never include them in a name."
     ))
     period_start: ISODate | None = Field(description=(

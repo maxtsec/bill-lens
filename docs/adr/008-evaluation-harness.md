@@ -106,6 +106,31 @@ does not spend credit and has zero cost despite unknown usage.
 
 ## Deliberate limits
 
+### Retailer-brand holdout addition (extract-v4)
+
+Keep the original five bills as development data and six new synthetic cases in
+`dataset/holdout/holdout_*`, never implicitly mixed by recursive discovery. The
+owner fixed the brand-first rule before holdout authoring; the new bills are not
+used to develop prompts or rules. Labels are authored independently of the PDF
+generator and owner-verified before any live run. The same agent authors both
+PDFs and labels, so independent owner verification is a merge blocker.
+
+If a prompt/rule is changed after inspecting held-out results, record that
+promotion to development data in the holdout README and add fresh held-out bills
+before claiming generalisation. This purpose-built synthetic set is not a blind
+real-world sample. Passing fake checks tests plumbing only.
+
+The loader accepts direct `bill_*` and `holdout_*` children. New summaries and
+reports identify the selected directory with `dataset_name`. This is additive
+display metadata: harness/scoring versions stay at 1 because scoring and the
+existing dev inputs are unchanged. Older v2 baseline summaries without this key
+remain readable, displayed as `legacy (name not recorded)`. Names do not decide
+comparability: differing dev/holdout hash manifests still cause rejection.
+No live evaluation accompanies this addition; preserving the v2 baseline and
+new v4 reports under docs/learning is a separately authorised post-merge step.
+
+### Scope of the original harness
+
 - No new bills, prompt changes, native PDF input, DB/HTTP changes or judge model.
 - No real-world accuracy estimate, confidence interval or significance claim.
 - No privacy-safe real-bill evaluation or signed/tamper-proof artifact store.

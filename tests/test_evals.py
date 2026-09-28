@@ -33,6 +33,7 @@ def metadata(cases, repeats=1, **overrides):
             "reasoning_effort": None, "configured_prompt_version": "fixture-v1",
             "git": {"commit": "code-revision", "dirty": False},
             "dataset_git": {"commit": "dataset-revision", "dirty": False},
+            "dataset_name": "dataset",
             "dataset": manifest(cases), "bill_count": len(cases), "repeats": repeats,
             "planned_attempts": len(cases) * repeats, "price_date": "2026-09-29", **overrides}
 
