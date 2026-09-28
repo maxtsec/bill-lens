@@ -71,7 +71,7 @@ def holdout_001(root):
     amount = charges(c, 270, "180", "0.32", "31", "1.05")
     total(c, 442, amount)
     panel(c, 567, 90, "#EAF3EE")
-    text(c, 54, 592, "Retailer and billing contact", 10, "Helvetica-Bold")
+    text(c, 54, 592, "Billing contact", 10, "Helvetica-Bold")
     text(c, 54, 627, "Quillstone Sample Power", 21, "Helvetica-Bold", "#28664C")
     # A separate footer logo, not the logo-then-name header used by dev bill_003.
     text(c, 438, 731, "QSP", 31, "Helvetica-Bold", "#28664C")
@@ -141,7 +141,6 @@ def holdout_006(root):
     total(c, 518, amount, color="#875027")
     text(c, 54, 681, "Copper Wren Sample Electricity is part of", 10)
     text(c, 54, 703, "Cobalt Loom Sample Group", 12, "Helvetica-Bold")
-    text(c, 54, 728, "Group information only; electricity is supplied by the brand above.", 9)
     c.save()
 
 
