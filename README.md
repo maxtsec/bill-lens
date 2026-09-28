@@ -148,8 +148,10 @@ curl.exe http://127.0.0.1:8000/bills/<bill-id>
 ```
 
 A new upload returns **201**; the same PDF returns **200** with the existing bill
-and run. Concurrent processing of the same hash returns **409 upload_in_progress**
-with `Retry-After: 1`; retry after the first request finishes. A recorded provider
+and run. Simultaneous uploads of the same PDF may both call the extractor, but
+the database UNIQUE constraint keeps one bill/run: the winner returns **201**,
+the loser removes its own file and returns **200** with the winner's result.
+No DB connection is held during extraction. A recorded provider
 failure is also a created bill (`status: failed`), so repeating it does not retry
 the model. PDF validation errors create no records or stored PDFs.
 
@@ -166,8 +168,8 @@ directory with the database when preserving local results.
 Files are limited to **10 MiB** and the whole multipart request to **10 MiB +
 64 KiB**. Actual bytes are counted even without Content-Length. Multipart parsing
 uses temporary files before the sync endpoint runs; accepted PDF bytes are then
-loaded for parsing. See ADR-005 for resource limits, PostgreSQL lock connection
-cost, and the crash window between file rename and DB commit.
+loaded for parsing. See ADR-005 for resource limits, the possible duplicate model
+call cost, and the crash window between file rename and DB commit.
 
 ```powershell
 # API integration tests use the same isolated PostgreSQL schema fixture.

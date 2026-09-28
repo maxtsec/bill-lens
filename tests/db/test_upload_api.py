@@ -1,14 +1,14 @@
 from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 import json
-from threading import Event
+from threading import Barrier, Event
 from typing import get_args
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 import pytest
 from reportlab.lib.pdfencrypt import StandardEncryption
-from sqlalchemy import select, text
+from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session
 
 from bill_lens import pdf_text
@@ -160,45 +160,96 @@ def test_unknown_fixture_and_invalid_requests(client, db_engine, tmp_path):
     assert_empty(db_engine, tmp_path)
 
 
-def test_concurrent_upload_does_not_extract_twice(app, client, db_engine, tmp_path):
-    entered, release = Event(), Event()
+def test_concurrent_identical_uploads_persist_one_result(app, client, db_engine, tmp_path):
+    entered, release = Barrier(3, timeout=10), Event()
     fake = FakeExtractor.from_dataset(ROOT / "dataset")
     calls = []
 
     class BlockingExtractor:
         def extract(self, document):
             calls.append(document.file_sha256)
-            with db_engine.connect() as connection:
-                # The advisory lock session is open, but holds no transaction.
-                assert connection.scalar(text("""SELECT count(*) FROM pg_stat_activity
-                    WHERE datname = current_database() AND pid <> pg_backend_pid()
-                    AND state LIKE 'idle in transaction%'""")) == 0
-            entered.set()
+            entered.wait()
             assert release.wait(10)
             return fake.extract(document)
 
     app.dependency_overrides[get_extractor] = lambda: BlockingExtractor()
-    with ThreadPoolExecutor(max_workers=1) as pool:
-        first = pool.submit(post, client)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(post, client) for _ in range(2)]
         try:
-            assert entered.wait(10)
-            second = post(client)
-            assert second.status_code == 409
-            assert second.json() == {"error": "upload_in_progress"}
-            assert second.headers["Retry-After"] == "1"
+            entered.wait()  # Both requests passed the lookup before either writes.
+            assert db_engine.pool.checkedout() == 0
         finally:
             release.set()
-        assert first.result().status_code == 201
+        responses = [future.result(timeout=10) for future in futures]
+    assert sorted(response.status_code for response in responses) == [200, 201]
+    assert responses[0].json() == responses[1].json()
+    assert all("Retry-After" not in response.headers for response in responses)
+    assert "409" not in app.openapi()["paths"]["/bills"]["post"]["responses"]
     assert post(client).status_code == 200
-    assert len(calls) == 1
+    assert len(calls) == 2
     with Session(db_engine) as session:
-        assert session.scalars(select(Bill)).one()
-        assert session.scalars(select(ExtractionRun)).one()
-    assert len(list(tmp_path.rglob("*.pdf"))) == 1
+        bill = session.scalars(select(Bill)).one()
+        run = session.scalars(select(ExtractionRun)).one()
+        assert run.bill_id == bill.id
+        assert str(bill.id) == responses[0].json()["id"]
+        assert str(run.id) == responses[0].json()["run"]["id"]
+        assert list(tmp_path.rglob("*.pdf")) == [tmp_path / bill.storage_key]
+        assert (tmp_path / bill.storage_key).read_bytes() == (ROOT / "dataset/bill_001/bill.pdf").read_bytes()
+    assert not list(tmp_path.rglob("*.tmp"))
+
+
+@pytest.mark.parametrize("upload_count", [2, 3])
+def test_distinct_uploads_release_connections_during_extraction(upload_count, db_engine, tmp_path):
+    # Reuse the migrated disposable schema, but give the app its own tiny pool.
+    with db_engine.connect() as connection:
+        schema = connection.scalar(text("SELECT current_schema()"))
+    engine = create_engine(
+        db_engine.url, pool_size=2, max_overflow=0, pool_timeout=1,
+        hide_parameters=True,
+        connect_args={"options": f"-csearch_path={schema} -cstatement_timeout=10000 -clock_timeout=5000"},
+    )
+    entered, release = Barrier(upload_count + 1, timeout=10), Event()
+    fake = FakeExtractor.from_dataset(ROOT / "dataset")
+    data = [(ROOT / f"dataset/bill_{i:03}/bill.pdf").read_bytes()
+            for i in range(1, upload_count + 1)]
+
+    class BlockingExtractor:
+        def extract(self, document):
+            entered.wait()
+            assert release.wait(10)
+            return fake.extract(document)
+
+    app = create_app(engine=engine, storage_root=tmp_path, extractor=BlockingExtractor())
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client, ThreadPoolExecutor(upload_count) as pool:
+            futures = [pool.submit(post, client, pdf) for pdf in data]
+            try:
+                entered.wait()  # All distinct uploads must reach extraction together.
+                assert engine.pool.checkedout() == 0
+                # A read must also progress while every extractor is blocked.
+                assert client.get(f"/bills/{uuid4()}").status_code == 404
+            finally:
+                release.set()
+            responses = [future.result(timeout=10) for future in futures]
+        assert [response.status_code for response in responses] == [201] * upload_count
+        assert len({response.json()["id"] for response in responses}) == upload_count
+        assert len({response.json()["run"]["id"] for response in responses}) == upload_count
+        with Session(engine) as session:
+            bills = session.scalars(select(Bill)).all()
+            runs = session.scalars(select(ExtractionRun)).all()
+            assert len(bills) == len(runs) == upload_count
+            assert {run.bill_id for run in runs} == {bill.id for bill in bills}
+            assert {bill.file_sha256 for bill in bills} == {sha256(pdf).hexdigest() for pdf in data}
+            assert set(tmp_path.rglob("*.pdf")) == {tmp_path / bill.storage_key for bill in bills}
+            for bill in bills:
+                assert sha256((tmp_path / bill.storage_key).read_bytes()).hexdigest() == bill.file_sha256
+        assert not list(tmp_path.rglob("*.tmp"))
+    finally:
+        engine.dispose()
 
 
 @pytest.mark.parametrize("failure", ["extractor", "rename", "insert", "commit"])
-def test_failures_clean_files_rows_and_release_lock(failure, app, client, db_engine, tmp_path, monkeypatch):
+def test_failures_clean_files_rows_and_allow_retry(failure, app, client, db_engine, tmp_path, monkeypatch):
     def fail(*args, **kwargs):
         raise RuntimeError("PRIVATE diagnostic")
 
@@ -230,7 +281,7 @@ def test_failures_clean_files_rows_and_release_lock(failure, app, client, db_eng
             if failure == "commit":
                 event.remove(Session, "before_commit", fail_outer_commit)
     assert_empty(db_engine, tmp_path)
-    assert post(client).status_code == 201  # The previous request released its lock.
+    assert post(client).status_code == 201
 
 
 def test_unique_race_with_writer_outside_api_removes_only_loser_file(client, db_engine, tmp_path, monkeypatch):
