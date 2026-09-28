@@ -15,7 +15,9 @@ from bill_lens.api.limits import UploadBodyLimit, read_pdf
 from bill_lens.api.schemas import BillResponse
 from bill_lens.api.service import get_bill, upload_bill
 from bill_lens.db.config import make_engine
-from bill_lens.extraction import BillExtractor, FakeExtractor
+from bill_lens.extraction import BillExtractor
+from bill_lens.extraction.config import configured_extractor
+from bill_lens.extraction.openai_adapter import OpenAIExtractor
 from bill_lens.extraction.fake import UnknownFixture
 from bill_lens.pdf_text import PdfTextError
 
@@ -30,18 +32,26 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
     database = engine if engine is not None else make_engine()
     root = (storage_root if storage_root is not None
             else Path(os.environ.get("BILL_STORAGE_ROOT", "var/uploads"))).resolve()
-    adapter = extractor if extractor is not None else FakeExtractor.from_dataset(
-        Path(os.environ.get("BILL_DATASET_ROOT", "dataset")))
+    try:
+        adapter = extractor if extractor is not None else configured_extractor()
+    except Exception:
+        if owns_engine:
+            database.dispose()
+        raise
 
     @asynccontextmanager
     async def lifespan(app):
         try:
             yield
         finally:
-            if owns_engine:
-                database.dispose()
+            try:
+                if extractor is None and isinstance(adapter, OpenAIExtractor):
+                    adapter.close()
+            finally:
+                if owns_engine:
+                    database.dispose()
 
-    app = FastAPI(title="Bill Lens (local fake)", lifespan=lifespan)
+    app = FastAPI(title="Bill Lens", lifespan=lifespan)
     app.state.extractor = adapter
     app.add_middleware(UploadBodyLimit)
 
