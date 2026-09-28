@@ -13,6 +13,9 @@ ExtractionErrorCode = Literal[
     "rate_limited", "timeout", "refused", "truncated", "invalid_output", "provider_error",
 ]
 
+# Match the signed 64-bit range used to persist attempt metadata.
+MAX_METADATA_INTEGER = 2**63 - 1
+
 
 @dataclass(frozen=True)
 class ExtractionAttempt:
@@ -52,6 +55,8 @@ class ExtractionAttempt:
                 raise TypeError(f"{name} must be an integer")
             if value < 0:
                 raise ValueError(f"{name} must be nonnegative")
+            if value > MAX_METADATA_INTEGER:
+                raise ValueError(f"{name} must be at most {MAX_METADATA_INTEGER}")
 
 
 class BillExtractor(Protocol):

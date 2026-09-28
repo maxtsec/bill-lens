@@ -234,6 +234,25 @@ def test_attempt_rejects_invalid_counts(attempt_args, name, value):
         ExtractionAttempt(**(attempt_args | {name: value}))
 
 
+@pytest.mark.parametrize("name", ["input_tokens", "output_tokens", "latency_ms"])
+@pytest.mark.parametrize("value", [2**63 - 1, 2**63])
+@pytest.mark.parametrize("failed", [False, True])
+def test_attempt_metadata_bigint_boundary(attempt_args, name, value, failed):
+    args = attempt_args | {name: value}
+    if failed:
+        args.update(fields=None, error_code="timeout")
+    helper_args = {key: item for key, item in args.items() if key != "fields"}
+    if value == 2**63:
+        # Both direct construction and the adapter helper reject without a DB.
+        with pytest.raises(ValueError, match=f"{name} must be at most"):
+            ExtractionAttempt(**args)
+        with pytest.raises(ValueError, match=f"{name} must be at most"):
+            build_attempt(**helper_args)
+    else:
+        assert getattr(ExtractionAttempt(**args), name) == value
+        assert getattr(build_attempt(**helper_args), name) == value
+
+
 @pytest.mark.parametrize("overrides", [{"latency_ms": None}, {"raw_response": b"{}"}, {"fields": {}}])
 def test_attempt_rejects_wrong_types(attempt_args, overrides):
     with pytest.raises(TypeError):
