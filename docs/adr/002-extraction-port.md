@@ -74,7 +74,8 @@ provider exception objects or messages.
 
 `ExtractionAttempt.__post_init__` enforces success/failure exclusivity, valid
 error codes, typed fields/raw text, nonblank labels, and nonnegative integer
-counts/latency (booleans are rejected). Both success and `invalid_output` require
+counts/latency (booleans are rejected), capped at `2**63-1` to match persisted
+BIGINT metadata (see ADR-004). Both success and `invalid_output` require
 raw response text. The successful-raw requirement is slightly stronger than the
 minimum task invariants and follows from retaining the text that was validated.
 

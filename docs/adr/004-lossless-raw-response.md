@@ -1,6 +1,6 @@
 # ADR-004: Lossless raw-response storage before the upload API
 
-- Status: Proposed; pending Claude review and owner approval
+- Status: Accepted after Claude review of 8ecba16 and owner approval
 - Scope: Contract validation and persistence of special characters; no HTTP
 - Supersedes: ADR-003's raw-response `text` limitation
 
@@ -21,6 +21,10 @@ The shared extraction gate returns `invalid_output`, no fields, and the exact
 raw response. Do not strip, replace, normalize or invent a null retailer. Accept
 ordinary Unicode including non-BMP characters and combining marks unchanged.
 The generated schema description and extraction-contract document specify this.
+
+M2 evaluation should count how many `invalid_output` results come from whitespace
+controls (such as a newline in a multi-line retailer name) before deciding whether
+to relax this rule; the current outcome remains a failed attempt with raw evidence.
 
 This tightens validation without changing the seven-field JSON shape or its
 version. Previously stored names with other control characters are not rewritten;
@@ -93,10 +97,16 @@ After the fix each commits exactly one Bill and one failed ExtractionRun, with
 Tests cover every Cc code point, surrogate range boundaries, known codec bytes,
 NULL vs empty, provider failures and populated migration/rollback behavior.
 
-This closes the model-output character gap. It does not make storage infallible:
-outages, disk limits, corrupted DB bytes, invalid adapter provenance or metadata
-outside database numeric ranges remain errors. In particular the existing
-rollback test now uses BIGINT overflow to verify a second-insert failure.
+`ExtractionAttempt` limits input/output token counts and latency to `0..2**63-1`,
+matching PostgreSQL BIGINT. Optional token counts may still be None. Values at
+`2**63` are rejected before persistence; tests verify the maximum can be committed
+and reloaded for both successful and failed attempts. These are adapter metadata
+errors (ValueError), not model-output `invalid_output` failures. No clamping occurs.
+
+This closes the model-output character and metadata numeric-range gaps. It does
+not make storage infallible: outages, disk limits, corrupted DB bytes and invalid
+adapter provenance remain errors. The rollback test injects a run-mapping defect
+that violates a real DB CHECK after the bill INSERT to verify atomic rollback.
 HTTP error policy, quotas, provider wire-byte capture and upload handling are
 future work. Phase 2 has not started.
 

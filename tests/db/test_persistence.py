@@ -8,10 +8,11 @@ from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from pydantic import ValidationError
 from sqlalchemy import JSON, bindparam, inspect, null, select, text
-from sqlalchemy.exc import DataError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from bill_lens.db.models import Base, Bill, ExtractionRun
+from bill_lens.db import repository
 from bill_lens.db.repository import BillAlreadyExists, create_bill_with_run, get_bill_by_hash, load_fields, new_storage_key
 from bill_lens.extraction import FakeExtractor, build_attempt
 from bill_lens.pdf_text import extract_pdf_text
@@ -253,13 +254,33 @@ def test_concurrent_duplicate_has_one_winner_and_no_partial_run(db_engine):
         assert connection.scalar(text("SELECT count(*) FROM extraction_runs")) == 1
 
 
-def test_run_failure_rolls_back_bill_and_storage_collision_is_not_duplicate(db_engine):
+@pytest.mark.parametrize("name", ["input_tokens", "output_tokens", "latency_ms"])
+@pytest.mark.parametrize("failed", [False, True])
+def test_metadata_bigint_maximum_survives_commit_and_reload(db_engine, name, failed):
+    args = dict(provider="test", model="m", prompt_version="v",
+                raw_response=golden().raw_response, latency_ms=0,
+                error_code="timeout" if failed else None)
+    attempt = build_attempt(**(args | {name: 2**63 - 1}))
     with Session(db_engine) as session, session.begin():
-        # A run's BIGINT overflow fails after the bill INSERT; its savepoint
-        # must still remove both. NUL raw text is now losslessly supported.
-        attempt = build_attempt(provider="fake", model="m", prompt_version="v", raw_response="reply", error_code="invalid_output", latency_ms=2**63)
-        with pytest.raises(DataError):
-            persist(session, attempt)
+        persist(session, attempt)
+    with Session(db_engine) as session:
+        run = session.scalar(select(ExtractionRun))
+        assert getattr(run, name) == 2**63 - 1
+        assert run.status == ("failed" if failed else "processed")
+
+
+def test_run_failure_rolls_back_bill_and_storage_collision_is_not_duplicate(db_engine, monkeypatch):
+    with Session(db_engine) as session, session.begin():
+        # Inject a mapping defect after attempt validation. A real DB CHECK
+        # rejects the run INSERT after the bill INSERT has already succeeded.
+        def invalid_run(**values):
+            return ExtractionRun(**(values | {"latency_ms": -1}))
+
+        with monkeypatch.context() as patch:
+            patch.setattr(repository, "ExtractionRun", invalid_run)
+            with pytest.raises(IntegrityError) as error:
+                persist(session)
+            assert error.value.orig.diag.constraint_name == "ck_runs_latency"
         assert session.scalar(select(Bill)) is None
         assert session.scalar(select(ExtractionRun)) is None
         first = persist(session)
