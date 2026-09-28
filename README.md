@@ -12,6 +12,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [ADR-003: PostgreSQL persistence model](docs/adr/003-persistence-model.md)
 - [ADR-004: Lossless raw-response storage](docs/adr/004-lossless-raw-response.md)
 - [ADR-005: Upload API, limits and file/DB consistency](docs/adr/005-upload-api.md)
+- [ADR-006: First OpenAI adapter, prompt and opt-in live check](docs/adr/006-first-provider.md)
 
 ## Run locally
 
@@ -44,7 +45,8 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added the provider-independent `BillExtractor` port, recordable `ExtractionAttempt`, one shared raw-response validation helper, and a deterministic `FakeExtractor`. All five PDFs now exercise the pipeline through domain flags without a model or API key. This tests plumbing, not extraction accuracy.
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
 - Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
-- Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake. Real adapters, prompts and retries are deferred.
+- Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake.
+- Added an opt-in OpenAI Responses adapter and versioned prompt, verified with offline stubs. Fake remains the default. Live compatibility and extraction accuracy are unverified; retries and M2 evaluation remain deferred.
 
 ### Exercise the extraction port locally
 
@@ -175,3 +177,61 @@ call cost, and the crash window between file rename and DB commit.
 # API integration tests use the same isolated PostgreSQL schema fixture.
 .\.venv\Scripts\python.exe -m pytest tests/db/test_upload_api.py -q
 ```
+
+### OpenAI adapter (opt-in)
+
+Install the updated requirements first. Keep `BILL_EXTRACTOR=fake` for normal
+development. To opt in, set these in your ignored `.env` (then import it using
+the PowerShell snippet above), or set process environment variables:
+
+```text
+BILL_EXTRACTOR=openai
+OPENAI_MODEL=<chosen-model-id>
+OPENAI_API_KEY=<your-secret-key>
+```
+
+Do not paste the key into chat, commit it, or include it in terminal output.
+Start the same Uvicorn factory command. Startup checks configuration locally;
+**uploading a new PDF in OpenAI mode makes a paid API call**. It sends extracted
+page text, not the original PDF. There are no SDK retries, the HTTP timeout is
+60 seconds, and the output cap is 4096 tokens (including reasoning). Success,
+refusal, truncation and provider failures follow the existing persistence path.
+See ADR-006 for exact error mapping and raw-response handling.
+
+Existing hashes return the stored result even after switching provider/model.
+Use a separate local database/storage pair to exercise the HTTP path afresh;
+changing the provider is not a re-extraction operation. The smoke script below
+does not use the database and can check all five PDFs independently.
+
+### Manual live smoke check (spends credit)
+
+Only run after explicitly deciding to spend API credit. Set OPENAI_API_KEY
+privately first. The command runs **both** a small and mid-tier baseline over all
+five golden PDFs (10 calls, no retries). It requires both environment gates:
+
+```powershell
+$env:BILL_LENS_LIVE = "1"
+try {
+    .\.venv\Scripts\python.exe -m scripts.live_openai_check --models gpt-5.4-mini gpt-5.4
+} finally {
+    Remove-Item Env:BILL_LENS_LIVE -ErrorAction SilentlyContinue
+}
+```
+
+It prints per-bill status/error/flags, field-match booleans, model names, token
+usage and latency, followed by known token totals and estimated USD cost using
+the dated [ADR-006 price table](docs/adr/006-first-provider.md). Cached savings
+are excluded; missing usage makes the full estimate unknown. It prints no raw
+response or document text and saves nothing automatically. These five synthetic
+bills provide a smoke check, not a reliable accuracy benchmark.
+
+**No live API call was made in CI/tests.** The default suite clears API credentials
+and live flags and blocks real HTTP transports, even if your shell has a key:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\pytest.exe -q
+```
+
+OpenAI was selected because the owner has API credit; no measured provider
+comparison has been performed. The first live check remains an owner-run step.
