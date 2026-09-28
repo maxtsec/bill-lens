@@ -2,7 +2,7 @@
 
 Bill Lens is a portfolio project for turning Victorian household electricity bill PDFs into structured, explainable, and verifiable data. The engineering rule is to use an LLM where a document is ambiguous and deterministic Python code for calculations, units, and validation.
 
-**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. M1 starts with a reusable PDF text boundary and schema descriptions. The upload-to-JSON application and measured LLM extraction accuracy are still pending.
+**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. The local upload-to-JSON API now uses a fixture-backed fake and PostgreSQL. Real model extraction and measured accuracy are still pending.
 
 - [Initial extraction contract](docs/extraction-contract.md)
 - [Five-bill synthetic dataset and review checklist](dataset/README.md)
@@ -11,6 +11,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [ADR-002: Extraction port and deterministic fake](docs/adr/002-extraction-port.md)
 - [ADR-003: PostgreSQL persistence model](docs/adr/003-persistence-model.md)
 - [ADR-004: Lossless raw-response storage](docs/adr/004-lossless-raw-response.md)
+- [ADR-005: Upload API, limits and file/DB consistency](docs/adr/005-upload-api.md)
 
 ## Run locally
 
@@ -43,7 +44,7 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added the provider-independent `BillExtractor` port, recordable `ExtractionAttempt`, one shared raw-response validation helper, and a deterministic `FakeExtractor`. All five PDFs now exercise the pipeline through domain flags without a model or API key. This tests plumbing, not extraction accuracy.
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
 - Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
-- Next, **after Phase 1 is reviewed and merged**: Phase 2 upload and JSON response path using the fake. Real adapters, prompts and retries are deferred.
+- Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake. Real adapters, prompts and retries are deferred.
 
 ### Exercise the extraction port locally
 
@@ -120,10 +121,55 @@ ORM/migration drift. No test uses `metadata.create_all`.
 
 The persistence helper flushes within a SAVEPOINT and the caller commits the
 outer transaction. See ADR-003 for the transaction pattern and duplicate outcome.
-No upload endpoint, file writing or HTTP application is included in Phase 1.
+Phase 2 connects that helper to HTTP and local PDF storage as described below.
 
 Migration `0002` converts raw responses from text to BYTEA (UTF-8 with
 `surrogatepass`); ORM callers still read/write `str | None`. Stop application
 processes before applying it. Existing text and NULL values are preserved.
 A downgrade to `0001` aborts without deleting evidence if NUL/surrogate data
 cannot fit the old text column. See ADR-004 for decoding and rollback details.
+
+### Upload API (local fake)
+
+Install the updated requirements, import `.env` as above, start PostgreSQL and
+run `alembic upgrade head` before starting the app. From the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn bill_lens.api.app:create_app --factory --host 127.0.0.1 --port 8000
+```
+
+Open [the interactive API docs](http://127.0.0.1:8000/docs) and upload a golden PDF,
+or in a second PowerShell terminal:
+
+```powershell
+curl.exe -i -F "file=@dataset/bill_001/bill.pdf" http://127.0.0.1:8000/bills
+# Use the id returned above:
+curl.exe http://127.0.0.1:8000/bills/<bill-id>
+```
+
+A new upload returns **201**; the same PDF returns **200** with the existing bill
+and run. Concurrent processing of the same hash returns **409 upload_in_progress**
+with `Retry-After: 1`; retry after the first request finishes. A recorded provider
+failure is also a created bill (`status: failed`), so repeating it does not retry
+the model. PDF validation errors create no records or stored PDFs.
+
+The default fake only recognises the five exact dataset PDFs. Another valid PDF
+returns **422 unsupported_fixture**. This tests the application flow, not model
+accuracy. No API key is needed. Responses include fields, flags, derived values
+and run metadata; raw model text and local storage keys are not exposed.
+
+`BILL_STORAGE_ROOT` defaults to ignored `var/uploads`; `BILL_DATASET_ROOT` defaults
+to `dataset`. Both resolve from the working directory. Filenames are generated
+by the server; the original upload filename is never stored. Keep the storage
+directory with the database when preserving local results.
+
+Files are limited to **10 MiB** and the whole multipart request to **10 MiB +
+64 KiB**. Actual bytes are counted even without Content-Length. Multipart parsing
+uses temporary files before the sync endpoint runs; accepted PDF bytes are then
+loaded for parsing. See ADR-005 for resource limits, PostgreSQL lock connection
+cost, and the crash window between file rename and DB commit.
+
+```powershell
+# API integration tests use the same isolated PostgreSQL schema fixture.
+.\.venv\Scripts\python.exe -m pytest tests/db/test_upload_api.py -q
+```

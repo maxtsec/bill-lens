@@ -141,6 +141,9 @@ Add static type checking when adapters are introduced: the current test's
 protocol check alone would not verify method signatures or return types. Before
 exposing the fake through HTTP, decide how dev mode reports an unknown fixture
 hash so an expected unsupported upload does not become an unexplained HTTP 500.
+Resolved in ADR-005: `UnknownFixture` remains a `KeyError` for direct callers;
+the local HTTP API maps that specific exception to 422 `unsupported_fixture`
+without storing a bill or fabricated attempt.
 The contract currently gives `stated_billing_days` a positive lower bound only.
 Revisit a realistic upper bound with billing-period evidence before changing the
 contract; an arbitrary 366-day cap could reject legitimate longer adjustments.
