@@ -7,10 +7,10 @@ there are no customer or contact details. Every PDF is marked
 placeholders, not real identifiers. A small explicit real-name deny-list is a
 regression guard, not a comprehensive registry of all organisations.
 
-**Status: owner (maxtsec) verification on 2026-09-29 remains valid for
-holdout_002 through holdout_005. The revised holdout_001 and holdout_006 PDFs
-require owner re-verification against all seven fields, supply unit/GST basis,
-flags and status.
+**Status: owner (maxtsec) verified holdout_002 through holdout_005 on
+2026-09-29, and re-verified the revised holdout_001 and holdout_006 PDFs on
+2026-09-29 after the answer-hint removal. Owner verification of all six PDFs is
+complete.
 No live evaluation has been run on this set; live use still requires separate
 explicit owner authorisation after PR review and merge.**
 
@@ -96,9 +96,9 @@ Check the PDF visually against all seven labelled fields, supply unit/GST basis,
 expected flags and status. Do not approve on passing tests alone. Record reviewer
 and date after verification; later PDF/label edits invalidate the affected review.
 
-- [ ] Owner re-verifies holdout_001 after the contact-label edit: all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29, re-verified after the contact-label edit: holdout_001 all seven fields, supply unit/GST basis, flags and status match the PDF.
 - [x] Owner (maxtsec), 2026-09-29: holdout_002 all seven fields, supply unit/GST basis, flags and status match the PDF.
 - [x] Owner (maxtsec), 2026-09-29: holdout_003 all seven fields, supply unit/GST basis, flags and status match the PDF.
 - [x] Owner (maxtsec), 2026-09-29: holdout_004 all seven fields, supply unit/GST basis, flags and status match the PDF.
 - [x] Owner (maxtsec), 2026-09-29: holdout_005 all seven fields, supply unit/GST basis, flags and status match the PDF.
-- [ ] Owner re-verifies holdout_006 after the hint removal: all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29, re-verified after the hint removal: holdout_006 all seven fields, supply unit/GST basis, flags and status match the PDF.
