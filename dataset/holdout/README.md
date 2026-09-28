@@ -7,9 +7,10 @@ there are no customer or contact details. Every PDF is marked
 placeholders, not real identifiers. A small explicit real-name deny-list is a
 regression guard, not a comprehensive registry of all organisations.
 
-**Status: owner verified holdout_001; holdout_002-006 remain pending.
-No live evaluation has been run on this set. Do not merge or run it live until
-the owner has checked every PDF against all seven fields, flags and status.**
+**Status: owner (maxtsec) verified all six PDFs against all seven fields, supply
+unit/GST basis, flags and status on 2026-09-29. Owner verification is complete.
+No live evaluation has been run on this set; live use still requires separate
+explicit owner authorisation after PR review and merge.**
 
 ## Holdout discipline
 
@@ -87,8 +88,8 @@ expected flags and status. Do not approve on passing tests alone. Record reviewe
 and date after verification; later PDF/label edits invalidate the affected review.
 
 - [x] Owner (maxtsec), 2026-09-29: holdout_001 all seven fields, supply unit/GST basis, flags and status match the PDF.
-- [ ] Owner verifies holdout_002: all fields, flags and status.
-- [ ] Owner verifies holdout_003: all fields, flags and status.
-- [ ] Owner verifies holdout_004: all fields, flags and status.
-- [ ] Owner verifies holdout_005: all fields, flags and status.
-- [ ] Owner verifies holdout_006: all fields, flags and status.
+- [x] Owner (maxtsec), 2026-09-29: holdout_002 all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29: holdout_003 all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29: holdout_004 all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29: holdout_005 all seven fields, supply unit/GST basis, flags and status match the PDF.
+- [x] Owner (maxtsec), 2026-09-29: holdout_006 all seven fields, supply unit/GST basis, flags and status match the PDF.
