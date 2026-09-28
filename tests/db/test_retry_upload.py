@@ -427,7 +427,7 @@ def test_configured_openai_upload_recovers_using_mock_transport(initial_status, 
         assert second.status_code == (200 if initial_status == 429 else 201)
         body = second.json()
         assert body["status"] == "processed" and body["run"]["provider"] == "openai"
-        assert body["run"]["model"] == "resolved-model" and body["run"]["prompt_version"] == "extract-v2"
+        assert body["run"]["model"] == "resolved-model" and body["run"]["prompt_version"] == "extract-v3"
         assert client.get(second.headers["Location"]).json() == body
         assert post(client).json() == body and len(calls) == 2
     assert clients[0].is_closed()

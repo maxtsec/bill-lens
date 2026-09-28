@@ -210,7 +210,12 @@ The app closes its client on shutdown. Standalone configured_extractor() callers
 must call close() themselves.
 The adapter sends extracted page text, not the original PDF. SDK retries are zero,
 HTTP timeout is 60 seconds, reasoning effort is explicitly `low`, and the output
-cap is 4096 tokens including reasoning. `extract-v2` identifies this fixed profile.
+cap is 4096 tokens including reasoning. `extract-v3` retains these execution
+settings and clarifies [retailer name selection](docs/extraction-contract.md#retailer):
+prefer the printed full name over a brand abbreviation only when both clearly
+identify the same retailer. A sole unambiguous abbreviation is kept as printed.
+Existing dataset labels and scoring rules are unchanged; improved model accuracy
+has not yet been established by a live evaluation of v3.
 Authentication, permission, missing model and schema/parameter rejections raise a
 safe `OpenAIConfigurationError`; document-specific context/content rejections
 remain failed attempts. HTTP maps raised errors to safe 500 internal_error,
