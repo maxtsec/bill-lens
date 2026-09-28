@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 
 from bill_lens.contract import ExpectedLabel, ExtractionFields
-from bill_lens.extraction.openai_adapter import OpenAIExtractor
+from bill_lens.extraction.openai_adapter import OpenAIExtractor, REASONING_EFFORT
 from bill_lens.pdf_text import extract_pdf_text
 from bill_lens.validation import derive_flags, derive_status, supply_rate_aud
 
@@ -82,6 +82,7 @@ def main(argv=None) -> int:
                 print(json.dumps({
                     "bill": name, "requested_model": model, "model": attempt.model,
                     "prompt_version": attempt.prompt_version,
+                    "reasoning_effort": REASONING_EFFORT,
                     "status": derive_status(flags) if attempt.fields else "failed",
                     "error_code": attempt.error_code, "flags": sorted(flags),
                     "field_matches": field_matches(attempt.fields, label.fields),
