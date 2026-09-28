@@ -14,6 +14,8 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [ADR-005: Upload API, limits and file/DB consistency](docs/adr/005-upload-api.md)
 - [ADR-006: First OpenAI adapter, prompt and opt-in live check](docs/adr/006-first-provider.md)
 - [ADR-007: Retry failed re-uploads and current-run selection](docs/adr/007-retry-failed-reupload.md)
+- [M2 evaluation harness: runs, scoring and comparisons](evals/README.md)
+- [ADR-008: Deterministic evaluation and file-based results](docs/adr/008-evaluation-harness.md)
 
 ## Run locally
 
@@ -253,3 +255,20 @@ and live flags and blocks real HTTP transports, even if your shell has a key:
 OpenAI was selected because the owner has API credit; no measured provider
 comparison over real bills has been performed. Live checks remain explicitly
 authorised owner-run steps; ordinary tests do not spend credit.
+
+## M2 evaluation (offline first)
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run --extractor fake --repeats 3
+.\.venv\Scripts\python.exe -m evals.compare evals/results/<run-a> evals/results/<run-b>
+```
+
+The harness records attempts, summaries and reports with per-field outcome counts,
+review decisions, per-bill correctness across repeats, input hashes and provenance.
+Fake answers come from labels: a perfect fake score is a harness sanity check,
+not model accuracy. The existing live smoke script now shares the same scoring.
+Results are git-ignored and include raw model output for this synthetic dataset;
+do not use real bills without revisiting privacy and retention. See the
+[evaluation guide](evals/README.md) for opt-in live gates, cost assumptions,
+comparability rules and the limits of five synthetic bills. No live evaluation
+is part of ordinary tests or this implementation.

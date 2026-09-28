@@ -5,47 +5,13 @@ from decimal import Decimal
 import json
 import os
 from pathlib import Path
-import re
 
-from bill_lens.contract import ExpectedLabel, ExtractionFields
+from bill_lens.contract import ExpectedLabel
 from bill_lens.extraction.openai_adapter import OpenAIExtractor, REASONING_EFFORT
 from bill_lens.pdf_text import extract_pdf_text
-from bill_lens.validation import derive_flags, derive_status, supply_rate_aud
-
-PRICE_DATE = "2026-09-29"
-# USD per million uncached input / output tokens, standard processing <=272k input.
-# Sources and estimation limitations are documented in ADR-006.
-PRICES = {"gpt-5.4-mini": (Decimal("0.75"), Decimal("4.50")),
-          "gpt-5.4": (Decimal("2.50"), Decimal("15.00"))}
-
-
-def field_matches(actual: ExtractionFields | None, expected: ExtractionFields) -> dict[str, bool]:
-    result = {}
-    for name in ExtractionFields.model_fields:
-        if actual is None:
-            result[name] = False
-            continue
-        left, right = getattr(actual, name), getattr(expected, name)
-        if left is None or right is None:
-            result[name] = left is right
-        elif name == "retailer":
-            result[name] = " ".join(left.casefold().split()) == " ".join(right.casefold().split())
-        elif name in {"total_usage_kwh", "current_bill_amount"}:
-            result[name] = Decimal(left) == Decimal(right)
-        elif name == "daily_supply_rate":
-            result[name] = supply_rate_aud(left) == supply_rate_aud(right) and left.gst_basis == right.gst_basis
-        else:
-            result[name] = left == right
-    return result
-
-
-def estimate_cost(requested: str, resolved: str, input_tokens: int | None,
-                  output_tokens: int | None) -> Decimal | None:
-    if (input_tokens is None or output_tokens is None or input_tokens > 272_000
-            or re.fullmatch(re.escape(requested) + r"(?:-\d{4}-\d{2}-\d{2})?", resolved) is None):
-        return None
-    input_price, output_price = PRICES[requested]
-    return (input_price * input_tokens + output_price * output_tokens) / Decimal(1_000_000)
+from bill_lens.validation import derive_flags, derive_status
+from evals.pricing import PRICE_DATE, PRICES, estimate_cost
+from evals.scoring import field_matches
 
 
 def main(argv=None) -> int:
