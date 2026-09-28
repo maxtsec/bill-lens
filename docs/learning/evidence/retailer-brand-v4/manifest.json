@@ -3,9 +3,11 @@
   "run_ids": {
     "v2-dev": "20260928T212834Z-11548f32c4b3",
     "v4-dev": "20260928T224629Z-d833f7fb2248",
-    "v4-holdout": "20260928T224659Z-206893300747"
+    "v4-holdout": "20260928T224659Z-206893300747",
+    "v2-bill-002-repeat": "20260928T232541Z-2b18b62e60bf",
+    "v4-bill-002-repeat": "20260928T232646Z-90f79aa5b450"
   },
-  "new_authorised_calls": 33,
+  "new_authorised_calls": 73,
   "historical_baseline_calls": 15,
   "artifact_hashes": {
     "v2-dev/attempts.jsonl": {
@@ -47,6 +49,64 @@
     "v2-vs-v4-dev.md": {
       "sha256": "57c6b88e44778d50695bacb293be7321bafb2bf82fe320e1916c7653e3b00438",
       "bytes": 8640
+    },
+    "v2-bill-002-repeat/attempts.jsonl": {
+      "sha256": "bc0df22a9a390ed30013b421fc418f794053ba3b0afa8b65be0ad11af4e8a208",
+      "bytes": 39200
+    },
+    "v2-bill-002-repeat/summary.json": {
+      "sha256": "7b39e5ff01ed7c80e4f82064cbfede58e9d092e2cf877202f2dff2ea4a962142",
+      "bytes": 11562
+    },
+    "v2-bill-002-repeat/report.md": {
+      "sha256": "c65044eaffdc2f1cc788258b62ad78d325268945fbcdfa9df1cf805d0e7d4221",
+      "bytes": 2465
+    },
+    "v4-bill-002-repeat/attempts.jsonl": {
+      "sha256": "fe484e753585c94d2444d667ad93541bc4c69b49b4b2e2c651c0f7e53180471c",
+      "bytes": 39184
+    },
+    "v4-bill-002-repeat/summary.json": {
+      "sha256": "41e048ff1beef8607bcffb08413df1f6d190a0e0bb7bc489056f59f2f9392051",
+      "bytes": 11598
+    },
+    "v4-bill-002-repeat/report.md": {
+      "sha256": "cdd803f860aec57a8219492de517865d44294ce5ca34c87054ec70f868c64b93",
+      "bytes": 2480
+    },
+    "v2-vs-v4-bill-002-repeat.md": {
+      "sha256": "e7c3b45f10adf9d56d28721ab90e5f08d30ce19863b13e4a72415c2e57aaa9a0",
+      "bytes": 3719
+    },
+    "repeat-study-budget.json": {
+      "sha256": "542a7e9c3d1eeeeef32baa1b0f3df9151f847b1d07e97f0f66dc586bcd13a7a7",
+      "bytes": 14510
+    },
+    "repeat-study-statistics.json": {
+      "sha256": "eaa16760536bf0e532e4a2de2eae4e6a67f0380dfe33b826fe7f7a276b4a9ad7",
+      "bytes": 1698
+    },
+    "repeat-study-pip-freeze.txt": {
+      "sha256": "f51f7198361a272ce01bb10e201a8695ce304bc754b5ac3c95d33d954ed6fd5f",
+      "bytes": 844
+    },
+    "repeat-study-method.md": {
+      "sha256": "99d738d5eb3b89dfd40b322d95958baa1235da9a00b2df85f21225aaffbceabd",
+      "bytes": 5063
     }
-  }
+  },
+  "total_preserved_calls": 88,
+  "authorisation_batches": [
+    {
+      "scope": "first v4 dev and holdout",
+      "calls": 33,
+      "estimated_cost_usd": "0.06155025"
+    },
+    {
+      "scope": "bill_002 only, v2 20 plus v4 20",
+      "calls": 40,
+      "budget_usd": "0.20",
+      "estimated_cost_usd": "0.0896070"
+    }
+  ]
 }
