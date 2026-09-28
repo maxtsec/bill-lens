@@ -255,9 +255,9 @@ def test_concurrent_duplicate_has_one_winner_and_no_partial_run(db_engine):
 
 def test_run_failure_rolls_back_bill_and_storage_collision_is_not_duplicate(db_engine):
     with Session(db_engine) as session, session.begin():
-        # PostgreSQL text cannot store NUL. The first bill INSERT succeeds,
-        # but its run fails; the savepoint must remove that bill as well.
-        attempt = build_attempt(provider="fake", model="m", prompt_version="v", raw_response="bad\x00reply", error_code="invalid_output", latency_ms=0)
+        # A run's BIGINT overflow fails after the bill INSERT; its savepoint
+        # must still remove both. NUL raw text is now losslessly supported.
+        attempt = build_attempt(provider="fake", model="m", prompt_version="v", raw_response="reply", error_code="invalid_output", latency_ms=2**63)
         with pytest.raises(DataError):
             persist(session, attempt)
         assert session.scalar(select(Bill)) is None

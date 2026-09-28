@@ -1,6 +1,7 @@
 """Validate the M0 wire format without inferring missing source values."""
 
 import re
+import unicodedata
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -76,7 +77,8 @@ class ExtractionFields(ContractModel):
     retailer: StrictStr | None = Field(description=(
         "Electricity retailer as displayed to the customer. Preserve its name and "
         "legal suffix; do not substitute a distributor, parent company or guessed alias. "
-        "Use null if missing or ambiguous."
+        "Use null if missing or ambiguous. Control characters (Unicode Cc) and "
+        "surrogate code points (Cs) are invalid; never include them in a name."
     ))
     period_start: ISODate | None = Field(description=(
         "First inclusive date of the electricity service period, as YYYY-MM-DD. "
@@ -123,6 +125,8 @@ class ExtractionFields(ContractModel):
     @field_validator("retailer")
     @classmethod
     def retailer_not_blank(cls, value: str | None) -> str | None:
+        if value is not None and any(unicodedata.category(char) in {"Cc", "Cs"} for char in value):
+            raise ValueError("retailer must not contain control characters or surrogate code points")
         if value is not None and not value.strip():
             raise ValueError("use null for an unidentified retailer")
         return value

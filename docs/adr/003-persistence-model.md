@@ -115,9 +115,10 @@ named constraint coverage and timestamp behavior are verified separately.
 - Raw responses can contain personal data or malicious text. They remain internal
   data; production retention/access policies are still needed. SQLAlchemy hides
   bound parameters in its errors, but callers must not log raw DB exceptions.
-- PostgreSQL text/JSONB cannot store NUL or malformed Unicode. Such persistence
-  errors roll back the whole operation; no silent raw-response sanitization is
-  performed. An API policy for these failures belongs in the upload milestone.
+- The initial schema used PostgreSQL text for raw responses, which could not
+  store NUL or malformed Unicode. [ADR-004](004-lossless-raw-response.md) describes
+  migration 0002 to lossless BYTEA storage and rejection of control characters
+  in extracted retailer names before the upload API is added.
 
 ## When we will revisit
 
