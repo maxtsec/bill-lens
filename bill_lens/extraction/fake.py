@@ -20,6 +20,10 @@ class ScriptedResponse:
     latency_ms: int = 0
 
 
+class UnknownFixture(KeyError):
+    """No scripted outcome; HTTP dev mode can distinguish this from a code bug."""
+
+
 class FakeExtractor:
     provider = "fake"
     model = "fake-v1"
@@ -58,7 +62,7 @@ class FakeExtractor:
             raise TypeError("document must be PdfText")
         response = self._responses.get(document.file_sha256)
         if response is None:
-            raise KeyError("no scripted outcome for document hash")
+            raise UnknownFixture("no scripted outcome for document hash")
         return build_attempt(
             provider=self.provider, model=self.model, prompt_version=self.prompt_version,
             raw_response=response.raw_response, error_code=response.error_code,
