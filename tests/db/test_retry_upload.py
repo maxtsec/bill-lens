@@ -1,7 +1,9 @@
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from hashlib import sha256
 import json
-from threading import Barrier, Event, Lock
+from threading import Barrier, Event, Lock, local
+from time import monotonic
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 import httpx2
@@ -13,9 +15,12 @@ from sqlalchemy.orm import Session
 from bill_lens.api import service
 from bill_lens.api.app import create_app, get_extractor
 from bill_lens.contract import ExpectedLabel
+from bill_lens.db import repository
 from bill_lens.db.models import Bill, ExtractionRun
 from bill_lens.extraction import FakeExtractor, ScriptedResponse
 from bill_lens.extraction.openai_adapter import OpenAIConfigurationError
+from bill_lens.pdf_text import extract_pdf_text
+from bill_lens.validation import derive_flags, derive_status
 from tests.helpers import ROOT
 
 pytestmark = pytest.mark.db
@@ -314,6 +319,76 @@ def test_simultaneous_retry_appends_serialize_status_updates(api, db_engine, tmp
         runs = session.scalars(select(ExtractionRun)).all()
         assert len(runs) == 3 and sum(run.error_code is None for run in runs) == 1
     assert len(calls) == 2 and len(list(tmp_path.rglob("*.pdf"))) == 1
+
+
+def test_row_lock_blocks_success_until_failed_status_update_commits(api, db_engine, monkeypatch):
+    app, client = api
+    app.dependency_overrides[get_extractor] = lambda: failed(pdf())
+    original = post(client).json()
+    bill_id = UUID(original["id"])
+    document = extract_pdf_text(pdf())
+    failure = failed(pdf(), "timeout").extract(document)
+    success = app.state.extractor.extract(document)
+    paused, release, success_started = Event(), Event(), Event()
+    role, backend_pids = local(), {}
+    real_update = repository.update
+
+    def pause_failed_update(*args, **kwargs):
+        # This call is AFTER current_run_statement was evaluated but BEFORE the
+        # Bill UPDATE. Without the row lock, its selected status can go stale.
+        if getattr(role, "name", None) == "failure":
+            paused.set()
+            assert release.wait(15), "test did not release the failed append"
+        return real_update(*args, **kwargs)
+
+    monkeypatch.setattr(repository, "update", pause_failed_update)
+
+    def append(name, attempt):
+        role.name = name
+        flags = derive_flags(attempt.fields) if attempt.fields else set()
+        with Session(db_engine) as session, session.begin():
+            backend_pids[name] = session.scalar(text("SELECT pg_backend_pid()"))
+            if name == "success":
+                success_started.set()
+            repository.append_extraction_run(
+                session, bill_id=bill_id, attempt=attempt, flags=flags,
+                status=derive_status(flags) if attempt.fields else "failed",
+            )
+
+    with ThreadPoolExecutor(2) as pool:
+        failed_future = pool.submit(append, "failure", failure)
+        try:
+            assert paused.wait(5), "failed append never reached the pre-UPDATE gate"
+            success_future = pool.submit(append, "success", success)
+            assert success_started.wait(5), "successful append never reached PostgreSQL"
+            blocked = False
+            deadline = monotonic() + 4
+            with db_engine.connect() as observer:
+                while not success_future.done():
+                    blocked = observer.scalar(text(
+                        "SELECT :holder = ANY(pg_blocking_pids(:waiter))"
+                    ), {"holder": backend_pids["failure"], "waiter": backend_pids["success"]})
+                    if blocked or monotonic() >= deadline:
+                        break
+                    # Bounded polling, not a fixed sleep used to infer blocking.
+                    release.wait(0.01)
+            finished_while_paused = success_future.done()
+        finally:
+            release.set()  # Always unblock workers, including assertion failures.
+        failed_future.result(timeout=10)
+        success_future.result(timeout=10)
+
+    with Session(db_engine) as session:
+        bill = session.get(Bill, bill_id)
+        current = session.scalars(repository.current_run_statement(bill_id)).one()
+        observed = (blocked, finished_while_paused, bill.processing_status, current.status)
+        assert observed == (True, False, "processed", "processed"), (
+            "expected success to wait for failure's lock and leave consistent status; "
+            f"got (blocked, finished_while_paused, bill_status, current_status)={observed}"
+        )
+        runs = session.scalars(select(ExtractionRun).where(ExtractionRun.bill_id == bill_id)).all()
+        assert len(runs) == 3 and sum(run.error_code is None for run in runs) == 1
+        assert client.get(f"/bills/{bill_id}").json()["run"]["id"] == str(current.id)
 
 
 @pytest.mark.parametrize("initial_status", [429, 401])

@@ -1,6 +1,6 @@
 # ADR-007: Retry failed uploads while preserving extraction history
 
-Status: Proposed (owner selected option A; implementation awaiting review)
+Status: Accepted (owner selected option A and requested acceptance after PR #9 review)
 
 ## Context
 
@@ -73,6 +73,15 @@ The late failure cannot make the current result failed. Two validated concurrent
 results are ordered by their append transaction, not request arrival or model
 completion time. Each response represents the current run at its transaction;
 a later successful commit can legitimately change a later GET.
+
+The row lock also protects the interval between selecting current run and
+updating Bill status. Without it, a failed append could select failed, pause,
+then overwrite status after a successful append commits. The regression test
+pauses precisely before the failed UPDATE, observes the successful backend
+waiting on it via pg_blocking_pids(), and verifies both final statuses are
+processed. Mutation verification removed with_for_update(): the successful
+append finished while failure was paused, leaving Bill status failed but current
+run processed, and the regression test failed. Restoring the lock passes.
 
 PostgreSQL now() records transaction start time, so it is unsuitable for ordering
 writers that waited for a row lock. Under the lock, a new run receives the greater
