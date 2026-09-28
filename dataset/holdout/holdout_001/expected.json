@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Quillstone Sample Power",
+    "period_start": "2026-01-01",
+    "period_end": "2026-01-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "180",
+    "daily_supply_rate": {"value": "1.05", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "90.15"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

@@ -2,7 +2,7 @@
 
 Ask whether a prompt/model/extraction change improves measured outcomes on the
 same labelled inputs. Scores are deterministic Python comparisons, never an LLM
-judge. Results from five synthetic bills are descriptive; they do not establish
+judge. Results from the five dev or six holdout synthetic bills are descriptive; they do not establish
 real-world accuracy or statistical significance.
 
 ## Run offline
@@ -16,9 +16,19 @@ From the repository root in the existing development environment:
 The default output is a new, unique `evals/results/<UTC-time>-<random-id>/`
 directory. It is git-ignored and excluded from package discovery. `--output`
 selects another **new** directory; existing paths are refused, never overwritten.
-`--dataset` selects a directory with `bill_*/bill.pdf` and `expected.json` pairs.
+`--dataset` selects a directory with direct `bill_*/bill.pdf` or
+`holdout_*/bill.pdf` and `expected.json` pairs. Discovery is not recursive.
 The default is this repository's dataset. All PDF/label bytes are loaded,
 validated and hashed before any provider call; duplicate PDF hashes are rejected.
+
+Use `--dataset dataset/holdout` for the separate six-case retailer-brand holdout
+(fake or, after authorisation, OpenAI mode). Summary/report headers identify the
+directory as `dataset_name`: `dataset` for dev and `holdout` for the new set.
+Old artifacts without it display `legacy (name not recorded)`; input hashes still
+control comparability. Dev and holdout runs cannot be directly compared.
+See [holdout discipline and owner checklist](../dataset/holdout/README.md): labels
+must be owner-verified before a live run, and cases used to revise a prompt after
+seeing results must become development data and be replaced by fresh holdouts.
 
 The production path is `extract_pdf_text` → `BillExtractor.extract` (the adapter
 calls `build_attempt`) → `derive_flags`/`derive_status`. Evaluation introduces no
@@ -173,9 +183,9 @@ are intentional comparison dimensions; dirty/missing code provenance produces a
 loud warning. Inputs are local run summaries, not signed evidence: do not edit
 artifacts and then treat them as original measurements.
 
-The `extract-v3` retailer clarification changes the prompt and retailer schema
-description, but keeps dataset bytes and scoring semantics unchanged. Preserve
-the original v2 run; compare a separately authorised v3 run with the same model,
+The `extract-v4` brand-first clarification changes the prompt and retailer schema
+description, but keeps existing dev dataset bytes and scoring semantics unchanged. Preserve
+the original v2 run; compare a separately authorised v4 dev run with the same model,
 effort and repeats. The header will warn about both prompt and code changing:
 review that code diff when interpreting results. Do not claim that offline
 request tests prove improved extraction accuracy. To reproduce v2, use its

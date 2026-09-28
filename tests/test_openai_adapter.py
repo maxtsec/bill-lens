@@ -61,7 +61,7 @@ def test_success_preserves_raw_text_and_metadata(case):
     attempt = adapter(stub).extract(extract_pdf_text((ROOT / "dataset" / case / "bill.pdf").read_bytes()))
     assert attempt.fields == label.fields and attempt.error_code is None
     assert attempt.raw_response == raw
-    assert (attempt.provider, attempt.model, attempt.prompt_version) == ("openai", "model-snapshot", "extract-v3")
+    assert (attempt.provider, attempt.model, attempt.prompt_version) == ("openai", "model-snapshot", "extract-v4")
     assert (attempt.input_tokens, attempt.output_tokens, attempt.latency_ms) == (100, 30, 123)
     assert len(stub.calls) == 1
     request = stub.calls[0]
@@ -98,7 +98,7 @@ def test_sdk_errors_are_safe_attempts(error, code, caplog):
     attempt = adapter(stub).extract(DOCUMENT)
     assert attempt.error_code == code and attempt.raw_response is None and attempt.fields is None
     assert attempt.model == "requested-alias"
-    assert attempt.prompt_version == "extract-v3"
+    assert attempt.prompt_version == "extract-v4"
     assert attempt.input_tokens is None and attempt.output_tokens is None and attempt.latency_ms == 123
     assert "PRIVATE" not in repr(attempt) and "PRIVATE" not in caplog.text
     assert len(stub.calls) == 1
@@ -208,6 +208,7 @@ def test_document_marker_is_regenerated_on_source_collision(monkeypatch):
     (1, "d943dcf8a9edbe3376d54eca893904f6ca00510964b63db4caebb7dfec75601c"),
     (2, "ffa5eefc3c74c2cb678ea91a41cdf7a64796bb0e2f04416b7a4811b1e526493b"),
     (3, "49f17b7f3292e60e419f3ba1bdcd0b21eb00dbee32b22d91fdf8ef3313bf4bad"),
+    (4, "3c6762fc560688769faa74c2866b719beeccf047986f3765929873e0a575a02a"),
 ])
 def test_published_prompt_versions_are_immutable(version, digest):
     # Canonical LF text, as loaded by the adapter, also works with CRLF checkouts.
@@ -228,22 +229,25 @@ def test_schema_preserves_contract_constraints_and_descriptions():
     assert all(value.get("description") for value in schema["properties"].values())
 
 
-def test_v3_request_carries_retailer_rules_in_instructions_and_schema():
+def test_v4_request_carries_retailer_rules_in_instructions_and_schema():
     stub = Stub(response('{}'))
     adapter(stub).extract(DOCUMENT)
     request = stub.calls[0]
-    assert request["instructions"].startswith("Prompt-Version: extract-v3\n")
+    assert request["instructions"].startswith("Prompt-Version: extract-v4\n")
     description = request["text"]["format"]["schema"]["properties"]["retailer"]["description"]
     for text in (request["instructions"], description):
         words = " ".join(text.split())
-        assert "extract the printed full name" in words
-        assert "If only the brand abbreviation is printed and unambiguously identifies" in words
+        assert "Extract the most complete customer-facing brand name as printed" in words
+        assert "does not replace a printed brand name" in words
+        assert "If only a legal-entity name identifies the retailer" in words
+        assert "including its suffix; exclude ABN/ACN labels and identifier numbers" in words
+        assert "If only an unambiguous abbreviation is printed, keep it" in words
         assert "never expand it from memory or outside data" in words
-        assert "Do not choose a name merely because it is longer" in words
-        assert "If several companies are named and the retailer cannot be identified unambiguously, return null" in words
-        assert "parent company" in words and "distributor" in words
+        assert "Never substitute a distributor, network operator, parent or group company" in words
+        assert "If missing or not unambiguously identifiable, return null" in words
+        assert "do not choose the longest name or blindly strip suffixes" in words
     # Prevent the request's instructions and metadata drifting to different versions.
-    assert request["instructions"] == files("bill_lens.extraction").joinpath("prompts/extract_v3.md").read_text(encoding="utf-8")
+    assert request["instructions"] == files("bill_lens.extraction").joinpath("prompts/extract_v4.md").read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("document_text,expected_name,returned_name,outcome", [
@@ -257,11 +261,15 @@ def test_v3_request_carries_retailer_rules_in_instructions_and_schema():
     ("Account contacts: North Energy; South Energy", None, "North Energy", "false_extraction"),
     ("Retailer: Oak Energy Pty Ltd\nDistributor: Long Regional Distribution Company",
      "Oak Energy Pty Ltd", "Long Regional Distribution Company", "wrong_value"),
+    ("Oak Energy\nLegal notice: Oak Retail Pty Ltd ABN 00 000 000 000", "Oak Energy", "Oak Retail Pty Ltd", "wrong_value"),
+    ("Oak Energy\nLegal notice: Oak Retail Pty Ltd ABN 00 000 000 000", "Oak Energy", "Oak Energy", "correct"),
+    ("Issued by Oak Retail Pty Ltd ABN 00 000 000 000", "Oak Retail Pty Ltd", "Oak Retail Pty Ltd", "correct"),
+    ("Issued by Oak Retail Pty Ltd ABN 00 000 000 000", "Oak Retail Pty Ltd", "Oak Retail", "wrong_value"),
 ])
 def test_retailer_outputs_are_scored_without_python_name_repair(
         valid_fields, document_text, expected_name, returned_name, outcome):
     # These are hand-built output oracles, NOT tests of a model choosing a name.
-    # A bad model answer must remain visible to evals, even under the v3 prompt.
+    # A bad model answer must remain visible to evals, even under the v4 prompt.
     expected = ExtractionFields.model_validate(valid_fields | {"retailer": expected_name})
     raw = json.dumps(valid_fields | {"retailer": returned_name})
     stub = Stub(response(raw))
@@ -382,9 +390,9 @@ def test_real_sdk_with_mock_transport_never_network(status, code, valid_fields):
                 http_client=httpx2.Client(transport=httpx2.MockTransport(handle))) as client:
         attempt = OpenAIExtractor(model="test-model", client=client).extract(DOCUMENT)
     assert attempt.error_code == code and len(sent) == 1
-    assert attempt.prompt_version == "extract-v3"
-    assert sent[0]["instructions"].startswith("Prompt-Version: extract-v3\n")
-    assert "extract the printed full name" in sent[0]["text"]["format"]["schema"]["properties"]["retailer"]["description"]
+    assert attempt.prompt_version == "extract-v4"
+    assert sent[0]["instructions"].startswith("Prompt-Version: extract-v4\n")
+    assert "customer-facing brand name" in sent[0]["text"]["format"]["schema"]["properties"]["retailer"]["description"]
     if status == 200:
         assert attempt.raw_response == raw and attempt.fields is not None and attempt.model == "resolved-model"
     else:

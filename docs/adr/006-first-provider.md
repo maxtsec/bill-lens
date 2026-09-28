@@ -46,7 +46,7 @@ requirements-dev.txt. Use the synchronous Responses API with `tools=[]`,
 `store=False`, `stream=False`, `service_tier="default"`, and a 4096-output-token
 cap. Set `reasoning={"effort": "low"}` explicitly for both baseline models: a
 bounded starting point for printed-fact extraction, not an accuracy finding.
-The `extract-v3` execution profile retains v2's fixed effort; changing effort requires a
+The `extract-v4` execution profile retains v2's fixed effort; changing effort requires a
 version bump, so each attempt's existing prompt_version identifies it without a
 DB migration. The smoke report also prints reasoning_effort. Independently
 configurable effort and a dedicated per-run column can follow in M2 if needed.
@@ -64,8 +64,8 @@ extraction (ADR-005); HTTP integration and retry history are defined by ADR-007.
 
 ### Prompt and document boundary
 
-The packaged file `bill_lens/extraction/prompts/extract_v3.md` declares
-`Prompt-Version: extract-v3`; that header supplies attempt.prompt_version.
+The packaged file `bill_lens/extraction/prompts/extract_v4.md` declares
+`Prompt-Version: extract-v4`; that header supplies attempt.prompt_version.
 Version 1 is retained unchanged (it used default reasoning and predictable PAGE
 markers). Version 2 uses explicit low effort and randomised PAGE markers.
 Version 3 preserves v2's execution settings and document boundary, and clarifies
@@ -73,7 +73,15 @@ the retailer brand/full-name rule in both the prompt and schema description:
 prefer the printed full name when both clearly identify the same retailer; keep
 a sole unambiguous abbreviation; never choose a name just because it is longer
 or substitute a parent/distributor. Unresolved retailer identity stays null.
-Versions 1 and 2 remain unchanged. Schema descriptions are also model input:
+Version 4 supersedes v3's full-name rule with the owner-selected brand-first rule:
+the most complete printed customer-facing brand takes priority over its logo
+abbreviation and legal entity. Use the exact legal name (including suffix, but
+not ABN/ACN metadata) only if no brand is printed; retain a sole unambiguous
+abbreviation. Never select a distributor, network operator, parent or group;
+unresolved identity is null. The six rules in the contract, schema and prompt
+are written in the same priority order. All five dev retailer labels remain
+valid; the per-bill check is documented in dataset/README.md.
+Versions 1 through 3 remain unchanged. Schema descriptions are also model input:
 changing extraction instructions in them requires a prompt version bump even
 when the wire shape and Python validation remain unchanged. Reproducing v2
 requires its original code/schema commit, not just its old Markdown prompt.

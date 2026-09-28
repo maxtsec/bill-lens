@@ -16,7 +16,7 @@ from .port import ExtractionAttempt, build_attempt
 SDK_TIMEOUT_SECONDS = 60.0
 SDK_MAX_RETRIES = 0
 MAX_OUTPUT_TOKENS = 4096
-# Fixed execution setting for extract-v3 (unchanged from v2).
+# Fixed execution setting for extract-v4 (unchanged from v2/v3).
 # Changing effort requires a prompt version bump.
 REASONING_EFFORT = "low"
 
@@ -72,9 +72,9 @@ class OpenAIExtractor:
         if client is None and (not isinstance(api_key, str) or not api_key
                                or not api_key.isascii() or any(not 33 <= ord(char) <= 126 for char in api_key)):
             raise ValueError("OPENAI_API_KEY must be set to a nonblank ASCII token")
-        self.instructions = files("bill_lens.extraction").joinpath("prompts/extract_v3.md").read_text(encoding="utf-8")
+        self.instructions = files("bill_lens.extraction").joinpath("prompts/extract_v4.md").read_text(encoding="utf-8")
         header = self.instructions.splitlines()[0]
-        if header != "Prompt-Version: extract-v3":
+        if header != "Prompt-Version: extract-v4":
             raise ValueError("prompt file version does not match its filename")
         self.prompt_version = header.removeprefix("Prompt-Version: ")
         self.model = model

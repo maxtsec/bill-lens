@@ -20,9 +20,10 @@ class Case:
 
 def load_cases(root: Path) -> list[Case]:
     cases, seen = [], set()
-    for path in sorted(root.glob("bill_*")):
-        if not path.is_dir() or re.fullmatch(r"bill_[A-Za-z0-9_-]+", path.name) is None:
-            raise ValueError("dataset case names must be bill_ followed by letters, digits, hyphens or underscores")
+    # Direct children only: dataset/holdout is never folded into the dev run.
+    for path in sorted([*root.glob("bill_*"), *root.glob("holdout_*")]):
+        if not path.is_dir() or re.fullmatch(r"(?:bill|holdout)_[A-Za-z0-9_-]+", path.name) is None:
+            raise ValueError("dataset case names must start with bill_ or holdout_ followed by letters, digits, hyphens or underscores")
         pdf = (path / "bill.pdf").read_bytes()
         label = (path / "expected.json").read_bytes()
         document = extract_pdf_text(pdf)
@@ -31,7 +32,7 @@ def load_cases(root: Path) -> list[Case]:
         seen.add(document.file_sha256)
         cases.append(Case(path.name, document, ExpectedLabel.model_validate_json(label), sha256(label).hexdigest()))
     if not cases:
-        raise ValueError("dataset must contain at least one bill_* case")
+        raise ValueError("dataset must contain at least one bill_* or holdout_* case")
     return cases
 
 

@@ -62,7 +62,7 @@ def render_report(summary: dict) -> str:
              f"Prompt: {', '.join(summary['prompt_versions']) or 'none'}; effort: {summary['reasoning_effort']}",
              f"Harness/scoring: {summary['harness_version']}/{summary['scoring_version']}; started: {summary['started_at']}",
              f"Code: {summary['git']['commit']} (dirty={summary['git']['dirty']})",
-             f"Dataset: {summary['bill_count']} synthetic bills @ {summary['dataset_git']['commit']}; repeats: {summary['repeats']}",
+             f"Dataset: {summary.get('dataset_name', 'legacy (name not recorded)')}; {summary['bill_count']} synthetic bills @ {summary['dataset_git']['commit']}; repeats: {summary['repeats']}",
              f"Completed attempts: {fraction(summary['completed_attempts'])}; complete={summary['completed']}; abort={summary['abort_reason']}",
              "", LIMITATION, "", "## Fields", "",
              "| Field | correct | wrong_value | missing | false_extraction | no_fields |",
