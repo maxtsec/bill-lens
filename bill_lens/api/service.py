@@ -3,24 +3,31 @@
 from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import Engine, select
-from sqlalchemy.orm import Session, defer
+from sqlalchemy import Engine
+from sqlalchemy.orm import Session
 
 from bill_lens.api.errors import UploadError
 from bill_lens.api.schemas import BillResponse, RunMetadata
 from bill_lens.api.storage import write_pdf
 from bill_lens.db.models import Bill, ExtractionRun
-from bill_lens.db.repository import BillAlreadyExists, create_bill_with_run, get_bill_by_hash, load_fields
+from bill_lens.db.repository import (
+    BillAlreadyExists, append_extraction_run, create_bill_with_run,
+    current_run_statement, get_bill_by_hash, load_fields,
+)
 from bill_lens.extraction import BillExtractor
 from bill_lens.pdf_text import extract_pdf_text
 from bill_lens.validation import billing_days, derive_flags, derive_status, supply_rate_aud
 
+RETRYABLE_ERRORS = frozenset({"rate_limited", "timeout", "provider_error"})
+
 
 def _response(session: Session, bill: Bill) -> BillResponse:
-    run = session.scalars(
-        select(ExtractionRun).where(ExtractionRun.bill_id == bill.id)
-        .order_by(ExtractionRun.created_at.desc(), ExtractionRun.id.desc())
-        .options(defer(ExtractionRun.raw_response, raiseload=True)).limit(1)
+    # One statement snapshots both current run and Bill metadata. Refresh a Bill
+    # already loaded by an earlier lookup if a retry committed in between.
+    run, bill = session.execute(
+        current_run_statement(bill.id).add_columns(Bill)
+        .join(Bill, Bill.id == ExtractionRun.bill_id)
+        .execution_options(populate_existing=True)
     ).one()
     fields = load_fields(run)
     days = billing_days(fields) if fields else None
@@ -53,14 +60,23 @@ def upload_bill(data: bytes, *, engine: Engine, storage_root: Path,
                 extractor: BillExtractor) -> tuple[BillResponse, bool]:
     document = extract_pdf_text(data)
     digest = document.file_sha256
-    if existing := _existing(engine, digest):
+    existing = _existing(engine, digest)
+    if existing and existing.run.error_code not in RETRYABLE_ERRORS:
         return existing, False
     # _existing closes its session before this call: no connection or transaction
-    # is held during extraction. Simultaneous identical uploads may both extract;
-    # the full-hash UNIQUE constraint decides which result is persisted.
+    # is held during extraction. First-upload races use UNIQUE; existing-bill
+    # retries each append their result under a short row lock afterwards.
     attempt = extractor.extract(document)
     flags = derive_flags(attempt.fields) if attempt.fields else set()
     status = derive_status(flags) if attempt.fields else "failed"
+    if existing:
+        # Keep the original file. Even if another retry has now succeeded, save
+        # this attempt; the repository prevents a late failure from downgrading it.
+        with Session(engine) as session, session.begin():
+            bill = append_extraction_run(session, bill_id=existing.id,
+                                         attempt=attempt, flags=flags, status=status)
+            result = _response(session, bill)
+        return result, False
     key, path = write_pdf(storage_root, data)
     commit_started = False
     try:

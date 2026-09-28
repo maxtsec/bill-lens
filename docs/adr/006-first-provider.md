@@ -10,9 +10,10 @@ a practical constraint, **not measured superiority** in bill extraction. The
 `BillExtractor` port preserves the option of other providers; M2 will compare
 accuracy, latency and cost using evidence.
 
-No live API call has been made for this implementation. Account access, model
-availability, real schema acceptance and extraction quality remain unverified.
-Only offline stubs and an SDK MockTransport have exercised the new adapter.
+At the initial PR #8 implementation/review, no live API call had been made. Account access, model
+availability, real schema acceptance and extraction quality were unverified.
+Only offline stubs and an SDK MockTransport had exercised the new adapter at
+that point. This statement records the original implementation evidence.
 
 ## Decision
 
@@ -26,10 +27,11 @@ credential validity and model access cannot be checked without a request;
 authentication/model-access rejections raise the safe `OpenAIConfigurationError`
 on a real call. No construction-time request lists models or validates the key.
 
-**API wiring moves to a separate follow-up PR.** `create_app` constructs the
-fixture-backed fake regardless of `BILL_EXTRACTOR`; existing test injection stays
-available. It does not call the config helper or construct an OpenAI client.
-The adapter, prompt, standalone config helper and gated live script stay in this PR.
+**API wiring was separated from PR #8.** That PR retained the adapter, prompt,
+standalone config helper and gated live script, with a fixture-only app factory.
+[ADR-007](007-retry-failed-reupload.md) now supplies the recovery prerequisite and
+wires create_app to the config helper. Fake remains the default; app-owned OpenAI
+clients close at shutdown and injected clients remain caller-owned.
 
 Review exposed that the current hash-idempotency path permanently returns the
 first saved failure. The owner chose **option A** for the follow-up: re-uploading
@@ -58,7 +60,7 @@ adapter. Error handling never copies SDK exception messages or HTTP error bodies
 into attempts. Standalone callers close their extractor; the live script does so
 in a finally block. The extractor closes only SDK clients it creates; injected
 clients remain caller-owned. The existing service holds no DB connection during
-extraction (ADR-005); HTTP integration is deferred as described above.
+extraction (ADR-005); HTTP integration and retry history are defined by ADR-007.
 
 ### Prompt and document boundary
 
@@ -204,7 +206,7 @@ MockTransport tests exercise actual SDK request/response parsing without a socke
 Unit tests check the closed live gates, comparisons and cost calculation. Neither
 CI nor the default suite runs the live script with the gates open.
 
-Next PR: option A transient-failure recovery and then API wiring, with concurrent
-retry tests. Deferred: M2 evaluation/provider comparison, native PDF input, automatic retry/backoff policy,
+Follow-up implemented in ADR-007: option A transient-failure recovery and API
+wiring, with concurrent retry tests. Deferred: M2 evaluation/provider comparison, native PDF input, automatic retry/backoff policy,
 prompt-injection experiments, pricing history/cached-token accounting and M6
 tracking of paid calls discarded by the simultaneous duplicate path (ADR-005).

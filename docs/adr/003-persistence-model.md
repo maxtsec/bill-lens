@@ -3,6 +3,9 @@
 - Status: Accepted for Phase 1 after Claude review of commit b669941 and owner approval
 - Scope: Persistence foundation only; no HTTP or upload orchestration
 
+Follow-up: [ADR-007](007-retry-failed-reupload.md) adds the append-run write API
+and defines current-run/status consistency under concurrent retries.
+
 ## Context
 
 The extraction port now produces recordable successes and failures. M1 needs

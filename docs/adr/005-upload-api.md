@@ -2,6 +2,11 @@
 
 Status: Accepted (owner selected option B after PR #7 review)
 
+Follow-up: [ADR-007](007-retry-failed-reupload.md) supersedes unconditional reuse
+of failed results, defines current-run selection and enables opt-in OpenAI.
+The first-upload UNIQUE race, file ownership and connection-lifetime rules below
+remain in effect.
+
 ## Context
 
 Persistence and lossless raw-response storage are merged. The next slice connects

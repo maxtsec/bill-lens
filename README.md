@@ -2,7 +2,7 @@
 
 Bill Lens is a portfolio project for turning Victorian household electricity bill PDFs into structured, explainable, and verifiable data. The engineering rule is to use an LLM where a document is ambiguous and deterministic Python code for calculations, units, and validation.
 
-**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. The local upload-to-JSON API now uses a fixture-backed fake and PostgreSQL. Real model extraction and measured accuracy are still pending.
+**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. The local upload-to-JSON API uses PostgreSQL and defaults to a fixture-backed fake, with opt-in OpenAI extraction and recovery from transient failures. Accuracy on real bills remains unmeasured.
 
 - [Initial extraction contract](docs/extraction-contract.md)
 - [Five-bill synthetic dataset and review checklist](dataset/README.md)
@@ -13,6 +13,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [ADR-004: Lossless raw-response storage](docs/adr/004-lossless-raw-response.md)
 - [ADR-005: Upload API, limits and file/DB consistency](docs/adr/005-upload-api.md)
 - [ADR-006: First OpenAI adapter, prompt and opt-in live check](docs/adr/006-first-provider.md)
+- [ADR-007: Retry failed re-uploads and current-run selection](docs/adr/007-retry-failed-reupload.md)
 
 ## Run locally
 
@@ -46,7 +47,7 @@ The [text baseline inspection](dataset/text-baseline.md) records the observed re
 - Added Phase 1 persistence: PostgreSQL, Alembic, atomic Bill/ExtractionRun writes, database-enforced hash uniqueness and real database tests.
 - Added a pre-API fix for special-character responses: invalid retailer controls become `invalid_output`, while BYTEA storage preserves the exact raw string, including NUL and surrogates.
 - Added Phase 2: local `POST /bills` / `GET /bills/{id}`, bounded uploads, opaque PDF storage, duplicate protection, and saved success/failure results using the fake.
-- Added a standalone OpenAI Responses adapter and versioned prompt, verified with offline stubs. The API still uses fake regardless of BILL_EXTRACTOR. A separate M1 PR will add retryable-failure recovery before wiring in OpenAI. Live compatibility and extraction accuracy are unverified; M2 evaluation remains deferred.
+- Added the OpenAI Responses adapter and versioned prompt, opt-in API configuration, and user-driven retries for transient failures. Every completed retry is retained; concurrent late failures cannot downgrade a validated result. M2 evaluation remains deferred.
 
 ### Exercise the extraction port locally
 
@@ -131,7 +132,7 @@ processes before applying it. Existing text and NULL values are preserved.
 A downgrade to `0001` aborts without deleting evidence if NUL/surrogate data
 cannot fit the old text column. See ADR-004 for decoding and rollback details.
 
-### Upload API (local fake)
+### Upload API (local, fake by default)
 
 Install the updated requirements, import `.env` as above, start PostgreSQL and
 run `alembic upgrade head` before starting the app. From the repository root:
@@ -150,12 +151,21 @@ curl.exe http://127.0.0.1:8000/bills/<bill-id>
 ```
 
 A new upload returns **201**; the same PDF returns **200** with the existing bill
-and run. Simultaneous uploads of the same PDF may both call the extractor, but
+identity. Successful/needs_review results and non-retryable failures are reused.
+For a current failure with `rate_limited`, `timeout` or `provider_error`, re-upload
+calls the extractor once and appends a new run, preserving history and the PDF.
+`refused`, `truncated` and `invalid_output` are not retried automatically by
+re-upload. There is no background retry or automatic backoff.
+
+Simultaneous **first** uploads of the same PDF may both call the extractor, but
 the database UNIQUE constraint keeps one bill/run: the winner returns **201**,
 the loser removes its own file and returns **200** with the winner's result.
-No DB connection is held during extraction. A recorded provider
-failure is also a created bill (`status: failed`), so repeating it does not retry
-the model. PDF validation errors create no records or stored PDFs.
+No DB connection is held during extraction. Concurrent retries of an existing
+bill retain both attempts. The current result is the latest validated run
+(processed or needs_review), if any, otherwise the latest failed run. A late
+failure never replaces a validated result. GET and POST use that same selection;
+POST may return another concurrent attempt's successful result. See ADR-007.
+PDF validation errors create no records or stored PDFs.
 
 The default fake only recognises the five exact dataset PDFs. Another valid PDF
 returns **422 unsupported_fixture**. This tests the application flow, not model
@@ -178,15 +188,11 @@ call cost, and the crash window between file rename and DB commit.
 .\.venv\Scripts\python.exe -m pytest tests/db/test_upload_api.py -q
 ```
 
-### OpenAI adapter (standalone; API wiring deferred)
+### OpenAI upload API (opt-in, spends credit)
 
-Install the updated requirements first. `create_app` still constructs the fake,
-even if `BILL_EXTRACTOR=openai` is set. Before enabling real extraction in the API,
-a follow-up PR will let re-uploads retry transient failures and append a run while
-preserving history (owner-selected option A in ADR-006).
-
-The standalone `configured_extractor()` helper remains available for explicit
-Python callers. It reads these settings from the process environment:
+Install the updated requirements first. To enable the adapter, set these values
+in your ignored `.env`, import them into the server's PowerShell process using
+the earlier snippet, and start/restart the Uvicorn factory command above:
 
 ```text
 BILL_EXTRACTOR=openai
@@ -195,16 +201,22 @@ OPENAI_API_KEY=<your-secret-key>
 ```
 
 Do not paste the key into chat, commit it, or include it in terminal output.
-Constructing the helper checks local configuration and sends no request; calling
-its OpenAI adapter's `extract()` makes a paid call. Call `close()` when finished.
+App construction checks local configuration and sends no request. Uploading a
+new PDF or re-uploading a retryable failure makes a paid call. BILL_LENS_LIVE
+only guards the separate smoke script; it is not required for OpenAI HTTP mode.
+The app closes its client on shutdown. Standalone configured_extractor() callers
+must call close() themselves.
 The adapter sends extracted page text, not the original PDF. SDK retries are zero,
 HTTP timeout is 60 seconds, reasoning effort is explicitly `low`, and the output
 cap is 4096 tokens including reasoning. `extract-v2` identifies this fixed profile.
 Authentication, permission, missing model and schema/parameter rejections raise a
 safe `OpenAIConfigurationError`; document-specific context/content rejections
-remain failed attempts. See ADR-006 for the complete mapping.
+remain failed attempts. HTTP maps raised errors to safe 500 internal_error,
+without creating a run or changing earlier results. See ADR-006 for the mapping.
 
-The current HTTP duplicate path still returns saved failures without retrying.
+Switching provider/model does not re-extract a successful or non-retryable bill.
+Re-upload retries only the three transient codes, once per request; persistent
+outages can therefore incur repeated costs if you keep re-uploading.
 The standalone smoke script below bypasses persistence and checks all five PDFs
 independently; API integration is not needed to run it.
 
@@ -239,4 +251,5 @@ and live flags and blocks real HTTP transports, even if your shell has a key:
 ```
 
 OpenAI was selected because the owner has API credit; no measured provider
-comparison has been performed. The first live check remains an owner-run step.
+comparison over real bills has been performed. Live checks remain explicitly
+authorised owner-run steps; ordinary tests do not spend credit.
