@@ -155,6 +155,17 @@ correctness and other outcome changes, then each bill's exact/review/field
 changes. Improved/regressed/unchanged describes correct-count fractions, not
 statistical significance. Cost or latency is not used to claim extraction quality.
 
+The header shows A and B's provider, requested/resolved models,
+configured/observed prompt versions, reasoning effort and code commit. It lists
+changed dimensions and warns when more than one differs, because the score
+change cannot be attributed to a single variable. Requested/resolved model are
+one dimension; configured/observed prompt versions are one dimension.
+
+Per-bill field rows also show every incorrect outcome's count A -> B. For
+example, `missing: 3/3 -> 0/3; no_fields: 0/3 -> 3/3` remains visible even though
+correctness stays 0/3. These are distributions across repeats, not paired
+attempt transitions; `unchanged` refers only to correctness.
+
 Comparison refuses incomplete runs, unequal PDF/label manifests, unequal repeat
 counts, and different/unsupported harness or scoring versions. It validates field
 denominators and the outcome partition. Different model, prompt and code commits
