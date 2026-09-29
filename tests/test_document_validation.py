@@ -25,6 +25,27 @@ def test_all_eleven_manual_labels_have_no_document_flags(case):
     assert derive_review_flags(case.label.fields, case.document) == set(case.label.expected_flags)
 
 
+@pytest.mark.parametrize("line", [
+    "Current bill amount: AUD 90.15",
+    "Your current bill amount is AUD 90.15.",
+    "Current bill amount $90.15, due 14 May",
+    "Current bill amount - AUD 90.15",
+    "Current bill amount – AUD 90.15",
+    "Current bill amount:$90.15",
+], ids=["plain", "full-stop", "comma", "hyphen-separator", "en-dash", "colon"])
+def test_review_probe_lines_keep_the_printed_amount_positive(line):
+    extracted = fields(
+        retailer="Example Energy", period_start="2026-04-01", period_end="2026-04-30",
+        stated_billing_days=30, total_usage_kwh="250", current_bill_amount="90.15",
+        daily_supply_rate={"value": "110.23", "unit": "cents/day", "gst_basis": "inclusive"},
+    )
+    source = document("Example Energy\nBilling days: 30\nTotal imported usage: 250 kWh\n"
+                      "Supply: 110.23 c/day\n" + line)
+    assert derive_document_flags(extracted, source) == set()
+    # A separator must not also manufacture support for the negative amount.
+    assert derive_document_flags(fields(current_bill_amount="-90.15"), source) == {"current_bill_amount_not_printed"}
+
+
 @pytest.mark.parametrize("text,value", [
     ("AUD 108.070", "108.07"), ("$108.07", "108.070"),
     ("AUD1,234.50", "1234.5"), ("1,234,567.89", "1234567.89"),
@@ -32,13 +53,28 @@ def test_all_eleven_manual_labels_have_no_document_flags(case):
     ("110.23 c", "110.23"), ("110.23/day", "110.23"), ("250kWh", "250"),
     ("0", "0.00"), ("4.00 CR", "-4"), ("4.00 credit", "-4.000"),
     ("credit: AUD 4.00", "-4"), ("CR $4.00", "-4"),
-    ("-4.00", "-4"), ("− 4.00", "-4"), ("-$4.00", "-4"),
+    ("-4.00", "-4"), ("−4.00", "-4"), ("-$4.00", "-4"),
+    ("−AUD 4.00", "-4"), ("-$ 4.00", "-4"),
+    ("1,234.50.", "1234.5"), ("1,234.50, due tomorrow", "1234.5"),
+    ("30.", "30"), ("30, due tomorrow", "30"),
     ("(4.00)", "-4"), ("(AUD 4.00)", "-4"), ("AUD (4.00)", "-4"),
     ("4.00 CR\n4.00", "4"),
     ("123456789012345678901234567890.01 CR", "-123456789012345678901234567890.01"),
 ])
 def test_numeric_formats_and_exact_signs_match(text, value):
     assert derive_document_flags(fields(current_bill_amount=value), document(text)) == set()
+
+
+@pytest.mark.parametrize("text", [" - 4.00", " − 4.00", " - AUD 4.00", " − $4.00", "-\t4.00"])
+def test_spaced_minus_is_a_separator_not_a_negative_sign(text):
+    assert derive_document_flags(fields(current_bill_amount="4"), document(text)) == set()
+    assert derive_document_flags(fields(current_bill_amount="-4"), document(text)) == {"current_bill_amount_not_printed"}
+
+
+@pytest.mark.parametrize("text", ["1.2.3", "1,23.45", "1,234,56", "1.234,50"])
+def test_malformed_numeric_tokens_cannot_supply_any_fragments(text):
+    from bill_lens.document_validation import _printed_numbers
+    assert _printed_numbers(document(text)) == set()
 
 
 @pytest.mark.parametrize("text,value", [

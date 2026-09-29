@@ -1,6 +1,6 @@
 # ADR-009: Review extracted values not printed in the source text
 
-Status: Proposed (owner-selected safeguard, pending PR review)
+Status: Accepted
 
 ## Context
 
@@ -32,18 +32,25 @@ The outbound ExtractionFields JSON schema and extract-v4 prompt are unchanged.
 - Extract whole ASCII decimal tokens; no substring inside a larger decimal.
   Compare with Decimal, so 108.07 equals 108.070. Commas are accepted only as
   groups of three digits (1,234.50); malformed grouping is not repaired.
+  A trailing full stop or comma is sentence punctuation when not immediately
+  followed by a digit: `90.15.` and `90.15, due tomorrow` both support 90.15.
+  A dot/comma followed by a digit must belong to the numeric grammar; malformed
+  tokens such as `1.2.3` and `1,23.45` cannot supply partial matches.
   Decimal construction and sign changes preserve precision without rounding.
 - Currency/unit decorations such as AUD, $, cents symbol, c, c/day, /day and
   kWh sit outside the token. No conversion is done: compare the extracted
   supply rate in its claimed printed unit, never the derived AUD/day value.
   Presence does not verify that the surrounding unit or GST basis is correct.
-- A token is negative when immediately preceded by ASCII `-` or Unicode `−`,
-  optionally with AUD/$ between sign and digits; enclosed in parentheses with
-  optional AUD/$ before the digits; or adjacent to case-insensitive `CR` or
+- A token is negative when ASCII `-` or Unicode `−` is attached directly to
+  the digits or their AUD/$ prefix (`-4.00`, `-$4.00`, `−AUD 4.00`); enclosed
+  in parentheses with optional AUD/$ before the digits; or adjacent to case-insensitive `CR` or
   `credit`. Prefix credit may have `:` or `=` and optional AUD/$, e.g.
   `credit: AUD 4.00`; suffix credit follows digits, e.g. `4.00 CR`.
-  Horizontal spaces/tabs are allowed in these forms. Markers must be on the
-  same line, with no intervening words or other number. A distant credit
+  Horizontal spaces/tabs are allowed after a currency prefix, inside parentheses
+  and between credit markers and values, but never immediately after a minus.
+  A spaced ` - ` or ` − ` is a separator, so `amount - AUD 90.15` supports
+  positive 90.15 only. Markers must be on the same line, with no intervening
+  words or other number. A distant credit
   heading or a marker on the next line/page does not change a number's sign.
 - A negative extracted value requires a matching negative token. A positive
   value does not match a credit-only token. If both signed and unsigned copies

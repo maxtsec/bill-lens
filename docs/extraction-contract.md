@@ -177,13 +177,20 @@ needs_review. Dates are not presence-checked in this version.
 
 Collect whole ASCII decimal tokens from each page's text and compare as Decimal:
 108.07 equals 108.070. Accept thousands commas grouped in threes (1,234.50).
+A trailing full stop or comma is punctuation if not immediately followed by a
+digit: `90.15.` and `90.15, due tomorrow` match 90.15. Malformed numeric tokens
+such as `1.2.3` and `1,23.45` cannot supply partial matches.
 Currency/unit decorations ($, AUD, cents symbol, c, c/day, /day, kWh) are outside
 the token. Do not find 32.66 inside 132.66 or repair malformed grouping. For a
 supply rate, check its printed numeric value, not the converted AUD/day value.
 
 Treat an adjacent same-line CR/credit marker, explicit ASCII/Unicode minus
-(- or −), or paired parentheses as negative. Optional AUD/$ may intervene
-between a leading marker and digits; credit prefixes may include a colon or
+(- or −) attached directly to digits or their currency prefix, or paired
+parentheses as negative. Thus `-4.00`, `-$4.00` and `−AUD 4.00` are negative,
+but spaced ` - ` / ` − ` separators leave the following number positive.
+Optional AUD/$ may intervene between a leading marker and digits; spaces/tabs
+are allowed after currency prefixes and around credit markers, never immediately
+after a minus. Credit prefixes may include a colon or
 equals sign. Thus `4.00 CR`, `credit: AUD 4.00`, `-$4.00` and `(AUD 4.00)`
 support -4.00, not +4.00. A distant credit heading or next-line marker is not
 attached. Positive values need an unsigned/positive occurrence; both signs
