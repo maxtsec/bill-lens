@@ -7,12 +7,12 @@ from pathlib import Path
 
 from bill_lens.extraction import build_attempt
 from bill_lens.validation import derive_document_flags, derive_flags, derive_status
-from evals import SCORING_VERSION
 from evals.dataset import load_cases
-from evals.scoring import score_attempt
+from evals.scoring import score_fields
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = Path("docs/learning/evidence/retailer-brand-v4")
+DERIVED_SCORING_VERSION = "2"  # Historical presence-only replay, not today's scorer.
 
 
 def build_evidence(root: Path = ROOT) -> dict:
@@ -51,11 +51,21 @@ def build_evidence(root: Path = ROOT) -> dict:
             old_status = derive_status(old_flags) if old_flags is not None else "failed"
             if (old_flags, old_status) != (row["flags"], row["status"]):
                 raise ValueError("source decision does not match scoring-v1 field rules")
-            scored = score_attempt(attempt, case.label, case.document)
+            # Keep this historical replay at scoring 2 when production gains
+            # new review rules. Reuse field scoring; do not rewrite old evidence.
+            added = sorted(derive_document_flags(attempt.fields, case.document)) if attempt.fields is not None else []
+            flags = sorted(set(old_flags) | set(added)) if old_flags is not None else None
+            scored = score_fields(attempt.fields, case.label.fields) | {
+                "predicted": attempt.fields.model_dump(mode="json") if attempt.fields else None,
+                "expected": case.label.fields.model_dump(mode="json"),
+                "expected_flags": case.label.expected_flags, "expected_status": case.label.expected_status,
+                "flags": flags, "status": derive_status(flags) if flags is not None else "failed",
+                "flags_match": flags is not None and set(flags) == set(case.label.expected_flags),
+            }
+            scored["exact_bill_match"] = all(v == "correct" for v in scored["field_outcomes"].values())
             for name in ("predicted", "expected", "expected_flags", "expected_status", "field_outcomes", "supply_components", "exact_bill_match"):
                 if row[name] != scored[name]:
                     raise ValueError(f"unexpected non-decision scoring change: {name}")
-            added = sorted(derive_document_flags(attempt.fields, case.document)) if attempt.fields is not None else []
             flags_changed, status_changed = scored["flags"] != old_flags, scored["status"] != old_status
             stats["attempts"] += 1
             stats["silent_false_acceptance_before"] += int(row["expected_status"] == "needs_review" and old_status == "processed")
@@ -76,7 +86,7 @@ def build_evidence(root: Path = ROOT) -> dict:
         raise ValueError("expected all 88 preserved attempts")
     implementation = ("bill_lens/document_validation.py", "bill_lens/validation.py",
                       "bill_lens/contract.py", "evals/scoring.py", "scripts/rescore_printed_values.py")
-    return {"source_scoring_version": "1", "derived_scoring_version": SCORING_VERSION,
+    return {"source_scoring_version": "1", "derived_scoring_version": DERIVED_SCORING_VERSION,
             "source_manifest_sha256": sha256(manifest_bytes).hexdigest(),
             "implementation_lf_sha256": {name: sha256((root / name).read_text(encoding="utf-8").encode("utf-8")).hexdigest() for name in implementation},
             "live_api_calls": 0, "per_run": per_run, "totals": totals, "changes": changes,

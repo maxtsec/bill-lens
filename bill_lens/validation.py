@@ -4,6 +4,7 @@ from collections.abc import Collection
 from decimal import Decimal, localcontext
 
 from bill_lens.contract import ExtractionFields, ReviewFlag, Status, SupplyRate
+from bill_lens.current_amount_role import derive_current_amount_role_flags
 from bill_lens.document_validation import derive_document_flags
 from bill_lens.pdf_text import PdfText
 
@@ -57,4 +58,5 @@ def derive_status(flags: Collection[ReviewFlag]) -> Status:
 
 def derive_review_flags(fields: ExtractionFields, document: PdfText) -> set[ReviewFlag]:
     """One review decision for upload, evaluation and the smoke check."""
-    return derive_flags(fields) | derive_document_flags(fields, document)
+    return (derive_flags(fields) | derive_document_flags(fields, document)
+            | derive_current_amount_role_flags(fields, document))

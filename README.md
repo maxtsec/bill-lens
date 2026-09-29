@@ -23,7 +23,12 @@ attempts, including repeated calls on the same bills; they are not independent l
 - **Deterministic presence checking reduced silent false acceptances from 3/88
   to 2/88 preserved attempts**, with zero new false reviews among those attempts
   and zero model calls. It caught the unprinted total; the printed distractor
-  still passes. [Offline replay](docs/learning/retailer-brand-evaluation.md#m3-offline-printed-value-replay)
+  still passes presence alone. [Offline replay](docs/learning/retailer-brand-evaluation.md#m3-offline-printed-value-replay)
+- **A Python current-amount label check then reduced 2/88 to 0/88**, with zero
+  new false reviews and zero model calls. Both saved amount-due errors now reach
+  review; values are not repaired. This heuristic still needs a fresh holdout
+  with varied wording and an amount-due trap.
+  [Role replay and limits](docs/learning/retailer-brand-evaluation.md#m3-offline-current-amount-role-replay)
 
 ## Architecture
 
@@ -40,7 +45,7 @@ flowchart TD
     port --> llm["OpenAI: interpret printed facts (LLM)"]
     fake --> gate["build_attempt: JSON + schema gate (deterministic)"]
     llm --> gate
-    gate --> review["Field + printed-value review flags (deterministic)"]
+    gate --> review["Field + presence + amount-role flags (deterministic)"]
     review --> db["PostgreSQL: bills + extraction_runs"]
     gate -->|recordable failure| db
     db --> json["JSON response (deterministic)"]
@@ -68,6 +73,7 @@ and [upload design](docs/adr/005-upload-api.md) for duplicate and failure paths.
 | [ADR-007](docs/adr/007-retry-failed-reupload.md) | Explicit re-upload retries append history; lock short status updates | Repeated retries can spend during an outage; no background recovery. |
 | [ADR-008](docs/adr/008-evaluation-harness.md) | Deterministic scoring, manual labels and hashed file artifacts | Small synthetic sets cannot establish generalisation. |
 | [ADR-009](docs/adr/009-printed-value-check.md) | Check printed-value presence and route unsupported values to review | A number printed in the wrong role still passes; formatting can cause false reviews. |
+| [ADR-010](docs/adr/010-current-amount-role-check.md) | Check current-amount labels in Python before requesting evidence spans | Limited vocabulary and flattened columns can misassociate values; fresh holdout needed. |
 
 ## Evaluation
 
@@ -103,9 +109,10 @@ specification change, amount-due failure, repeat study and preserved provenance.
 
 Comparisons refuse incomplete runs, different PDF/label hashes, unequal repeat
 counts and incompatible harness/scoring versions. They warn when multiple
-experimental settings differ. The printed-value rule introduced scoring version
-2: historical artifacts stay unchanged and are analysed through a separate
-offline replay, not relabelled for comparison. See the [evaluation guide](evals/README.md).
+experimental settings differ. Presence introduced scoring version 2; the
+current-amount role rule uses version **3**. Historical artifacts stay unchanged
+and are analysed through separate offline replays, not relabelled for comparison.
+See the [evaluation guide](evals/README.md).
 
 The holdout rule was fixed before authoring; labels were owner-verified before
 live use. Those bills are now evaluated, not still unseen. If their results are
@@ -160,9 +167,10 @@ owner judgement or independently measured evidence.
 - Small, synthetic text-PDF datasets; no real or scanned bill accuracy measurement,
   OCR, adversarial evaluation or production load evidence.
 - OpenAI is the only real provider adapter. No measured provider comparison.
-- Dates are not checked for printed presence. A printed wrong-role amount such
-  as bill_002's 162.66 remains open; common numbers and retailer substrings can
-  match unrelated text. Unusual formatting can still trigger false reviews.
+- Dates are not checked for printed presence. Current-amount labels are a
+  limited heuristic: unknown wording can cause false reviews and flattened
+  columns can confirm the wrong amount. Common numbers and retailer substrings
+  can match unrelated text; real-bill role coverage is unmeasured.
 - No authentication; local development only. No deployed service, distributed
   jobs, automatic orphan-file reconciliation or production retention policy.
 - Existing stored results retain their historical decisions; new rules do not
@@ -170,10 +178,10 @@ owner judgement or independently measured evidence.
 
 ## Roadmap candidates
 
-- Evidence spans **plus label/context verification** for printed distractors;
-  a matching span alone cannot establish an amount's role.
-- Fresh held-out bills, including an amount-due trap, before claiming the next
-  safeguard generalises.
+- PR B: fresh held-out bills with varied wording and an amount-due trap, before
+  claiming the Python role safeguard generalises.
+- Evidence spans **plus label/context verification** only if the Python-first
+  check proves insufficient; a matching span alone cannot establish a role.
 - M4 period comparison, once extraction and review semantics support it.
 
 These are candidates, not delivered features or delivery promises.

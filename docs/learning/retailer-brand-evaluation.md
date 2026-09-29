@@ -171,8 +171,8 @@ occurred.
 ## Preserved evidence and offline verification
 
 Historical comparisons in this note use scoring version 1 and require the
-original checkout. M3 uses scoring 2 and correctly refuses those files in
-`evals.compare`; use the separate offline replay below to inspect the change.
+original checkout. Current M3 uses scoring 3 and correctly refuses those files in
+`evals.compare`; use the separate offline replays below to inspect the changes.
 
 The [artifact manifest](evidence/retailer-brand-v4/manifest.json) hashes each
 preserved source file and the generated comparison. Original `attempts.jsonl`,
@@ -401,12 +401,12 @@ all **11** correct dev/holdout labels produce no `*_not_printed` flags, so no
 labels or PDFs changed. These finite oracle/replay checks do not prove absence
 of false reviews on other layouts, ambiguous signs or OCR output.
 
-Production upload and evaluation now use the same field-plus-document decision.
-Scoring version changes from 1 to 2; original runs are not relabelled as new
+This presence-only replay introduced the shared field-plus-document decision.
+Scoring version changed from 1 to 2; original runs are not relabelled as new
 runs and cannot be compared directly across scoring versions. This replay does
 not modify existing stored application records. See
 [ADR-009](../adr/009-printed-value-check.md) for sign matching, repository trust,
-format limitations and the next candidate: evidence spans plus label/context.
+format limitations. The follow-up below tries Python label context before spans.
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
@@ -415,3 +415,66 @@ format limitations and the next candidate: evidence spans plus label/context.
 The script refuses an existing output filename, verifies source hashes and
 attempt coverage, revalidates responses, reproduces original field-only decisions,
 and asserts field outcomes are unchanged before reporting new flags/status.
+
+## M3 offline current-amount role replay
+
+No live API call was made. The Python label check replays the same **88 preserved
+attempts**, comparing scoring **2 → 3**. The original artifacts, manifest, PDFs,
+labels and previous presence evidence remain byte-unchanged. The new
+[derived evidence](evidence/current-amount-role-check.json) records original
+source hashes, the scoring-2 baseline hash, current implementation fingerprints
+and every changed decision. Raw values and field-accuracy scores stay unchanged.
+
+| Preserved run | Attempts | Silent false acceptance before | After | New false reviews | Flag / status changes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v2 dev | 15 | 0 | 0 | 0 | 0 / 0 |
+| v4 dev | 15 | 1 | 0 | 0 | 1 / 1 |
+| v4 holdout | 18 | 0 | 0 | 0 | 0 / 0 |
+| v2 bill_002 repeat | 20 | 0 | 0 | 0 | 0 / 0 |
+| v4 bill_002 repeat | 20 | 1 | 0 | 0 | 2 / 1 |
+| Total | **88** | **2** | **0** | **0** | **3 / 2** |
+
+Definitions remain explicit: silent false acceptance is expected `needs_review`
+but predicted `processed`. New false reviews count originally exact-bill-correct
+attempts gaining a role flag (0 among 82 such attempts within the 88). This does
+not measure all possible silent errors on labels expected to be processed.
+
+- v4 dev bill_002 repeat 3 and v4 repeat-study bill_002 repeat 3 each returned
+  **162.66**. Both now gain `current_bill_amount_role_unconfirmed` and move from
+  processed to needs_review, because the value has only an amount-due label.
+- v4 repeat-study bill_002 repeat 13 returned **132.66**, an unprinted amount.
+  It keeps `current_bill_amount_not_printed` and gains the role flag. Its status
+  remains needs_review. Thus three flag sets change but only two statuses do.
+- All three extractions remain wrong: the manual label expects null and
+  `current_bill_amount_missing`. Exact flag matching remains false even when
+  review status is now right. The code does not manufacture correct fields.
+
+Separately, the **11-label oracle (5 dev + 6 holdout) produces zero role flags**
+on correct answers; combined flags still match all manual labels. Null current
+amounts add no role flag. The rule was not loosened after oracle failures.
+
+The [ADR](../adr/010-current-amount-role-check.md) specifies the shared signed
+tokenizer, same-line/previous-line window, nearest-label and distractor tie rules,
+and general Australian terminology sources. bill_001 passes when the same value
+has both roles. bill_004's prior-line label and CR suffix pass. bill_005's
+interleaved supply line passes, but this is not column reconstruction: a different
+supply amount on that same line could also falsely pass (covered by a limitation
+test). Unknown wording can falsely reject correct values.
+
+These are small synthetic samples with repeats, not 88 independent layouts.
+Synthetic wording overlaps the vocabulary, so zero observed false reviews may
+be optimistic. Real bills, tables, OCR, unfamiliar labels and prose are untested.
+The next step is **PR B: a fresh holdout with varied wording and an amount-due
+trap**, keeping the rule fixed before evaluation. Model evidence spans remain
+a later option only if this Python-first check proves insufficient.
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.rescore_current_amount_roles --output tmp/m3-role-replay.json
+```
+
+Choose a new filename. The script refuses overwrite, verifies original artifact
+and dataset hashes, reproduces the saved scoring-2 decisions, and asserts field
+outcomes are unchanged. The older presence script remains explicitly scoring 2;
+its current source fingerprints differ from the preserved historical artifact,
+whose original fingerprints require the original checkout. No stored application
+result is backfilled by either replay.

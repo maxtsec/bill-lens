@@ -4,18 +4,23 @@ A match proves presence somewhere, never the number's role or its unit/GST basis
 These conservative review flags do not repair fields or establish correctness.
 """
 
+from collections.abc import Iterator
+from dataclasses import dataclass
 from decimal import Decimal
 import re
 
 from bill_lens.contract import ExtractionFields, ReviewFlag
 from bill_lens.pdf_text import PdfText
 
-DOCUMENT_FLAG_FIELDS: dict[ReviewFlag, str] = {
+PRESENCE_FLAG_FIELDS: dict[ReviewFlag, str] = {
     "current_bill_amount_not_printed": "current_bill_amount",
     "total_usage_kwh_not_printed": "total_usage_kwh",
     "daily_supply_rate_not_printed": "daily_supply_rate",
     "stated_billing_days_not_printed": "stated_billing_days",
     "retailer_not_printed": "retailer",
+}
+DOCUMENT_FLAG_FIELDS: dict[ReviewFlag, str] = PRESENCE_FLAG_FIELDS | {
+    "current_bill_amount_role_unconfirmed": "current_bill_amount",
 }
 
 # Whole decimal tokens only: no substring matches inside larger numbers or
@@ -32,9 +37,19 @@ _CREDIT_BEFORE = re.compile(r"\b(?:CR|credit)[ \t]*[:=]?[ \t]*" + _CURRENCY + r"
 _CREDIT_AFTER = re.compile(r"^[ \t]*(?:CR|credit)\b", re.IGNORECASE)
 
 
-def _printed_numbers(document: PdfText) -> set[Decimal]:
-    values = set()
+@dataclass(frozen=True)
+class PrintedNumber:
+    value: Decimal
+    line: str
+    start: int
+    end: int
+    previous_line: str
+
+
+def printed_number_occurrences(document: PdfText) -> Iterator[PrintedNumber]:
+    """One tokenizer/sign policy for both presence and label-role checks."""
     for page in document.pages:
+        previous_line = ""  # Never inherit a label across a page boundary.
         # Sign/credit markers must be adjacent on the same line. A distant
         # 'credit' heading must not flip every number on the page.
         for line in page.text.splitlines():
@@ -50,8 +65,14 @@ def _printed_numbers(document: PdfText) -> set[Decimal]:
                           or (_OPEN_PAREN.search(before) and _CLOSE_PAREN.match(after)))
                 value = Decimal(token.group().replace(",", ""))
                 # copy_negate is exact even beyond the current Decimal precision.
-                values.add(value.copy_negate() if credit else value)
-    return values
+                yield PrintedNumber(value.copy_negate() if credit else value,
+                                    line, token.start(), token.end(), previous_line)
+            if line.strip():
+                previous_line = line
+
+
+def _printed_numbers(document: PdfText) -> set[Decimal]:
+    return {occurrence.value for occurrence in printed_number_occurrences(document)}
 
 
 def _normalise(text: str) -> str:
@@ -62,7 +83,7 @@ def derive_document_flags(fields: ExtractionFields, document: PdfText) -> set[Re
     """Flag non-null values absent from the document; dates are intentionally out of scope."""
     numbers = _printed_numbers(document)
     flags: set[ReviewFlag] = set()
-    for flag, name in DOCUMENT_FLAG_FIELDS.items():
+    for flag, name in PRESENCE_FLAG_FIELDS.items():
         value = getattr(fields, name)
         if value is None:
             continue  # Missing-value rules belong to field-derived checks.

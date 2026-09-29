@@ -133,7 +133,7 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
 
 `schema_version` versions the dataset format; it is not an extracted bill field. `billing_days` and the normalised supply rate are derived values, so they do not appear under `fields`. For M0, `expected_status` is `processed` when there are no review flags and `needs_review` when there is at least one. It is derived from `expected_flags`, so a label check must reject a contradictory status. Operational failures such as unreadable PDFs will use `failed` in a later milestone.
 
-The human labeler records `expected_flags` from the PDF and these contract rules **independently of the application validator**. Tests check `derive_review_flags(label.fields, document) == set(label.expected_flags)` and `label.expected_status == derive_status(label.expected_flags)`. This combines the original field checks with M3's printed-value check. Do not generate the label's expected flags by calling the validator under test: that would let a flag-logic bug write its own expected answer.
+The human labeler records `expected_flags` from the PDF and these contract rules **independently of the application validator**. Tests check `derive_review_flags(label.fields, document) == set(label.expected_flags)` and `label.expected_status == derive_status(label.expected_flags)`. This combines field checks with M3's presence and current-amount role checks. Do not generate the label's expected flags by calling the validator under test: that would let a flag-logic bug write its own expected answer.
 
 For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. The PDFs and candidate labels now exist; owner verification is recorded separately in the dataset README.
 
@@ -161,6 +161,7 @@ The original field-derived codes do not require a hidden explanation of why the 
 | `supply_rate_gst_basis_unknown` | Rate and unit are known, but `gst_basis` is `unknown`. |
 | `total_usage_kwh_missing` | `total_usage_kwh` is `null`. |
 | `current_bill_amount_not_printed` | Non-null current amount has no matching signed numeric token in the document. |
+| `current_bill_amount_role_unconfirmed` | Non-null current amount has no matching signed occurrence with a current-charges label in its selected window (ADR-010). |
 | `total_usage_kwh_not_printed` | Non-null usage has no matching numeric token. |
 | `daily_supply_rate_not_printed` | Non-null rate's `value`, in its printed unit without conversion, has no matching numeric token. |
 | `stated_billing_days_not_printed` | Non-null day count has no matching numeric token. |
@@ -171,7 +172,7 @@ In particular, `daily_supply_rate_missing` does not say whether the bill omitted
 ### Printed-value presence (M3)
 
 `derive_document_flags(fields, document)` never changes fields. Null values add
-no document flag. `derive_review_flags` unions these flags with `derive_flags`;
+no document flag. `derive_review_flags` unions field, presence and role flags;
 upload, evaluation and smoke decisions all use this function. Any flag means
 needs_review. Dates are not presence-checked in this version.
 
@@ -199,13 +200,27 @@ turning credit-only text into positive debit evidence without inventing roles.
 
 A numeric match proves only that the value is printed **somewhere**. It cannot
 distinguish a current amount from amount due, verify its unit/GST association,
-or disambiguate common integers. The 162.66 bill_002 distractor intentionally
-passes; the unprinted 132.66 does not. Unusual formats, split credit markers,
+or disambiguate common integers. The 162.66 bill_002 distractor passes presence
+but now fails the role check below; the unprinted 132.66 fails both. Unusual formats, split credit markers,
 column order and future OCR may cause false reviews. See
 [ADR-009](adr/009-printed-value-check.md) for the exact grammar and boundaries.
+
+### Current-amount role review (M3)
+
+For non-null `current_bill_amount`, reuse the same numeric occurrences and sign
+rules. Any occurrence with a current-charges label confirms the role heuristic;
+otherwise add `current_bill_amount_role_unconfirmed`. Keep the extracted value
+unchanged. Null gets no role flag. The window is the same-line prefix before
+the number, falling back to the previous non-empty line on the same page only
+when that prefix has no alphabetic text except AUD/CR/credit decorations.
+Unknown same-line wording blocks fallback. The recognised label ending nearest
+the number wins; a tie between classes favours the distractor. Matching folds
+case and whitespace. See [ADR-010](adr/010-current-amount-role-check.md) for the
+complete vocabularies, tie rules, sources and limits, including bill_005's
+interleaved columns. Passing is not proof of correct accounting semantics.
 
 Evaluation compares numeric fields as `Decimal`, not strings. Supply field
 accuracy still compares converted AUD/day values **and** GST basis; document
 presence checks do not change those field-accuracy rules. Review accuracy now
-uses fields plus document text, with SCORING_VERSION **2**. Old-vs-new scoring
+uses fields plus document text, with SCORING_VERSION **3**. Old-vs-new scoring
 runs are not directly comparable. Manual labels stay independent of validators.

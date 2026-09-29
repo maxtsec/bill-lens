@@ -51,7 +51,7 @@ def _validated_run(attempt: ExtractionAttempt, flags: Collection[ReviewFlag], st
         fields_json = attempt.fields.model_dump(mode="json")
         validated = ExtractionFields.model_validate(fields_json)
         expected_flags = derive_flags(validated)
-        # Without PdfText the repository cannot re-prove presence. Only allow
+        # Without PdfText the repository cannot re-prove presence or role. Allow
         # document codes for non-null fields, retaining exact field-rule checks.
         allowed_document_flags = {flag for flag, name in DOCUMENT_FLAG_FIELDS.items()
                                   if getattr(validated, name) is not None}

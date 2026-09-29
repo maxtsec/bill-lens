@@ -40,6 +40,7 @@ DecimalString = Annotated[StrictStr, AfterValidator(decimal_string)]
 NonnegativeDecimal = Annotated[DecimalString, AfterValidator(nonnegative)]
 ISODate = Annotated[date, BeforeValidator(iso_date)]
 ReviewFlag = Literal[
+    "current_bill_amount_role_unconfirmed",
     "current_bill_amount_not_printed",
     "total_usage_kwh_not_printed",
     "daily_supply_rate_not_printed",

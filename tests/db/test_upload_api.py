@@ -51,8 +51,8 @@ def assert_empty(db_engine, tmp_path):
 
 
 @pytest.mark.parametrize("amount,expected_flags,status", [
-    ("132.66", ["current_bill_amount_not_printed"], "needs_review"),
-    ("162.66", [], "processed"),  # Printed amount, wrong role: intentional gap.
+    ("132.66", ["current_bill_amount_not_printed", "current_bill_amount_role_unconfirmed"], "needs_review"),
+    ("162.66", ["current_bill_amount_role_unconfirmed"], "needs_review"),
 ])
 def test_upload_document_decision_matches_evaluation(amount, expected_flags, status, app, client, db_engine):
     from bill_lens.pdf_text import extract_pdf_text
