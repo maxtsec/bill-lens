@@ -21,9 +21,11 @@ DOCUMENT_FLAG_FIELDS: dict[ReviewFlag, str] = {
 # Whole decimal tokens only: no substring matches inside larger numbers or
 # malformed comma groups. Commas must group exactly three digits. Decorations
 # such as AUD, $, cents symbols and kWh are outside the numeric token.
-_NUMBER = re.compile(r"(?<![0-9.,])(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?(?![0-9.,])")
+# A trailing dot/comma is punctuation unless followed by another digit.
+_NUMBER = re.compile(r"(?<![0-9.,])(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?(?![0-9]|[.,][0-9])")
 _CURRENCY = r"(?:(?:AUD|\$)[ \t]*)?"
-_MINUS = re.compile(r"[-−][ \t]*" + _CURRENCY + r"$", re.IGNORECASE)
+# The minus must touch the number or currency; a spaced dash is a separator.
+_MINUS = re.compile(r"[-−]" + _CURRENCY + r"$", re.IGNORECASE)
 _OPEN_PAREN = re.compile(r"\([ \t]*" + _CURRENCY + r"$", re.IGNORECASE)
 _CLOSE_PAREN = re.compile(r"^[ \t]*\)")
 _CREDIT_BEFORE = re.compile(r"\b(?:CR|credit)[ \t]*[:=]?[ \t]*" + _CURRENCY + r"$", re.IGNORECASE)

@@ -3,7 +3,7 @@
   "derived_scoring_version": "2",
   "source_manifest_sha256": "a3cf699b00ca71e328a80cc2ccc7bcf9d73759e8103b3ff76fec506d32ad0fe8",
   "implementation_lf_sha256": {
-    "bill_lens/document_validation.py": "196670bf991fd77215b8331d006b1c6a6e4a8e95a09f69036d488bbd33019b2e",
+    "bill_lens/document_validation.py": "d341b4b52eb1ebb618f9e942b86dc85a59ed32f9cf1b8af992a896f36023336d",
     "bill_lens/validation.py": "eef8c2cb5049f4f8a5edb254c7dd9adc5e352b10c19c660cd7ae09f6b966fab5",
     "bill_lens/contract.py": "e3a7c860965d0238fc0719c5d86e8654a66fd5e0fd4d60d610dacfbbaff935d8",
     "evals/scoring.py": "f9dc86eb39622d3dd1b5afadbd76a2c25858a469d9a3982d6f7926fec0c44dee",
