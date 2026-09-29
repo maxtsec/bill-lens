@@ -17,9 +17,9 @@ attempts, including repeated calls on the same bills; they are not independent l
   six previously unevaluated holdout bills. The holdout contained no amount-due
   trap. [Results and limits](docs/learning/retailer-brand-evaluation.md#holdout-interpretation-and-next-decision)
 - **bill_002 repeat study: 0/20 v2 versus 2/20 v4 false extractions.** This does
-  not establish a regression; the review's Fisher two-sided p is approximately
+  not establish a regression; Fisher's two-sided p is approximately
   0.49. The failures used a wrong printed total and an unprinted total.
-  [Saved outcomes](docs/learning/evidence/retailer-brand-v4/repeat-study-statistics.json) · [Statistical review](https://github.com/maxtsec/bill-lens/pull/14#issuecomment-5880832146)
+  [Saved outcomes](docs/learning/evidence/retailer-brand-v4/repeat-study-statistics.json) · [Fisher method and result](docs/learning/retailer-brand-evaluation.md#fisher-exact-comparison)
 - **Deterministic presence checking reduced silent false acceptances from 3/88
   to 2/88 preserved attempts**, with zero new false reviews among those attempts
   and zero model calls. It caught the unprinted total; the printed distractor
@@ -122,11 +122,11 @@ production incident rates. Review used extra probes, fuzzing and mutation checks
 | Parser exceptions escaped the PDF boundary | Fuzzing: 59 escapes in 9,000 malformed synthetic inputs | Guard parser calls; all 59 became classified failures, other outcomes unchanged. [Evidence](docs/learning/pdf-boundary-fuzzing.md#post-fix-replay-results), [PR #3](https://github.com/maxtsec/bill-lens/pull/3) |
 | Duplicate JSON keys silently kept the last value | Adversarial JSON probes | Reject duplicates before parsing loses them; preserve raw output. [PR #4](https://github.com/maxtsec/bill-lens/pull/4#issuecomment-5854033704) |
 | NUL and lone surrogates could not be stored | A Python-valid attempt failed PostgreSQL insertion | Validate field controls and store raw strings losslessly. [PR #5](https://github.com/maxtsec/bill-lens/pull/5#issuecomment-5860771520) → [PR #6](https://github.com/maxtsec/bill-lens/pull/6#issuecomment-5861400708) |
-| Metadata exceeded BIGINT capacity | Review compared Python validation with DB limits | Bound latency/token counts; test the maximum and overflow in both layers. [PR #6](https://github.com/maxtsec/bill-lens/pull/6#issuecomment-5861492843) |
-| Nested connection checkout exhausted the pool | Concurrent distinct uploads with a blocking extractor and small pool | Remove advisory locks; hold no connection during extraction. [PR #7](https://github.com/maxtsec/bill-lens/pull/7#issuecomment-5861810833) |
+| Metadata exceeded BIGINT capacity | Review compared Python validation with DB limits | Bound latency/token counts; test the maximum and overflow in both layers. [PR #6](https://github.com/maxtsec/bill-lens/pull/6#issuecomment-5861400708) |
+| Nested connection checkout exhausted the pool | Concurrent distinct uploads with a blocking extractor and small pool | Remove advisory locks; hold no connection during extraction. [PR #7](https://github.com/maxtsec/bill-lens/pull/7#issuecomment-5861692033) |
 | A transient outage became a permanently cached failure | Re-upload after a simulated rate limit recovered | Retry transient failures on re-upload and append history. [PR #8](https://github.com/maxtsec/bill-lens/pull/8#issuecomment-5877184203) → [PR #9](https://github.com/maxtsec/bill-lens/pull/9) |
-| Tests passed with the row lock removed | Mutation test exposed an untested status-update interleaving | Deterministic concurrent regression now fails without the lock. [PR #9](https://github.com/maxtsec/bill-lens/pull/9#issuecomment-5878127276) |
-| Sentence punctuation and spaced dashes caused false review flags | Correct-amount text probes outside the synthetic layouts | Accept trailing punctuation; only attached minus signs negate values. [PR #15](https://github.com/maxtsec/bill-lens/pull/15#issuecomment-5881315945) |
+| Tests passed with the row lock removed | Mutation test exposed an untested status-update interleaving | Deterministic concurrent regression now fails without the lock. [PR #9](https://github.com/maxtsec/bill-lens/pull/9#issuecomment-5877888011) |
+| Sentence punctuation and spaced dashes caused false review flags | Correct-amount text probes outside the synthetic layouts | Accept trailing punctuation; only attached minus signs negate values. [PR #15](https://github.com/maxtsec/bill-lens/pull/15#issuecomment-5881232308) |
 
 ## Security and data handling
 
