@@ -210,13 +210,15 @@ column order and future OCR may cause false reviews. See
 For non-null `current_bill_amount`, reuse the same numeric occurrences and sign
 rules. Any occurrence with a current-charges label confirms the role heuristic;
 otherwise add `current_bill_amount_role_unconfirmed`. Keep the extracted value
-unchanged. Null gets no role flag. The window is the same-line prefix before
-the number, falling back to the previous non-empty line on the same page only
-when that prefix has no alphabetic text except AUD/CR/credit decorations.
-Unknown same-line wording blocks fallback. The recognised label ending nearest
-the number wins; a tie between classes favours the distractor. Matching folds
-case and whitespace. See [ADR-010](adr/010-current-amount-role-check.md) for the
-complete vocabularies, tie rules, sources and limits, including bill_005's
+unchanged. Null gets no role flag. On the same line, the window starts after
+the preceding numeric token, so a label can confirm only its following first
+number. Fall back to the previous non-empty line on the same page only when the
+same-line window has no alphabetic text except AUD/CR/credit decorations **and**
+the previous line contains no numeric token. Unknown same-line wording blocks
+fallback. Any recognised distractor in the selected window vetoes confirmation,
+regardless of distance or tie. Matching folds case and whitespace. See
+[ADR-010](adr/010-current-amount-role-check.md) for the complete vocabularies,
+sources and limits, including bill_005's
 interleaved columns. Passing is not proof of correct accounting semantics.
 
 Evaluation compares numeric fields as `Decimal`, not strings. Supply field

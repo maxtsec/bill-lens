@@ -4,8 +4,8 @@
   "source_manifest_sha256": "a3cf699b00ca71e328a80cc2ccc7bcf9d73759e8103b3ff76fec506d32ad0fe8",
   "presence_evidence_sha256": "7c2760d9a6a27820a3214fb76444e35135435bc17e3aee4ef07a79a3d69ca6f7",
   "implementation_lf_sha256": {
-    "bill_lens/document_validation.py": "7d1bbb8122c46ead236525d27ad17475b1925e835acbe96921c46d2a796b9357",
-    "bill_lens/current_amount_role.py": "0c91e073c54665f6f088d2cd6dd1b0fed7f60ae7b2abddb4c7ef139cc1052daf",
+    "bill_lens/document_validation.py": "0f84cbe3f60d7178ca1360e9a6cbbb2cccf75a818505d50bd8ea58771e9b9430",
+    "bill_lens/current_amount_role.py": "669d09ca028f49568ddd326e8d6e6edeee2c0d428f8c55bd480d3de77ae1a575",
     "bill_lens/validation.py": "abc610d3b35f80becb6a1c3c4d02facbfc3eceb1610e3eb54c9bc0cc29f61301",
     "bill_lens/contract.py": "6d823380b78be113083abde3f87732c572daea9060bdafd7b3672e3f9c1fb4a7",
     "evals/scoring.py": "f9dc86eb39622d3dd1b5afadbd76a2c25858a469d9a3982d6f7926fec0c44dee",

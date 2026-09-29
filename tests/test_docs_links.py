@@ -12,7 +12,7 @@ OFFICIAL_HOSTS = {
     "alembic.sqlalchemy.org", "developers.openai.com", "docs.python.org",
     "docs.sqlalchemy.org", "fastapi.tiangolo.com", "www.itl.nist.gov",
     "www.postgresql.org", "www.psycopg.org", "www.starlette.io",
-    "www.energyaustralia.com.au", "www.horizonpower.com.au", "www.ergon.com.au",
+    "www.energyaustralia.com.au", "www.agl.com.au",
 }
 # pdfplumber's official documentation is hosted in its GitHub repository.
 GITHUB_PATHS = ("/maxtsec/bill-lens", "/jsvine/pdfplumber")

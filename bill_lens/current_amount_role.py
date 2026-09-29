@@ -33,13 +33,11 @@ def _normalise(text):
     return " ".join(text.casefold().split())
 
 
-def _current_label_wins(window: str) -> bool:
-    matches = [(match.end(), distractor, match.end() - match.start())
-               for distractor, patterns in ((False, _CURRENT), (True, _DISTRACTORS))
-               for pattern in patterns for match in pattern.finditer(window)]
-    # Distance is from the label's end to the number/window end. On equal ends,
-    # a distractor wins; within one class the longest phrase is the tie-breaker.
-    return bool(matches) and not max(matches)[1]
+def _has_current_without_distractor(window: str) -> bool:
+    # A distractor anywhere in this number's window vetoes a current label,
+    # including "amount due for this bill" where the current phrase is nearer.
+    return (any(pattern.search(window) for pattern in _CURRENT)
+            and not any(pattern.search(window) for pattern in _DISTRACTORS))
 
 
 def derive_current_amount_role_flags(fields: ExtractionFields, document: PdfText) -> set[ReviewFlag]:
@@ -50,12 +48,17 @@ def derive_current_amount_role_flags(fields: ExtractionFields, document: PdfText
     for occurrence in printed_number_occurrences(document):
         if occurrence.value != amount:
             continue
-        before = _normalise(occurrence.line[:occurrence.start])
+        # A label belongs to the first numeric token after it. Earlier numbers
+        # on this line consume their labels, so inspect only the intervening text.
+        before = _normalise(occurrence.line[occurrence.previous_number_end:occurrence.start])
         # Any alphabetic text except currency/credit decorations is label-like,
         # even if unrecognised. Unknown same-line labels must not borrow a heading.
         label_like = any(c.isalpha() for c in _DECORATION_WORDS.sub("", before))
-        window = before if label_like else _normalise(occurrence.previous_line)
-        if _current_label_wins(window):
+        # A previous line with a number has already consumed its label. Refuse
+        # this fallback even if PDF reading order put the next value below it.
+        window = (before if label_like else
+                  "" if occurrence.previous_line_has_number else _normalise(occurrence.previous_line))
+        if _has_current_without_distractor(window):
             # Presence of a recognised label is still not a column/role proof.
             return set()
     return {"current_bill_amount_role_unconfirmed"}

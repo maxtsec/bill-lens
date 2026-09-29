@@ -66,7 +66,7 @@ def test_distractor_vocabulary_never_confirms(label):
     ("Current charges: $90.15 Amount due: $100.00", "100", {FLAG}),
     ("Amount due: $100.00 Current charges: $90.15", "90.15", set()),
     ("Current charges Amount due $90.15", "90.15", {FLAG}),
-    ("Amount due Current charges $90.15", "90.15", set()),
+    ("Amount due Current charges $90.15", "90.15", {FLAG}),
     ("TOTAL\t  NeW  CHARGES: $90.15", "90.15", set()),
     ("notthis billable: $90.15", "90.15", {FLAG}),
     ("Current charges\n\n  \nAUD 90.15", "90.15", set()),
@@ -101,9 +101,27 @@ def test_previous_line_is_page_local_but_any_current_occurrence_can_confirm():
 
 
 def test_equal_end_tie_prefers_distractor_even_over_longer_current_label(monkeypatch):
-    # Vocabularies currently have no cross-class overlap. Lock down future ties.
+    # Vocabularies currently have no cross-class overlap. A distractor vetoes
+    # confirmation even when the current label is longer or just as near.
     monkeypatch.setattr(role, "_DISTRACTORS", role._patterns(("charges",)))
     assert role.derive_current_amount_role_flags(fields("90.15"), document("Total current charges $90.15")) == {FLAG}
+
+
+@pytest.mark.parametrize("text,amount,expected", [
+    ("Amount due for this bill $162.66", "162.66", {FLAG}),
+    ("Total amount due on this bill: $162.66", "162.66", {FLAG}),
+    ("Balance on this bill: $162.66", "162.66", {FLAG}),
+    ("This bill: $113.40\nAmount due for this bill: $163.40", "113.40", set()),
+    ("This bill: $113.40\nAmount due for this bill: $163.40", "163.40", {FLAG}),
+    ("Current charges $113.40\n$163.40\nTotal amount due", "163.40", {FLAG}),
+    ("Total amount due $163.40\n$113.40\nCurrent charges", "113.40", {FLAG}),
+    ("Current charges $113.40 $163.40 Total amount due", "163.40", {FLAG}),
+    ("Current charges $113.40 AUD $163.40", "163.40", {FLAG}),
+    ("Amount due $163.40 Current charges\n$113.40", "113.40", {FLAG}),
+    ("Total amount due $163.40 Current charges $113.40", "113.40", set()),
+])
+def test_distractor_veto_and_first_number_ownership(text, amount, expected):
+    assert role.derive_current_amount_role_flags(fields(amount), document(text)) == expected
 
 
 def test_occurrences_keep_sign_offsets_and_previous_nonempty_line():
@@ -113,6 +131,12 @@ def test_occurrences_keep_sign_offsets_and_previous_nonempty_line():
     assert str(token.value) == "-4.00"
     assert token.line[token.start:token.end] == "4.00"
     assert token.previous_line == "Current bill amount"
+    assert token.previous_number_end == 0
+    assert token.previous_line_has_number is False
+    tokens = list(printed_number_occurrences(document("Current charges $113.40\n$163.40")))
+    assert tokens[1].previous_line_has_number is True
+    tokens = list(printed_number_occurrences(document("Current charges $113.40 AUD $163.40")))
+    assert tokens[1].line[tokens[1].previous_number_end:tokens[1].start] == " AUD $"
 
 
 def test_documented_column_limitation_does_not_claim_layout_reconstruction():
