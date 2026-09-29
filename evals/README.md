@@ -36,7 +36,7 @@ must be owner-verified before a live run, and cases used to revise a prompt afte
 seeing results must become development data and be replaced by fresh holdouts.
 
 The production path is `extract_pdf_text` → `BillExtractor.extract` (the adapter
-calls `build_attempt`) → `derive_flags`/`derive_status`. Evaluation introduces no
+calls `build_attempt`) → `derive_review_flags(fields, document)`/`derive_status`. Evaluation introduces no
 second parser, field validator or flag implementation. The fake reads the frozen
 label answers, so its perfect score is a **harness self-test**, not evidence that
 a model can extract anything. Its unknown token usage stays unknown; cost is zero.
@@ -145,6 +145,12 @@ These scores are reported separately from field accuracy but are not statistical
 independent of it. A failed attempt has flags=null and status=failed: empty
 expected flags do not accidentally award it a flag match.
 
+Scoring version **2** combines field flags with printed-value flags from the
+same PdfText used for extraction. `score_attempt` requires that document;
+the missing-value oracle is still manually labelled. No fields are repaired.
+For example, an unprinted amount now routes to review while retaining its
+incorrect value, so status can improve without a field or exact-flag match.
+
 Attempt outcomes show successes (`none`) plus every error code, including zero
 counts. All field and decision metrics show `count/total`; failures stay in the
 denominator. Partial runs show both planned and completed attempt counts, with
@@ -196,6 +202,20 @@ review that code diff when interpreting results. Do not claim that offline
 request tests prove improved extraction accuracy. To reproduce v2, use its
 original code/schema commit; loading only the old prompt with today's schema
 would not recreate the original model input.
+
+The later M3 printed-value check changes review scoring semantics to **2**.
+Current `evals.compare` refuses the historical scoring-1 artifacts, including
+old-vs-new comparisons. The earlier v2/v4 comparisons above describe scoring 1;
+reproduce them with their original checkout. Do not edit their version numbers
+or overwrite original results. A separate offline replay verifies recorded
+PDF/label hashes and reuses saved responses to report decision changes:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
+```
+
+This is derived evidence, not a new live run or a directly comparable run summary.
+See [ADR-009](../docs/adr/009-printed-value-check.md).
 
 ## Tests
 

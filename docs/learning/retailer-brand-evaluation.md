@@ -170,6 +170,10 @@ occurred.
 
 ## Preserved evidence and offline verification
 
+Historical comparisons in this note use scoring version 1 and require the
+original checkout. M3 uses scoring 2 and correctly refuses those files in
+`evals.compare`; use the separate offline replay below to inspect the change.
+
 The [artifact manifest](evidence/retailer-brand-v4/manifest.json) hashes each
 preserved source file and the generated comparison. Original `attempts.jsonl`,
 `summary.json` and `report.md` are copied byte-for-byte for all three runs:
@@ -320,3 +324,53 @@ The next decision remains which protection to prototype against the two dev
 failure modes (wrong printed total and unprinted reconstructed total). The
 options above are open. No prompt fix, new model comparison or further live
 evaluation is included or authorised by this completed study.
+
+## M3 offline printed-value replay
+
+No live API call was made. The new deterministic check reuses the **same 88
+saved responses**, with document text re-extracted from the PDFs after verifying
+recorded PDF and label hashes. Original artifacts and their manifest remain
+byte-unchanged. The new [derived evidence](evidence/printed-value-check.json)
+records source identity, implementation fingerprints and every decision change.
+
+Silent false acceptance means expected needs_review but predicted processed.
+New false reviews count originally exact-bill-correct attempts that gain any
+document-derived flag. These are counts in saved samples, not production rates.
+
+| Source run | Attempts | Silent false acceptance before | After | New false reviews | Flag/status changes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v2 dev | 15 | 0 | 0 | 0 | 0 / 0 |
+| v4 dev | 15 | 1 | 1 | 0 | 0 / 0 |
+| v4 holdout | 18 | 0 | 0 | 0 | 0 / 0 |
+| v2 bill_002 repeat | 20 | 0 | 0 | 0 | 0 / 0 |
+| v4 bill_002 repeat | 20 | 2 | 1 | 0 | 1 / 1 |
+| Total | **88** | **3** | **2** | **0** | **1 / 1** |
+
+The sole change is v4 repeat-study bill_002, repeat 13: **132.66** gains
+`current_bill_amount_not_printed`, moving processed to needs_review. The value
+and raw response remain intact. The label expects a null value with
+`current_bill_amount_missing`; therefore the new status is correct but field
+accuracy and exact flag matching remain wrong. This routes the error for review
+without disguising it as a correct extraction.
+
+Both **162.66** failures remain processed because that value is printed as
+amount due. This check cannot establish the value's role. There are no other
+flag/status changes or new false reviews among the 88 attempts. Separately,
+all **11** correct dev/holdout labels produce no `*_not_printed` flags, so no
+labels or PDFs changed. These finite oracle/replay checks do not prove absence
+of false reviews on other layouts, ambiguous signs or OCR output.
+
+Production upload and evaluation now use the same field-plus-document decision.
+Scoring version changes from 1 to 2; original runs are not relabelled as new
+runs and cannot be compared directly across scoring versions. This replay does
+not modify existing stored application records. See
+[ADR-009](../adr/009-printed-value-check.md) for sign matching, repository trust,
+format limitations and the next candidate: evidence spans plus label/context.
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
+```
+
+The script refuses an existing output filename, verifies source hashes and
+attempt coverage, revalidates responses, reproduces original field-only decisions,
+and asserts field outcomes are unchanged before reporting new flags/status.

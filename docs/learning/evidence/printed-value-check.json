@@ -1,0 +1,87 @@
+{
+  "source_scoring_version": "1",
+  "derived_scoring_version": "2",
+  "source_manifest_sha256": "a3cf699b00ca71e328a80cc2ccc7bcf9d73759e8103b3ff76fec506d32ad0fe8",
+  "implementation_lf_sha256": {
+    "bill_lens/document_validation.py": "196670bf991fd77215b8331d006b1c6a6e4a8e95a09f69036d488bbd33019b2e",
+    "bill_lens/validation.py": "eef8c2cb5049f4f8a5edb254c7dd9adc5e352b10c19c660cd7ae09f6b966fab5",
+    "bill_lens/contract.py": "e3a7c860965d0238fc0719c5d86e8654a66fd5e0fd4d60d610dacfbbaff935d8",
+    "evals/scoring.py": "f9dc86eb39622d3dd1b5afadbd76a2c25858a469d9a3982d6f7926fec0c44dee",
+    "scripts/rescore_printed_values.py": "af5d92031eabe669eb862b0a2de64f9f95af032ec52d9c136d0defb8e2ebeffb"
+  },
+  "live_api_calls": 0,
+  "per_run": {
+    "v2-dev": {
+      "attempts": 15,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v4-dev": {
+      "attempts": 15,
+      "silent_false_acceptance_before": 1,
+      "silent_false_acceptance_after": 1,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v4-holdout": {
+      "attempts": 18,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v2-bill-002-repeat": {
+      "attempts": 20,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v4-bill-002-repeat": {
+      "attempts": 20,
+      "silent_false_acceptance_before": 2,
+      "silent_false_acceptance_after": 1,
+      "new_false_reviews": 0,
+      "flag_changes": 1,
+      "status_changes": 1
+    }
+  },
+  "totals": {
+    "attempts": 88,
+    "silent_false_acceptance_before": 3,
+    "silent_false_acceptance_after": 2,
+    "new_false_reviews": 0,
+    "flag_changes": 1,
+    "status_changes": 1
+  },
+  "changes": [
+    {
+      "run": "v4-bill-002-repeat",
+      "run_id": "20260928T232646Z-90f79aa5b450",
+      "bill": "bill_002",
+      "repeat": 13,
+      "current_bill_amount": "132.66",
+      "document_flags": [
+        "current_bill_amount_not_printed"
+      ],
+      "flags_before": [],
+      "flags_after": [
+        "current_bill_amount_not_printed"
+      ],
+      "status_before": "processed",
+      "status_after": "needs_review",
+      "flags_match_before": false,
+      "flags_match_after": false
+    }
+  ],
+  "definitions": {
+    "silent_false_acceptance": "expected needs_review, predicted processed",
+    "new_false_review": "original exact-bill-correct attempt now has a document-derived flag"
+  }
+}

@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from bill_lens.contract import ExpectedLabel, ExtractionFields
 from bill_lens.extraction import ExtractionAttempt
-from bill_lens.validation import derive_flags, derive_status, supply_rate_aud
+from bill_lens.pdf_text import PdfText
+from bill_lens.validation import derive_review_flags, derive_status, supply_rate_aud
 
 FIELDS = tuple(ExtractionFields.model_fields)
 OUTCOMES = ("correct", "wrong_value", "missing", "false_extraction", "no_fields")
@@ -43,11 +44,11 @@ def field_matches(actual: ExtractionFields | None, expected: ExtractionFields) -
     return {key: value == "correct" for key, value in score_fields(actual, expected)["field_outcomes"].items()}
 
 
-def score_attempt(attempt: ExtractionAttempt, expected: ExpectedLabel) -> dict:
+def score_attempt(attempt: ExtractionAttempt, expected: ExpectedLabel, document: PdfText) -> dict:
     scored = score_fields(attempt.fields, expected.fields)
     # Contract: JSON shape and review rules. Expected flags remain the manual
     # oracle; production functions compute predictions only, never the answer.
-    flags = sorted(derive_flags(attempt.fields)) if attempt.fields is not None else None
+    flags = sorted(derive_review_flags(attempt.fields, document)) if attempt.fields is not None else None
     status = derive_status(flags) if flags is not None else "failed"
     return scored | {
         "predicted": attempt.fields.model_dump(mode="json") if attempt.fields else None,

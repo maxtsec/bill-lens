@@ -16,7 +16,7 @@ from bill_lens.db.repository import (
 )
 from bill_lens.extraction import BillExtractor
 from bill_lens.pdf_text import extract_pdf_text
-from bill_lens.validation import billing_days, derive_flags, derive_status, supply_rate_aud
+from bill_lens.validation import billing_days, derive_review_flags, derive_status, supply_rate_aud
 
 RETRYABLE_ERRORS = frozenset({"rate_limited", "timeout", "provider_error"})
 
@@ -67,7 +67,7 @@ def upload_bill(data: bytes, *, engine: Engine, storage_root: Path,
     # is held during extraction. First-upload races use UNIQUE; existing-bill
     # retries each append their result under a short row lock afterwards.
     attempt = extractor.extract(document)
-    flags = derive_flags(attempt.fields) if attempt.fields else set()
+    flags = derive_review_flags(attempt.fields, document) if attempt.fields else set()
     status = derive_status(flags) if attempt.fields else "failed"
     if existing:
         # Keep the original file. Even if another retry has now succeeded, save

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, defer
 from bill_lens.contract import ExtractionFields, ReviewFlag
 from bill_lens.db.models import Bill, ExtractionRun
 from bill_lens.extraction import ExtractionAttempt
+from bill_lens.document_validation import DOCUMENT_FLAG_FIELDS
 from bill_lens.validation import derive_flags, derive_status
 
 FIELDS_SCHEMA_VERSION = 1
@@ -41,25 +42,34 @@ def _validated_run(attempt: ExtractionAttempt, flags: Collection[ReviewFlag], st
     if not isinstance(attempt, ExtractionAttempt):
         raise TypeError("attempt must be ExtractionAttempt")
     attempt.__post_init__()
+    if isinstance(flags, (str, bytes)) or any(flag not in get_args(ReviewFlag) for flag in flags):
+        raise ValueError("unknown review flags")
+    supplied_flags = set(flags)
     # Nested Pydantic models are mutable: revalidate their JSON representation.
     fields_json = None
     if attempt.fields is not None:
         fields_json = attempt.fields.model_dump(mode="json")
         validated = ExtractionFields.model_validate(fields_json)
         expected_flags = derive_flags(validated)
-        expected_status = derive_status(expected_flags)
+        # Without PdfText the repository cannot re-prove presence. Only allow
+        # document codes for non-null fields, retaining exact field-rule checks.
+        allowed_document_flags = {flag for flag, name in DOCUMENT_FLAG_FIELDS.items()
+                                  if getattr(validated, name) is not None}
+        if not expected_flags <= supplied_flags or supplied_flags - expected_flags - allowed_document_flags:
+            raise ValueError("flags/status must match the current attempt's domain checks")
+        expected_status = derive_status(supplied_flags)
     else:
         expected_flags, expected_status = set(), "failed"
-    if isinstance(flags, (str, bytes)) or any(flag not in get_args(ReviewFlag) for flag in flags):
-        raise ValueError("unknown review flags")
-    if set(flags) != expected_flags or status != expected_status:
+        if supplied_flags:
+            raise ValueError("failed attempts cannot have review flags")
+    if status != expected_status:
         raise ValueError("flags/status must match the current attempt's domain checks")
     return ExtractionRun(
         provider=attempt.provider, model=attempt.model,
         prompt_version=attempt.prompt_version, raw_response=attempt.raw_response,
         fields=fields_json,
         fields_schema_version=FIELDS_SCHEMA_VERSION if fields_json is not None else None,
-        error_code=attempt.error_code, review_flags=sorted(expected_flags), status=status,
+        error_code=attempt.error_code, review_flags=sorted(supplied_flags), status=status,
         input_tokens=attempt.input_tokens, output_tokens=attempt.output_tokens,
         latency_ms=attempt.latency_ms,
     )

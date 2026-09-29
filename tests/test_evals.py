@@ -60,7 +60,7 @@ def fake(cases, overrides=None):
 def test_hand_authored_field_oracles(cases, case_index, field, value, outcome):
     label = cases[case_index].label
     predicted = label.fields.model_dump(mode="json") | {field: value}
-    scored = score_attempt(attempt(predicted), label)
+    scored = score_attempt(attempt(predicted), label, cases[case_index].document)
     assert scored["field_outcomes"][field] == outcome
     assert set(scored["field_outcomes"]) == set(FIELDS)
     assert set(scored["field_outcomes"].values()) <= set(OUTCOMES)
@@ -80,7 +80,7 @@ def test_hand_authored_field_oracles(cases, case_index, field, value, outcome):
 ])
 def test_supply_value_and_gst_are_separate_oracles(cases, rate, outcome, value_match, gst_match):
     expected = cases[0].label
-    scored = score_attempt(attempt(expected.fields.model_dump(mode="json") | {"daily_supply_rate": rate}), expected)
+    scored = score_attempt(attempt(expected.fields.model_dump(mode="json") | {"daily_supply_rate": rate}), expected, cases[0].document)
     assert scored["field_outcomes"]["daily_supply_rate"] == outcome
     assert scored["supply_components"] == {"rate_value": value_match, "gst_basis": gst_match}
 
@@ -364,3 +364,15 @@ def test_compare_rejects_corrupt_denominators(cases, tmp_path):
 def test_smoke_uses_the_same_scoring_function():
     from evals.scoring import field_matches
     assert live_openai_check.field_matches is field_matches
+
+
+def test_old_scoring_artifacts_are_not_silently_reinterpreted(cases, tmp_path):
+    assert SCORING_VERSION == "2"
+    path = ROOT / "docs/learning/evidence/retailer-brand-v4/v4-dev"
+    old = json.loads((path / "summary.json").read_text())
+    assert old["scoring_version"] == "1"
+    with pytest.raises(ValueError, match="unsupported harness/scoring version"):
+        compare.load_summary(path)
+    new = run.evaluate(cases, fake(cases), tmp_path / "new", metadata(cases, repeats=3))
+    with pytest.raises(ValueError, match="different scoring_version"):
+        compare.compare_runs(old, new)

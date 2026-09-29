@@ -2,7 +2,7 @@
 
 Run: fake / requested fake-v1 / resolved fake-v1
 Prompt: fixture-v1; effort: None
-Harness/scoring: 1/1; started: 2026-09-29T00:00:00+00:00
+Harness/scoring: 1/2; started: 2026-09-29T00:00:00+00:00
 Code: code-revision (dirty=False)
 Dataset: dataset; 1 synthetic bills @ dataset-revision; repeats: 2
 Completed attempts: 2/2; complete=True; abort=None
@@ -22,7 +22,7 @@ Synthetic bills only; descriptive results, not evidence of real-world accuracy o
 | current_bill_amount | 1/2 | 1/2 | 0/2 | 0/2 | 0/2 |
 
 Exact bill match: 1/2
-Review decision: flags 2/2; status 2/2
+Review decision: flags 1/2; status 1/2
 Supply rate_value: 2/2 matched when both rates exist; 0/2 unavailable
 Supply gst_basis: 2/2 matched when both rates exist; 0/2 unavailable
 Attempt outcomes: none 2/2; rate_limited 0/2; timeout 0/2; refused 0/2; truncated 0/2; invalid_output 0/2; provider_error 0/2
@@ -33,7 +33,7 @@ Counts below use completed repeats; see planned/completed totals above.
 
 | Bill | Exact | Flags | Status | retailer | period_start | period_end | stated_billing_days | total_usage_kwh | daily_supply_rate | current_bill_amount |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| bill_001 | 1/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 1/2 |
+| bill_001 | 1/2 | 1/2 | 1/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 2/2 | 1/2 |
 
 ## Usage and latency
 

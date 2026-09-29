@@ -4,6 +4,8 @@ from collections.abc import Collection
 from decimal import Decimal, localcontext
 
 from bill_lens.contract import ExtractionFields, ReviewFlag, Status, SupplyRate
+from bill_lens.document_validation import derive_document_flags
+from bill_lens.pdf_text import PdfText
 
 
 def billing_days(fields: ExtractionFields) -> int | None:
@@ -51,3 +53,8 @@ def derive_flags(fields: ExtractionFields) -> set[ReviewFlag]:
 
 def derive_status(flags: Collection[ReviewFlag]) -> Status:
     return "needs_review" if flags else "processed"
+
+
+def derive_review_flags(fields: ExtractionFields, document: PdfText) -> set[ReviewFlag]:
+    """One review decision for upload, evaluation and the smoke check."""
+    return derive_flags(fields) | derive_document_flags(fields, document)
