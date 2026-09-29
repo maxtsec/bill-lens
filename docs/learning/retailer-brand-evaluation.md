@@ -278,6 +278,47 @@ They describe uncertainty under a binomial repeated-call model with independent
 trials and a stable failure probability; service/model variability and fixed
 run order can weaken that assumption. No real-bill rate is inferred.
 
+### Fisher exact comparison
+
+The [preserved repeat-study counts](evidence/retailer-brand-v4/repeat-study-statistics.json)
+give this fixed-margin contingency table for `current_bill_amount`:
+
+| Version | False extraction | No false extraction | Total |
+| --- | ---: | ---: | ---: |
+| v2 | 0 | 20 | 20 |
+| v4 | 2 | 18 | 20 |
+
+Fisher's exact test conditions on the row and column totals. Under the null of
+equal failure probabilities, let X be the number of the two false extractions
+assigned to v2's 20 attempts. Its hypergeometric probability is
+`P(X=x) = C(20,x) * C(20,2-x) / C(40,2)` for x in {0, 1, 2}, where `C(n,k)` is
+the binomial coefficient computed with standard-library `math.comb`.
+
+The observed X is 0. For the one-sided alternative that v4 fails more often,
+sum probabilities for X <= 0: `C(20,2)/C(40,2) = 190/780`.
+For the two-sided test, sum all tables whose probability is no greater than
+the observed table's. Here those are X=0 and X=2, giving `380/780`; the central
+X=1 table has probability `400/780` and is excluded. Doubling a one-sided value
+works for this symmetric table, not as a general definition of the test.
+
+| Tail | Exact probability | Rounded p |
+| --- | --- | --- |
+| One-sided (v4 higher) | 190/780 | 0.244 |
+| Two-sided | 380/780 | 0.487 |
+
+These values reproduce the [PR #14 review calculation](https://github.com/maxtsec/bill-lens/pull/14#issuecomment-5880832146),
+not a new live experiment. The [offline regression test](../../tests/test_repeat_study_fisher.py)
+recomputes the distribution from the saved counts using `math.comb` and exact
+`Fraction` arithmetic, then checks this table and its rounded values. Preserved
+JSON and manifest files remain unchanged.
+
+The result does **not establish a difference** between versions; it also does
+not prove equivalence or zero risk. This is one selected synthetic bill with
+sequential repeats, not independent documents or a randomised production sample.
+The probability calculation assumes exchangeability under the null; service
+variability and fixed run order can weaken that assumption. It does not establish
+real-world accuracy or isolate the effect of the retailer-rule change.
+
 ### Repeat-study cost and guard
 
 | Run | Input tokens | Output tokens | Total / median / max latency ms | Estimated USD |

@@ -308,59 +308,19 @@ without an API key or model call (choose a new output filename):
 
 ## Check documentation links
 
-This offline check covers every inline Markdown link in `README.md` and this
-guide, including fragments on linked Markdown files. Both documents use inline
-links, not reference-style links. It ignores fenced examples, rejects missing
-files/heading anchors and paths outside the checkout, and allows only GitHub PR
-URLs as external links (the owner's explicit exception). PR availability is
-verified separately with GitHub; this check makes no network or model call.
+The offline [link test](../tests/test_docs_links.py) checks root Markdown files
+and all Markdown under `docs/`, `dataset/` and `evals/`. It excludes `.venv/`,
+`tmp/`, `var/` and `evals/results/`, checks relative targets and Markdown heading
+anchors, and ignores fenced examples. Negative fixtures cover missing targets
+and anchors, duplicate headings, inline code and the external-link allowlist.
 
-Save the following as ignored `tmp/check_documentation_links.py`, then run
-`.\.venv\Scripts\python.exe tmp/check_documentation_links.py` from the repo root.
-On macOS/Linux, use `.venv/bin/python`.
-
-```python
-from pathlib import Path
-import re
-from urllib.parse import unquote, urlsplit
-
-root = Path.cwd().resolve()
-sources = [root / "README.md", root / "docs/development.md"]
-
-def prose(path):
-    text = path.read_text(encoding="utf-8")
-    return re.sub(r"(?ms)^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*$", "", text)
-
-def anchors(path):
-    # GitHub heading slugs for the plain-text ATX headings used in these docs.
-    used = set()
-    for title in re.findall(r"(?m)^#{1,6}[ \t]+(.+?)\s*$", prose(path)):
-        title = re.sub(r"[ \t]+#+$", "", title)
-        base = re.sub(r"[^\w\- ]", "", title.lower()).replace(" ", "-")
-        slug, suffix = base, 0
-        while slug in used:
-            suffix += 1
-            slug = f"{base}-{suffix}"
-        used.add(slug)
-    return used
-
-local_count = pr_count = 0
-for source in sources:
-    for target in re.findall(r"!?\[[^\]\n]*\]\(([^)\n]+)\)", prose(source)):
-        url = urlsplit(target)
-        if url.scheme or url.netloc:
-            assert re.fullmatch(
-                r"https://github\.com/maxtsec/bill-lens/pull/\d+(?:#issuecomment-\d+)?",
-                target,
-            ), f"Unexpected external link: {target}"
-            pr_count += 1
-            continue
-        assert not url.query and not url.path.startswith("/"), target
-        path = (source.parent / unquote(url.path)).resolve() if url.path else source
-        assert path.is_relative_to(root) and path.is_file(), f"Missing file: {source}: {target}"
-        if url.fragment:
-            assert path.suffix == ".md", f"Unsupported fragment: {target}"
-            assert unquote(url.fragment) in anchors(path), f"Missing anchor: {source}: {target}"
-        local_count += 1
-print(f"Checked {local_count} file/anchor links; {pr_count} allowed PR links (syntax only).")
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_docs_links.py -q
+.\.venv\Scripts\pytest.exe tests/test_docs_links.py -q
 ```
+
+External links are never fetched by the test. Official documentation hosts are
+listed explicitly; GitHub links are limited to this project and pdfplumber's
+official documentation repository. New destinations require a deliberate
+allowlist change. Check external availability separately when editing sources.
+The former copy-and-run checker is now replaced by this single implementation.
