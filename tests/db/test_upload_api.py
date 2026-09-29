@@ -50,6 +50,33 @@ def assert_empty(db_engine, tmp_path):
     assert not list(tmp_path.rglob("*.tmp"))
 
 
+@pytest.mark.parametrize("amount,expected_flags,status", [
+    ("132.66", ["current_bill_amount_not_printed"], "needs_review"),
+    ("162.66", [], "processed"),  # Printed amount, wrong role: intentional gap.
+])
+def test_upload_document_decision_matches_evaluation(amount, expected_flags, status, app, client, db_engine):
+    from bill_lens.pdf_text import extract_pdf_text
+    from evals.scoring import score_attempt
+    data = (ROOT / "dataset/bill_002/bill.pdf").read_bytes()
+    label = ExpectedLabel.model_validate_json((ROOT / "dataset/bill_002/expected.json").read_text())
+    raw = json.dumps(label.fields.model_dump(mode="json") | {"current_bill_amount": amount})
+    extractor = FakeExtractor({sha256(data).hexdigest(): ScriptedResponse(raw)})
+    app.dependency_overrides[get_extractor] = lambda: extractor
+    response = post(client, data)
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert body["fields"]["current_bill_amount"] == amount
+    assert body["flags"] == expected_flags and body["status"] == status
+    document = extract_pdf_text(data)
+    score = score_attempt(extractor.extract(document), label, document)
+    assert (score["flags"], score["status"]) == (body["flags"], body["status"])
+    assert client.get(response.headers["Location"]).json() == body
+    with Session(db_engine) as session:
+        saved = session.scalars(select(ExtractionRun)).one()
+        assert saved.review_flags == expected_flags and saved.status == status
+        assert saved.raw_response == raw
+
+
 @pytest.mark.parametrize("case,days,rate", [
     ("bill_001", "30", "1.1023"), ("bill_002", "31", "1.00"),
     ("bill_003", "30", "0.98"), ("bill_004", "30", "1.00"),

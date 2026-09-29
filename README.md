@@ -2,7 +2,7 @@
 
 Bill Lens is a portfolio project for turning Victorian household electricity bill PDFs into structured, explainable, and verifiable data. The engineering rule is to use an LLM where a document is ambiguous and deterministic Python code for calculations, units, and validation.
 
-**Milestone 0 is complete; Milestone 1 is in progress.** Five PDFs and owner-verified labels exist, together with Pydantic schemas and deterministic Python checks. The local upload-to-JSON API uses PostgreSQL and defaults to a fixture-backed fake, with opt-in OpenAI extraction and recovery from transient failures. Accuracy on real bills remains unmeasured.
+**The extraction/upload pipeline and evaluation harness are implemented; M3 adds document checks.** Five dev PDFs and six holdout PDFs have owner-verified labels. The local upload-to-JSON API uses PostgreSQL and defaults to a fixture-backed fake, with opt-in OpenAI extraction and recovery from transient failures. Accuracy on real bills remains unmeasured.
 
 - [Initial extraction contract](docs/extraction-contract.md)
 - [Five-bill synthetic dataset and review checklist](dataset/README.md)
@@ -16,6 +16,7 @@ Bill Lens is a portfolio project for turning Victorian household electricity bil
 - [ADR-007: Retry failed re-uploads and current-run selection](docs/adr/007-retry-failed-reupload.md)
 - [M2 evaluation harness: runs, scoring and comparisons](evals/README.md)
 - [ADR-008: Deterministic evaluation and file-based results](docs/adr/008-evaluation-harness.md)
+- [ADR-009: Printed-value presence checks](docs/adr/009-printed-value-check.md)
 
 ## Run locally
 
@@ -36,6 +37,7 @@ Rebuild the synthetic PDFs with `python scripts/generate_dataset.py` using that 
 
 - Pydantic rejects malformed dates, numbers, unknown units, extra keys and omitted nullable keys.
 - Python calculates inclusive billing days and exact supply-rate unit conversion, then derives review flags and status.
+- Non-null amounts, usage, supply rates, day counts and retailer names absent from the extracted PDF text add review flags. Values are preserved for review; printed numbers in the wrong role can still pass.
 - Tests compare derived flags against independently authored labels, check label status consistency, and reconcile quantities, rates and charge amounts read from the actual PDFs using `Decimal`.
 - Regression cases cover missing fields, unknown GST basis, reverse dates, leap days, zero usage and credit amounts. Passing these tests establishes deterministic behavior; it does not measure an LLM's ability to read a bill.
 
@@ -59,14 +61,14 @@ From the repository root in the installed development environment:
 from pathlib import Path
 from bill_lens.extraction import FakeExtractor
 from bill_lens.pdf_text import extract_pdf_text
-from bill_lens.validation import derive_flags, derive_status
+from bill_lens.validation import derive_review_flags, derive_status
 
 document = extract_pdf_text(Path("dataset/bill_002/bill.pdf").read_bytes())
 attempt = FakeExtractor.from_dataset(Path("dataset")).extract(document)
 if attempt.error_code is not None:
     print(attempt.error_code)  # Later: persist failed attempts too.
 else:
-    flags = derive_flags(attempt.fields)
+    flags = derive_review_flags(attempt.fields, document)
     print(derive_status(flags), sorted(flags))
 # needs_review ['current_bill_amount_missing']
 ```
@@ -285,3 +287,22 @@ do not use real bills without revisiting privacy and retention. See the
 [evaluation guide](evals/README.md) for opt-in live gates, cost assumptions,
 comparability rules and the limits of these small synthetic sets. No live evaluation
 is part of ordinary tests or this implementation.
+
+## M3 printed-value safeguard
+
+New extractions combine field-derived flags with presence checks on the same
+PdfText supplied to the model. All 11 manual labels produce zero new document
+flags. Offline replay of 88 preserved attempts reduces silent false acceptance
+from **3 to 2**, with **0 new false reviews**: the unprinted 132.66 now routes to
+review, while printed amount-due 162.66 remains a known gap. See the
+[evidence and limits](docs/learning/retailer-brand-evaluation.md#m3-offline-printed-value-replay).
+Dates, roles/context and OCR remain future work. Saved runs keep their original
+decisions; existing processed uploads are not silently re-evaluated.
+
+Scoring version is now **2**; the comparison tool rejects scoring-1 results.
+The original artifacts remain unchanged. Reproduce the new derived evidence
+without an API key or model call (choose a new output filename):
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
+```

@@ -9,7 +9,7 @@ from pathlib import Path
 from bill_lens.contract import ExpectedLabel
 from bill_lens.extraction.openai_adapter import OpenAIExtractor, REASONING_EFFORT
 from bill_lens.pdf_text import extract_pdf_text
-from bill_lens.validation import derive_flags, derive_status
+from bill_lens.validation import derive_review_flags, derive_status
 from evals.pricing import PRICE_DATE, PRICES, estimate_cost
 from evals.scoring import field_matches
 
@@ -38,7 +38,7 @@ def main(argv=None) -> int:
         try:
             for name, document, label in cases:
                 attempt = adapter.extract(document)
-                flags = derive_flags(attempt.fields) if attempt.fields else set()
+                flags = derive_review_flags(attempt.fields, document) if attempt.fields else set()
                 cost = estimate_cost(model, attempt.model, attempt.input_tokens, attempt.output_tokens)
                 input_total += attempt.input_tokens or 0
                 output_total += attempt.output_tokens or 0

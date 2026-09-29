@@ -69,7 +69,7 @@ def evaluate(cases: list[Case], extractor: BillExtractor, output: Path, metadata
                               "input_tokens": attempt.input_tokens, "output_tokens": attempt.output_tokens,
                               "latency_ms": attempt.latency_ms, "price_date": PRICE_DATE,
                               "estimated_cost_usd": str(cost) if cost is not None else None,
-                              **score_attempt(attempt, case.label)}
+                              **score_attempt(attempt, case.label, case.document)}
                     # ensure_ascii preserves literal NUL/lone surrogates losslessly.
                     stream.write(json.dumps(record, ensure_ascii=True) + "\n")
                     stream.flush()
