@@ -1,0 +1,11 @@
+{
+  "current_bill_amount": "106.05",
+  "current_label": "Current charges",
+  "shape": "A",
+  "printed_distractors": [
+    {"value": "55.00", "printed_label": "Opening balance", "role": "previous_balance"},
+    {"value": "20.00", "printed_label": "Payments received", "role": "payment"},
+    {"value": "0.00", "printed_label": "Account credit", "role": "credit"},
+    {"value": "141.05", "printed_label": "Amount due", "role": "amount_due"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Spruce Wattle Sample Electricity",
+    "period_start": "2026-12-01",
+    "period_end": "2026-12-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "310",
+    "daily_supply_rate": {"value": "1.00", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "120.90"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

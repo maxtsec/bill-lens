@@ -1,0 +1,11 @@
+{
+  "current_bill_amount": "95.60",
+  "current_label": "Total charges (incl. 10% GST)",
+  "shape": "D",
+  "printed_distractors": [
+    {"value": "30.00", "printed_label": "Previous balance", "role": "previous_balance"},
+    {"value": "0.00", "printed_label": "Payment", "role": "payment"},
+    {"value": "-10.00", "printed_label": "Account credit", "role": "credit"},
+    {"value": "115.60", "printed_label": "Amount Due", "role": "amount_due"}
+  ]
+}
