@@ -104,7 +104,7 @@ escape in the revision being tested; it will write none for these fixed runs.
 
 ### Reproduce from the repository root
 
-Use the pinned development environment described in the README:
+Use the pinned environment in the [development guide](../development.md#run-locally):
 
 ```powershell
 New-Item -ItemType Directory -Force tmp/fuzz | Out-Null
