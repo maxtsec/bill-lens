@@ -124,6 +124,17 @@ def test_distractor_veto_and_first_number_ownership(text, amount, expected):
     assert role.derive_current_amount_role_flags(fields(amount), document(text)) == expected
 
 
+@pytest.mark.parametrize("text", [
+    "Current charges for 31 days: $113.40",
+    "Current charges incl. 10% GST $113.40",
+    "Current charges (1 May - 31 May)\n$113.40",
+])
+def test_numeric_detail_in_current_label_causes_known_false_review(text):
+    actual, source = fields("113.40"), document(text)
+    assert derive_document_flags(actual, source) == set()  # The value is printed.
+    assert role.derive_current_amount_role_flags(actual, source) == {FLAG}
+
+
 def test_occurrences_keep_sign_offsets_and_previous_nonempty_line():
     tokens = list(printed_number_occurrences(document("Current bill amount\n\nAUD 4.00 CR")))
     assert len(tokens) == 1

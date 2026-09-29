@@ -1,6 +1,6 @@
 # ADR-010: Check current-amount labels in Python before requesting evidence spans
 
-Status: Proposed
+Status: Accepted
 
 ## Context and decision
 
@@ -109,7 +109,13 @@ bills. Labels after numbers, split across lines, unfamiliar words or intervening
 notes can cause **either false reviews or false confirmations** when flattened
 reading order misassociates a value with a nearby heading. The first-number rule
 and previous-line block catch the demonstrated cases but are conservative on
-tables. Repeated amounts, unrelated text on the same line, prose containing
+tables. They also treat **dates, day counts and percentages inside a label** as
+numbers that consume it. For example, the correct 113.40 in `Current charges
+for 31 days: $113.40` or `Current charges incl. 10% GST $113.40` now goes to
+review; `Current charges (1 May - 31 May)` followed by `$113.40` does too.
+These are known false-review shapes, not evidence that the amount is wrong.
+Keep the conservative rule fixed until a fresh holdout measures its cost.
+Repeated amounts, unrelated text on the same line, prose containing
 `this bill`, negation, and unknown intervening charge labels can still falsely
 confirm a value. We do not verify units, subtotals or the
 accounting meaning of a whole sentence. Existing synthetic wording overlaps
@@ -145,7 +151,8 @@ separately in [current-amount-role-check.json](../learning/evidence/current-amou
 ## Next decision
 
 PR B should create a **fresh holdout with varied wording, an amount-due trap,
-tables and number-above-label summary boxes**, with owner-verified labels and
+tables, number-above-label summary boxes, and a current label containing a date,
+day count or percentage**, with owner-verified labels and
 the role rule fixed before evaluation.
 The existing evaluated holdout is not unseen evidence for this check. Measure
 missed distractors and newly flagged correct answers before claiming broader
