@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Indigo Meadow Sample Energy",
+    "period_start": "2027-02-01",
+    "period_end": "2027-02-28",
+    "stated_billing_days": 28,
+    "total_usage_kwh": "205",
+    "daily_supply_rate": {"value": "1.12", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "103.11"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

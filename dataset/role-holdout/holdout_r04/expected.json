@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Quartz Cove Sample Energy",
+    "period_start": "2026-10-01",
+    "period_end": "2026-10-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "198",
+    "daily_supply_rate": {"value": "1.04", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "95.60"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}

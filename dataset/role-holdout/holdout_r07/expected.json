@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Juniper Vale Sample Power",
+    "period_start": "2027-01-01",
+    "period_end": "2027-01-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "175",
+    "daily_supply_rate": {"value": "0.95", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": null
+  },
+  "expected_status": "needs_review",
+  "expected_flags": ["current_bill_amount_missing"]
+}

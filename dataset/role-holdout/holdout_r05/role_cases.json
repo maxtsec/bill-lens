@@ -1,0 +1,11 @@
+{
+  "current_bill_amount": "101.55",
+  "current_label": "Electricity charges",
+  "shape": "E",
+  "printed_distractors": [
+    {"value": "20.00", "printed_label": "Previous balance", "role": "previous_balance"},
+    {"value": "0.00", "printed_label": "Payment", "role": "payment"},
+    {"value": "-5.00", "printed_label": "Account credit", "role": "credit"},
+    {"value": "116.55", "printed_label": "Amount due", "role": "amount_due"}
+  ]
+}

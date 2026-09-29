@@ -135,6 +135,16 @@ Every extraction attempt returns all seven keys under `fields`. Use `null` for a
 
 The human labeler records `expected_flags` from the PDF and these contract rules **independently of the application validator**. Tests check `derive_review_flags(label.fields, document) == set(label.expected_flags)` and `label.expected_status == derive_status(label.expected_flags)`. This combines field checks with M3's presence and current-amount role checks. Do not generate the label's expected flags by calling the validator under test: that would let a flag-logic bug write its own expected answer.
 
+The fresh `dataset/role-holdout` is a deliberate measurement exception: its
+handwritten `expected_flags` record **field-derived and printed-presence ground
+truth only**, never `current_bill_amount_role_unconfirmed`. The latter is the
+heuristic outcome to be measured after owner verification, not a label answer.
+Each case also has separately handwritten `role_cases.json` with the correct
+current amount and annotated non-current account totals. The PR B integrity
+checks use `derive_flags` and `derive_document_flags` only; PR C will preserve
+and hash all three input files before evaluating the frozen role rule. Existing
+development and retailer-holdout oracle semantics remain unchanged.
+
 For `bill_002`, the same shape has `"current_bill_amount": null`, `"expected_status": "needs_review"`, and `"expected_flags": ["current_bill_amount_missing"]`. The PDFs and candidate labels now exist; owner verification is recorded separately in the dataset README.
 
 ### Implemented schema boundary

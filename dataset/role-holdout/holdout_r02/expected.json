@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fields": {
+    "retailer": "Cloud Ember Sample Electric",
+    "period_start": "2026-08-01",
+    "period_end": "2026-08-31",
+    "stated_billing_days": 31,
+    "total_usage_kwh": "180",
+    "daily_supply_rate": {"value": "0.98", "unit": "AUD/day", "gst_basis": "inclusive"},
+    "current_bill_amount": "91.58"
+  },
+  "expected_status": "processed",
+  "expected_flags": []
+}
