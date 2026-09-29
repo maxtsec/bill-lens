@@ -145,8 +145,8 @@ These scores are reported separately from field accuracy but are not statistical
 independent of it. A failed attempt has flags=null and status=failed: empty
 expected flags do not accidentally award it a flag match.
 
-Scoring version **2** combines field flags with printed-value flags from the
-same PdfText used for extraction. `score_attempt` requires that document;
+Scoring version **3** combines field, printed-presence and current-amount-role
+flags from the same PdfText used for extraction. `score_attempt` requires that document;
 the missing-value oracle is still manually labelled. No fields are repaired.
 For example, an unprinted amount now routes to review while retaining its
 incorrect value, so status can improve without a field or exact-flag match.
@@ -203,19 +203,23 @@ request tests prove improved extraction accuracy. To reproduce v2, use its
 original code/schema commit; loading only the old prompt with today's schema
 would not recreate the original model input.
 
-The later M3 printed-value check changes review scoring semantics to **2**.
-Current `evals.compare` refuses the historical scoring-1 artifacts, including
+M3 presence introduced scoring **2**; the current-amount label check uses **3**.
+Current `evals.compare` refuses historical scoring-1 and scoring-2 artifacts, including
 old-vs-new comparisons. The earlier v2/v4 comparisons above describe scoring 1;
 reproduce them with their original checkout. Do not edit their version numbers
 or overwrite original results. A separate offline replay verifies recorded
-PDF/label hashes and reuses saved responses to report decision changes:
+PDF/label hashes and reuses saved responses to report decision changes. The
+first command retains historical scoring-2 decisions; the second compares 2 to 3:
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
+.\.venv\Scripts\python.exe -m scripts.rescore_current_amount_roles --output tmp/m3-role-replay.json
 ```
 
 This is derived evidence, not a new live run or a directly comparable run summary.
-See [ADR-009](../docs/adr/009-printed-value-check.md).
+See [ADR-009](../docs/adr/009-printed-value-check.md) and
+[ADR-010](../docs/adr/010-current-amount-role-check.md). Neither replay makes a
+model call or changes the preserved source artifacts.
 
 ## Tests
 

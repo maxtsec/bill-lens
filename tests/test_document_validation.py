@@ -128,7 +128,8 @@ def test_combined_decision_routes_unprinted_amount_to_review():
     case = next(c for c in CASES if c.name == "bill_002")
     changed = ExtractionFields.model_validate(case.label.fields.model_dump(mode="json") | {"current_bill_amount": "132.66"})
     assert derive_status(derive_flags(changed)) == "processed"
-    assert derive_review_flags(changed, case.document) == {"current_bill_amount_not_printed"}
+    assert derive_review_flags(changed, case.document) == {
+        "current_bill_amount_not_printed", "current_bill_amount_role_unconfirmed"}
     assert derive_status(derive_review_flags(changed, case.document)) == "needs_review"
 
 

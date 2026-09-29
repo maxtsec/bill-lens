@@ -14,7 +14,7 @@ previously in the root README. Use synthetic bills only.
 - [Paid OpenAI API mode](#openai-upload-api-opt-in-spends-credit)
 - [Paid smoke check](#manual-live-smoke-check-spends-credit)
 - [Offline evaluation](#m2-evaluation-offline-first)
-- [Offline printed-value replay](#m3-printed-value-safeguard)
+- [Offline presence and role replays](#m3-presence-and-current-amount-safeguards)
 - [Documentation link check](#check-documentation-links)
 
 ## Run locally
@@ -287,24 +287,28 @@ do not use real bills without revisiting privacy and retention. See the
 comparability rules and the limits of these small synthetic sets. No live evaluation
 is part of ordinary tests or this implementation.
 
-## M3 printed-value safeguard
+## M3 presence and current-amount safeguards
 
-New extractions combine field-derived flags with presence checks on the same
-PdfText supplied to the model. All 11 manual labels produce zero new document
-flags. Offline replay of 88 preserved attempts reduces silent false acceptance
-from **3 to 2**, with **0 new false reviews**: the unprinted 132.66 now routes to
-review, while printed amount-due 162.66 remains a known gap. See the
-[evidence and limits](learning/retailer-brand-evaluation.md#m3-offline-printed-value-replay).
-Dates, roles/context and OCR remain future work. Saved runs keep their original
-decisions; existing processed uploads are not silently re-evaluated.
+New extractions combine field, presence and current-amount-label checks on the
+same PdfText supplied to the model. All 11 manual labels produce zero role
+flags. Presence reduced silent false acceptance **3/88 → 2/88**; the role check
+then reduces **2/88 → 0/88**, with **0 new false reviews** in either replay.
+Both printed 162.66 distractors now reach review, without repairing values.
+See the [evidence and limits](learning/retailer-brand-evaluation.md#m3-offline-current-amount-role-replay).
+Vocabulary and column ambiguity remain; dates and OCR are not checked. Saved
+runs keep their original decisions; stored uploads are not silently re-evaluated.
 
-Scoring version is now **2**; the comparison tool rejects scoring-1 results.
-The original artifacts remain unchanged. Reproduce the new derived evidence
+Scoring version is now **3**; comparisons reject scoring-1 and scoring-2 results.
+The original artifacts remain unchanged. Reproduce the derived evidence
 without an API key or model call (choose a new output filename):
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.rescore_printed_values --output tmp/m3-replay.json
+.\.venv\Scripts\python.exe -m scripts.rescore_current_amount_roles --output tmp/m3-role-replay.json
 ```
+
+The first command explicitly reproduces historical scoring-2 decisions. The
+second verifies that baseline and compares scoring 2 to 3; neither calls a model.
 
 ## Check documentation links
 

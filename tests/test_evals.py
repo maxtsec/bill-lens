@@ -68,8 +68,10 @@ def test_hand_authored_field_oracles(cases, case_index, field, value, outcome):
         assert scored["flags"] == [] and scored["expected_flags"] == ["stated_days_mismatch"]
         assert not scored["flags_match"] and not scored["status_match"]
     if case_index == 2:
-        # Wrong amount can still have the correct review decision.
-        assert scored["flags_match"] and scored["status_match"] and not scored["exact_bill_match"]
+        # The printed amount due is now routed to review without repairing it.
+        assert scored["flags"] == ["current_bill_amount_role_unconfirmed"]
+        assert scored["status"] == "needs_review"
+        assert not scored["flags_match"] and not scored["status_match"] and not scored["exact_bill_match"]
 
 
 @pytest.mark.parametrize("rate,outcome,value_match,gst_match", [
@@ -367,7 +369,7 @@ def test_smoke_uses_the_same_scoring_function():
 
 
 def test_old_scoring_artifacts_are_not_silently_reinterpreted(cases, tmp_path):
-    assert SCORING_VERSION == "2"
+    assert SCORING_VERSION == "3"
     path = ROOT / "docs/learning/evidence/retailer-brand-v4/v4-dev"
     old = json.loads((path / "summary.json").read_text())
     assert old["scoring_version"] == "1"
@@ -376,3 +378,10 @@ def test_old_scoring_artifacts_are_not_silently_reinterpreted(cases, tmp_path):
     new = run.evaluate(cases, fake(cases), tmp_path / "new", metadata(cases, repeats=3))
     with pytest.raises(ValueError, match="different scoring_version"):
         compare.compare_runs(old, new)
+    presence_only = new | {"scoring_version": "2"}
+    with pytest.raises(ValueError, match="different scoring_version"):
+        compare.compare_runs(presence_only, new)
+    historical = tmp_path / "presence-only.json"
+    historical.write_text(json.dumps(presence_only), encoding="utf-8")
+    with pytest.raises(ValueError, match="unsupported harness/scoring version"):
+        compare.load_summary(historical)

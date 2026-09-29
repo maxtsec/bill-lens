@@ -1,4 +1,5 @@
 from decimal import Decimal
+import json
 
 import pytest
 
@@ -45,3 +46,34 @@ def test_cost_estimate_uses_decimal_and_all_output_tokens(resolved):
 ])
 def test_unknown_cost_is_not_zero(resolved, input_tokens, output_tokens):
     assert smoke.estimate_cost("gpt-5.4-mini", resolved, input_tokens, output_tokens) is None
+
+
+def test_smoke_routes_wrong_role_amount_to_review_with_fake_only(monkeypatch, capsys):
+    from bill_lens.extraction import FakeExtractor, build_attempt
+    from tests.helpers import ROOT
+    fake = FakeExtractor.from_dataset(ROOT / "dataset")
+
+    class OfflineAdapter:
+        def __init__(self, **kwargs):
+            pass
+
+        def extract(self, document):
+            attempt = fake.extract(document)
+            fields = attempt.fields.model_dump(mode="json")
+            if fields["current_bill_amount"] is None:  # bill_002 amount-due distractor.
+                fields["current_bill_amount"] = "162.66"
+            return build_attempt(provider="fake", model="fake-v1", prompt_version="fixture-v1",
+                                 raw_response=json.dumps(fields), latency_ms=0)
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(smoke, "OpenAIExtractor", OfflineAdapter)
+    monkeypatch.setenv("BILL_LENS_LIVE", "1")
+    monkeypatch.setenv("OPENAI_API_KEY", "not-a-real-key")
+    assert smoke.main(["--dataset", str(ROOT / "dataset")]) == 0
+    rows = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    amounts = [row for row in rows if row.get("bill") == "bill_002"]
+    assert len(amounts) == 2
+    assert all(row["status"] == "needs_review" and row["flags"] == ["current_bill_amount_role_unconfirmed"]
+               for row in amounts)

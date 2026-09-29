@@ -2,7 +2,7 @@
 
 Run: fake / requested fake-v1 / resolved fake-v1
 Prompt: fixture-v1; effort: None
-Harness/scoring: 1/2; started: 2026-09-29T00:00:00+00:00
+Harness/scoring: 1/3; started: 2026-09-29T00:00:00+00:00
 Code: code-revision (dirty=False)
 Dataset: dataset; 1 synthetic bills @ dataset-revision; repeats: 2
 Completed attempts: 2/2; complete=True; abort=None

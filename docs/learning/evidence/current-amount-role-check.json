@@ -1,0 +1,117 @@
+{
+  "source_scoring_version": "2",
+  "derived_scoring_version": "3",
+  "source_manifest_sha256": "a3cf699b00ca71e328a80cc2ccc7bcf9d73759e8103b3ff76fec506d32ad0fe8",
+  "presence_evidence_sha256": "7c2760d9a6a27820a3214fb76444e35135435bc17e3aee4ef07a79a3d69ca6f7",
+  "implementation_lf_sha256": {
+    "bill_lens/document_validation.py": "7d1bbb8122c46ead236525d27ad17475b1925e835acbe96921c46d2a796b9357",
+    "bill_lens/current_amount_role.py": "0c91e073c54665f6f088d2cd6dd1b0fed7f60ae7b2abddb4c7ef139cc1052daf",
+    "bill_lens/validation.py": "abc610d3b35f80becb6a1c3c4d02facbfc3eceb1610e3eb54c9bc0cc29f61301",
+    "bill_lens/contract.py": "6d823380b78be113083abde3f87732c572daea9060bdafd7b3672e3f9c1fb4a7",
+    "evals/scoring.py": "f9dc86eb39622d3dd1b5afadbd76a2c25858a469d9a3982d6f7926fec0c44dee",
+    "scripts/rescore_printed_values.py": "bbc52953adf9b48e9ca8b7fda7030a0f6f08ac0786620e0886077424f0437f6a",
+    "scripts/rescore_current_amount_roles.py": "4d946ac52da02ed6d3a45c4d721a840f3f790ee4ca0ed30a431edca675df6a64"
+  },
+  "live_api_calls": 0,
+  "per_run": {
+    "v2-dev": {
+      "attempts": 15,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v4-dev": {
+      "attempts": 15,
+      "silent_false_acceptance_before": 1,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 1,
+      "status_changes": 1
+    },
+    "v4-holdout": {
+      "attempts": 18,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v2-bill-002-repeat": {
+      "attempts": 20,
+      "silent_false_acceptance_before": 0,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 0,
+      "status_changes": 0
+    },
+    "v4-bill-002-repeat": {
+      "attempts": 20,
+      "silent_false_acceptance_before": 1,
+      "silent_false_acceptance_after": 0,
+      "new_false_reviews": 0,
+      "flag_changes": 2,
+      "status_changes": 1
+    }
+  },
+  "totals": {
+    "attempts": 88,
+    "silent_false_acceptance_before": 2,
+    "silent_false_acceptance_after": 0,
+    "new_false_reviews": 0,
+    "flag_changes": 3,
+    "status_changes": 2
+  },
+  "changes": [
+    {
+      "run": "v4-dev",
+      "run_id": "20260928T224629Z-d833f7fb2248",
+      "bill": "bill_002",
+      "repeat": 3,
+      "current_bill_amount": "162.66",
+      "flags_before": [],
+      "flags_after": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status_before": "processed",
+      "status_after": "needs_review",
+      "flags_match_after": false
+    },
+    {
+      "run": "v4-bill-002-repeat",
+      "run_id": "20260928T232646Z-90f79aa5b450",
+      "bill": "bill_002",
+      "repeat": 3,
+      "current_bill_amount": "162.66",
+      "flags_before": [],
+      "flags_after": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status_before": "processed",
+      "status_after": "needs_review",
+      "flags_match_after": false
+    },
+    {
+      "run": "v4-bill-002-repeat",
+      "run_id": "20260928T232646Z-90f79aa5b450",
+      "bill": "bill_002",
+      "repeat": 13,
+      "current_bill_amount": "132.66",
+      "flags_before": [
+        "current_bill_amount_not_printed"
+      ],
+      "flags_after": [
+        "current_bill_amount_not_printed",
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status_before": "needs_review",
+      "status_after": "needs_review",
+      "flags_match_after": false
+    }
+  ],
+  "definitions": {
+    "silent_false_acceptance": "expected needs_review, predicted processed",
+    "new_false_review": "original exact-bill-correct attempt now has a role flag"
+  }
+}
