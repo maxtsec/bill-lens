@@ -454,7 +454,7 @@ on correct answers; combined flags still match all manual labels. Null current
 amounts add no role flag. The rule was not loosened after oracle failures.
 
 The [ADR](../adr/010-current-amount-role-check.md) specifies the shared signed
-tokenizer, same-line/previous-line window, nearest-label and distractor tie rules,
+tokenizer, first-number ownership, guarded previous-line fallback and distractor veto,
 and general Australian terminology sources. bill_001 passes when the same value
 has both roles. bill_004's prior-line label and CR suffix pass. bill_005's
 interleaved supply line passes, but this is not column reconstruction: a different
@@ -464,8 +464,12 @@ test). Unknown wording can falsely reject correct values.
 These are small synthetic samples with repeats, not 88 independent layouts.
 Synthetic wording overlaps the vocabulary, so zero observed false reviews may
 be optimistic. Real bills, tables, OCR, unfamiliar labels and prose are untested.
-The next step is **PR B: a fresh holdout with varied wording and an amount-due
-trap**, keeping the rule fixed before evaluation. Model evidence spans remain
+Review found that nearest-label matching could accept `Amount due for this bill`
+and that a numeric previous line could lend its label to the next value. Tests
+now reject both shapes; the 11-label oracle and 88-attempt replay remain unchanged.
+The next step is **PR B: a fresh holdout with varied wording, an amount-due
+trap, tables and number-above-label boxes**, keeping the rule fixed before
+evaluation. Model evidence spans remain
 a later option only if this Python-first check proves insufficient.
 
 ```powershell

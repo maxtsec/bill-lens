@@ -44,12 +44,15 @@ class PrintedNumber:
     start: int
     end: int
     previous_line: str
+    previous_number_end: int
+    previous_line_has_number: bool
 
 
 def printed_number_occurrences(document: PdfText) -> Iterator[PrintedNumber]:
     """One tokenizer/sign policy for both presence and label-role checks."""
     for page in document.pages:
         previous_line = ""  # Never inherit a label across a page boundary.
+        previous_line_has_number = False
         # Sign/credit markers must be adjacent on the same line. A distant
         # 'credit' heading must not flip every number on the page.
         for line in page.text.splitlines():
@@ -66,9 +69,12 @@ def printed_number_occurrences(document: PdfText) -> Iterator[PrintedNumber]:
                 value = Decimal(token.group().replace(",", ""))
                 # copy_negate is exact even beyond the current Decimal precision.
                 yield PrintedNumber(value.copy_negate() if credit else value,
-                                    line, token.start(), token.end(), previous_line)
+                                    line, token.start(), token.end(), previous_line,
+                                    tokens[index - 1].end() if index else 0,
+                                    previous_line_has_number)
             if line.strip():
                 previous_line = line
+                previous_line_has_number = bool(tokens)
 
 
 def _printed_numbers(document: PdfText) -> set[Decimal]:

@@ -178,8 +178,8 @@ owner judgement or independently measured evidence.
 
 ## Roadmap candidates
 
-- PR B: fresh held-out bills with varied wording and an amount-due trap, before
-  claiming the Python role safeguard generalises.
+- PR B: fresh held-out bills with varied wording, an amount-due trap, tables
+  and number-above-label boxes before claiming the role safeguard generalises.
 - Evidence spans **plus label/context verification** only if the Python-first
   check proves insufficient; a matching span alone cannot establish a role.
 - M4 period comparison, once extraction and review semantics support it.
