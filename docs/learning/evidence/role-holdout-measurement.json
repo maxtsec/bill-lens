@@ -1,0 +1,1617 @@
+{
+  "schema_version": 1,
+  "live_api_calls": 0,
+  "rule_commit": "940272e8cbefb07e9f2bce1bcacd0ec4f3415bbb",
+  "dataset_commit": "1047d5e63ba839a66841fc7607a11ec05add3ea3",
+  "prediction_commit": "9fc8131b7c9045005d30685c6d4848dea624db3a",
+  "prediction_sha256": "a838d38303432a7a7f6cf6d42f2fae772f3a86b16e055f7860603723c7a35514",
+  "input_hashes": {
+    "holdout_r01": {
+      "bill.pdf": "a567c99fd22d54fb8af390856955b52ffe9c2f50fff51f61358846ff6f07e112",
+      "expected.json": "b638be9df68463b685aecaa0b75cf9cf442bc7273aced64912e7bb7b864442b2",
+      "role_cases.json": "ca8b4389556f0d2c1d8712c0f72555a5ab24dd20db2e608310169c7ea5cdfe74"
+    },
+    "holdout_r02": {
+      "bill.pdf": "f2184cae89245809ee19827816f98b9c5e5bef97bdcd3c9ca159c16acf2a93f7",
+      "expected.json": "c6db8b0dc2ab6201697a948ecb1d613f67f786dbab3e9be568e5f5e0045ae89e",
+      "role_cases.json": "a7db138f55e354cd8c369f8ee1a6e975565908a1bec01d607d83b9f5b67f18d1"
+    },
+    "holdout_r03": {
+      "bill.pdf": "968eea267e0126ff338930885fd2024c9e0439afdf97ed400e22ef6d37b818ab",
+      "expected.json": "f7aedae34f1d65982303c2276f7fffc8a95f68415dca594b48594647b16b5c65",
+      "role_cases.json": "26fb1604b4d05d7bc2143a944d44364778607470f57542291d9df6c3e99bceb3"
+    },
+    "holdout_r04": {
+      "bill.pdf": "7f07e5ce41477041aa52c66c083e1da6ba4c0d01153a94286a6f4928364e5e5b",
+      "expected.json": "00a487b1aacd050a6dce1e9dc8dfaed4065f01c9b9440ac5a12b558c6c59fdbd",
+      "role_cases.json": "596361ecd223e9a412ff064ab08b3743a4d2545569b7e825c4d1f53934935288"
+    },
+    "holdout_r05": {
+      "bill.pdf": "957fde2df284545b2039b2d837732f246b5822cd924f0861de0be2bbc8062084",
+      "expected.json": "819b326a765a6c77c6194119abbe037901025ad05288f1bf7642971d8ad25a67",
+      "role_cases.json": "1c3f2e13ae9d5805165dd19d726bd361ce45e8e976533d4b2d20311df4def66f"
+    },
+    "holdout_r06": {
+      "bill.pdf": "39fda04c423104ec0d9e11089683b6301edc5dcb07a175acab63d09baf9d3993",
+      "expected.json": "9e4cef51c590169881ea3e4b9307ca6c5d7c8d5970aea7f50d81154a05c4f65b",
+      "role_cases.json": "37aa88c052b0dfdff150df1b26a6db4270a79aed7aabfa84f8428920aad67e88"
+    },
+    "holdout_r07": {
+      "bill.pdf": "5bf1ff28ea5f9acbd3f6aa2898991d86396cf7c82e181a84047478f72868d239",
+      "expected.json": "9c739703559f152ca56305513f8c1f210cfbedd204308464508e0dcd29ac483f",
+      "role_cases.json": "606f49bc343c75bf128afed31a7fc0706cfcdf18ccc01fc46d432fa78603a71f"
+    },
+    "holdout_r08": {
+      "bill.pdf": "617df9eee77f71a39167e028929cc60676015ee9ce135eaf87670305e1c1206b",
+      "expected.json": "883062f0654c1e498f644cecd41a758b6a0da28744ec19e64e437042dee8ec5d",
+      "role_cases.json": "9a11208f6befb53d614666d18717d92734f1f784d9f4f22c9d9a2082021d9eaf"
+    },
+    "holdout_r09": {
+      "bill.pdf": "b193e96110d02714c348fab407f165a4c93bd5643125fe249c59bd25338ac422",
+      "expected.json": "e00b18656c503264af6349fbc61f8a94cc9221c632c03b223eaa3f4701ba23e4",
+      "role_cases.json": "aab6149673c41637c9bbfb558f1ea01e0fe24e495db2664a5ff7224e80a4b0fb"
+    },
+    "holdout_r10": {
+      "bill.pdf": "78cab6090a7f6d6f69e517673b5a9ee6b12236d4b3a518e1ae7d88cc3e08961e",
+      "expected.json": "ee7e799343aa81b089861ebfc9bca2d1560de3f0469c0dca2892009915f49acf",
+      "role_cases.json": "e0fd4b2c3e02b30deec9d7875bcdd2e2b937fdf3c61601f8a5a432abad840d9d"
+    }
+  },
+  "input_manifest_sha256": "15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5",
+  "implementation_lf_sha256": {
+    "bill_lens/current_amount_role.py": "669d09ca028f49568ddd326e8d6e6edeee2c0d428f8c55bd480d3de77ae1a575",
+    "bill_lens/document_validation.py": "0f84cbe3f60d7178ca1360e9a6cbbb2cccf75a818505d50bd8ea58771e9b9430",
+    "bill_lens/validation.py": "abc610d3b35f80becb6a1c3c4d02facbfc3eceb1610e3eb54c9bc0cc29f61301",
+    "bill_lens/pdf_text.py": "4acddb5115595a56142bc95bfcf47c6b9dbdcd7f7263e13cfd07096310b9eff6",
+    "bill_lens/contract.py": "6d823380b78be113083abde3f87732c572daea9060bdafd7b3672e3f9c1fb4a7",
+    "evals/role_cases.py": "d1462ee11104727fe5d5c5fbeba26a5b8f140424a3c899f911088f8656108fd1",
+    "scripts/measure_role_holdout.py": "9e6e987a00dcfb5066be4811634edaea00c8234f280a08d7157dbc1b988edbc0"
+  },
+  "per_case": [
+    {
+      "case_id": "holdout_r01",
+      "shape": "A",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "106.05",
+        "predicted": "confirmed",
+        "prediction_reason": "ADR-010 steps 2-4: same-line Current charges precedes this number without a distractor.",
+        "measured": "confirmed",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 15,
+            "line": "Current charges: AUD 106.05",
+            "previous_non_empty_line": "Account credit: AUD 3.00"
+          }
+        ],
+        "role_flags": [],
+        "combined_flags": [],
+        "status": "processed",
+        "matches_label": true
+      },
+      "distractors": [
+        {
+          "value": "55.00",
+          "printed_label": "Opening balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 12,
+              "line": "Opening balance: AUD 55.00",
+              "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "20.00",
+          "printed_label": "Payments received",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Payments received: AUD 20.00",
+              "previous_non_empty_line": "Opening balance: AUD 55.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-3.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Account credit: AUD 3.00",
+              "previous_non_empty_line": "Payments received: AUD 20.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "138.05",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Amount due: AUD 138.05",
+              "previous_non_empty_line": "Current charges: AUD 106.05"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 0,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r02",
+      "shape": "B",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "91.58",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 steps 2 and 4: the number-only row borrows its header, which contains both Current charges and due/payment distractors, so veto.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 13,
+            "line": "42.00 12.00 5.00 91.58 116.58",
+            "previous_non_empty_line": "Previous balance Payment Account credit Current charges Amount Due"
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "42.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 steps 2 and 4: the borrowed table header contains balance and due, so veto.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "42.00 12.00 5.00 91.58 116.58",
+              "previous_non_empty_line": "Previous balance Payment Account credit Current charges Amount Due"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "12.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 steps 2 and 4: the borrowed table header contains payment and due, so veto.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "42.00 12.00 5.00 91.58 116.58",
+              "previous_non_empty_line": "Previous balance Payment Account credit Current charges Amount Due"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "5.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 steps 2 and 4: the borrowed table header contains due/payment distractors, so veto.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "42.00 12.00 5.00 91.58 116.58",
+              "previous_non_empty_line": "Previous balance Payment Account credit Current charges Amount Due"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "116.58",
+          "printed_label": "Amount Due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 steps 2 and 4: the borrowed table header contains Amount Due, so veto.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "42.00 12.00 5.00 91.58 116.58",
+              "previous_non_empty_line": "Previous balance Payment Account credit Current charges Amount Due"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r03",
+      "shape": "C",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "103.20",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 steps 2-3: AUD is only decoration; the prior GST note has no current phrase, and the caption comes after the number.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 12,
+            "line": "AUD 103.20 AUD 116.20",
+            "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "25.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Previous balance: AUD 25.00",
+              "previous_non_empty_line": "Total current charges Total amount due"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "10.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Payment: AUD 10.00",
+              "previous_non_empty_line": "Previous balance: AUD 25.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-2.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Account credit: AUD 2.00",
+              "previous_non_empty_line": "Payment: AUD 10.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "116.20",
+          "printed_label": "Total amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 steps 1-3: the caption follows the number; its intervening AUD/prior GST note has no current phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 12,
+              "line": "AUD 103.20 AUD 116.20",
+              "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r04",
+      "shape": "D",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "95.60",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 steps 1-3: numeric 10 in the known label consumes Current charges; the remaining GST/AUD prefix has no current phrase.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 12,
+            "line": "Current charges (incl. 10% GST): AUD 95.60",
+            "previous_non_empty_line": "Daily supply rate: AUD 1.04/day (GST inclusive)"
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "30.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Previous balance: AUD 30.00",
+              "previous_non_empty_line": "Current charges (incl. 10% GST): AUD 95.60"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "7.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Payment: AUD 7.00",
+              "previous_non_empty_line": "Previous balance: AUD 30.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-10.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: the signed credit occurrence has no current-charge phrase; the unsigned GST percentage is a different value.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 8,
+              "line": "Service period: 2026-10-01 to 2026-10-31 (inclusive)",
+              "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+            },
+            {
+              "page": 1,
+              "line_number": 8,
+              "line": "Service period: 2026-10-01 to 2026-10-31 (inclusive)",
+              "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+            },
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Account credit: AUD 10.00",
+              "previous_non_empty_line": "Payment: AUD 7.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "108.60",
+          "printed_label": "Amount Due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Amount Due: AUD 108.60",
+              "previous_non_empty_line": "Account credit: AUD 10.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r05",
+      "shape": "E",
+      "label_vocabulary": "out",
+      "correct": {
+        "value": "101.55",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 step 3: Electricity charges is outside the frozen current-label vocabulary.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 13,
+            "line": "Electricity charges: AUD 101.55",
+            "previous_non_empty_line": "Current service"
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "20.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Previous balance: AUD 20.00",
+              "previous_non_empty_line": "Electricity charges: AUD 101.55"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "8.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Payment: AUD 8.00",
+              "previous_non_empty_line": "Previous balance: AUD 20.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-5.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Account credit: AUD 5.00",
+              "previous_non_empty_line": "Payment: AUD 8.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "108.55",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 17,
+              "line": "Amount due: AUD 108.55",
+              "previous_non_empty_line": "Account credit: AUD 5.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r06",
+      "shape": "F",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "120.90",
+        "predicted": "confirmed",
+        "prediction_reason": "ADR-010 steps 2-4: same-line Current charges precedes this number without a distractor.",
+        "measured": "confirmed",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 12,
+            "line": "Current charges: AUD 120.90",
+            "previous_non_empty_line": "Daily supply rate: AUD 1.00/day (GST inclusive)"
+          }
+        ],
+        "role_flags": [],
+        "combined_flags": [],
+        "status": "processed",
+        "matches_label": true
+      },
+      "distractors": [
+        {
+          "value": "40.00",
+          "printed_label": "Opening balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Opening balance: AUD 40.00",
+              "previous_non_empty_line": "Current charges: AUD 120.90"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "85.00",
+          "printed_label": "Payments received",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Payments received: AUD 85.00",
+              "previous_non_empty_line": "Opening balance: AUD 40.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-45.00",
+          "printed_label": "Balance carried forward",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance and carried forward veto the signed CR occurrence.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Balance carried forward: AUD 45.00 CR",
+              "previous_non_empty_line": "Payments received: AUD 85.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "75.90",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Amount due: AUD 75.90",
+              "previous_non_empty_line": "Balance carried forward: AUD 45.00 CR"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 0,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r07",
+      "shape": "G",
+      "label_vocabulary": "n/a",
+      "correct": {
+        "value": null,
+        "predicted": "missing",
+        "prediction_reason": "ADR-010 null rule adds no role flag; the field rule yields current_bill_amount_missing and needs_review.",
+        "measured": "missing",
+        "prediction_match": true,
+        "occurrences": [],
+        "role_flags": [],
+        "combined_flags": [
+          "current_bill_amount_missing"
+        ],
+        "status": "needs_review",
+        "matches_label": true
+      },
+      "distractors": [
+        {
+          "value": "40.00",
+          "printed_label": "Opening balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Opening balance: AUD 40.00",
+              "previous_non_empty_line": "Account activity"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "10.00",
+          "printed_label": "Payments received",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Payments received: AUD 10.00",
+              "previous_non_empty_line": "Opening balance: AUD 40.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-5.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Account credit: AUD 5.00",
+              "previous_non_empty_line": "Payments received: AUD 10.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "112.20",
+          "printed_label": "Total amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Total amount due: AUD 112.20",
+              "previous_non_empty_line": "Account credit: AUD 5.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 0,
+        "false_reviews": 0,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 4,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r08",
+      "shape": "H",
+      "label_vocabulary": "in",
+      "correct": {
+        "value": "103.11",
+        "predicted": "confirmed",
+        "prediction_reason": "ADR-010 steps 2-4: page 2 has a same-line Current charges label without a distractor.",
+        "measured": "confirmed",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 2,
+            "line_number": 8,
+            "line": "Current charges: AUD 103.11",
+            "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+          }
+        ],
+        "role_flags": [],
+        "combined_flags": [],
+        "status": "processed",
+        "matches_label": true
+      },
+      "distractors": [
+        {
+          "value": "60.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line page-1 label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 8,
+              "line": "Previous balance: AUD 60.00",
+              "previous_non_empty_line": "Daily supply rate: AUD 1.12/day (GST inclusive)"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "20.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line page-1 label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 9,
+              "line": "Payment: AUD 20.00",
+              "previous_non_empty_line": "Previous balance: AUD 60.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-5.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this page-1 credit label contains no current-charge phrase; no cross-page inheritance.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 10,
+              "line": "Account credit: AUD 5.00",
+              "previous_non_empty_line": "Payment: AUD 20.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "138.11",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line page-1 label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 11,
+              "line": "Amount due: AUD 138.11",
+              "previous_non_empty_line": "Account credit: AUD 5.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 0,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r09",
+      "shape": "E",
+      "label_vocabulary": "out",
+      "correct": {
+        "value": "85.13",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 step 3: Total charges is outside the frozen current-label vocabulary.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 12,
+            "line": "Total charges: AUD 85.13",
+            "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "27.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Previous balance: AUD 27.00",
+              "previous_non_empty_line": "Total charges: AUD 85.13"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "9.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Payment: AUD 9.00",
+              "previous_non_empty_line": "Previous balance: AUD 27.00"
+            },
+            {
+              "page": 1,
+              "line_number": 17,
+              "line": "ROLE-R09 | Fictional electricity statement | Page 1 of 1",
+              "previous_non_empty_line": "Amount due: AUD 99.13"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-4.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Account credit: AUD 4.00",
+              "previous_non_empty_line": "Payment: AUD 9.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "99.13",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Amount due: AUD 99.13",
+              "previous_non_empty_line": "Account credit: AUD 4.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    },
+    {
+      "case_id": "holdout_r10",
+      "shape": "E",
+      "label_vocabulary": "out",
+      "correct": {
+        "value": "115.50",
+        "predicted": "false_review",
+        "prediction_reason": "ADR-010 step 3: Total electricity charges is outside the frozen current-label vocabulary.",
+        "measured": "false_review",
+        "prediction_match": true,
+        "occurrences": [
+          {
+            "page": 1,
+            "line_number": 12,
+            "line": "Total electricity charges: AUD 115.50",
+            "previous_non_empty_line": "Rates and charge lines are GST inclusive."
+          }
+        ],
+        "role_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "combined_flags": [
+          "current_bill_amount_role_unconfirmed"
+        ],
+        "status": "needs_review",
+        "matches_label": false
+      },
+      "distractors": [
+        {
+          "value": "32.00",
+          "printed_label": "Previous balance",
+          "role": "previous_balance",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 13,
+              "line": "Previous balance: AUD 32.00",
+              "previous_non_empty_line": "Total electricity charges: AUD 115.50"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "11.00",
+          "printed_label": "Payment",
+          "role": "payment",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 14,
+              "line": "Payment: AUD 11.00",
+              "previous_non_empty_line": "Previous balance: AUD 32.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "-6.00",
+          "printed_label": "Account credit",
+          "role": "credit",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 15,
+              "line": "Account credit: AUD 6.00",
+              "previous_non_empty_line": "Payment: AUD 11.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        },
+        {
+          "value": "130.50",
+          "printed_label": "Amount due",
+          "role": "amount_due",
+          "predicted": "caught",
+          "prediction_reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation.",
+          "measured": "caught",
+          "prediction_match": true,
+          "occurrences": [
+            {
+              "page": 1,
+              "line_number": 16,
+              "line": "Amount due: AUD 130.50",
+              "previous_non_empty_line": "Account credit: AUD 6.00"
+            }
+          ],
+          "role_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "presence_flags": [],
+          "combined_flags": [
+            "current_bill_amount_role_unconfirmed"
+          ],
+          "status": "needs_review",
+          "silent_false_acceptance": false
+        }
+      ],
+      "counts": {
+        "correct_total": 1,
+        "false_reviews": 1,
+        "distractors_total": 4,
+        "caught": 4,
+        "missed": 0,
+        "silent_false_acceptances": 0,
+        "prediction_items": 5,
+        "prediction_mismatches": 0
+      }
+    }
+  ],
+  "per_shape": {
+    "A": {
+      "correct_total": 1,
+      "false_reviews": 0,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    },
+    "B": {
+      "correct_total": 1,
+      "false_reviews": 1,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    },
+    "C": {
+      "correct_total": 1,
+      "false_reviews": 1,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    },
+    "D": {
+      "correct_total": 1,
+      "false_reviews": 1,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    },
+    "E": {
+      "correct_total": 3,
+      "false_reviews": 3,
+      "distractors_total": 12,
+      "caught": 12,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 15,
+      "prediction_mismatches": 0
+    },
+    "F": {
+      "correct_total": 1,
+      "false_reviews": 0,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    },
+    "G": {
+      "correct_total": 0,
+      "false_reviews": 0,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 4,
+      "prediction_mismatches": 0
+    },
+    "H": {
+      "correct_total": 1,
+      "false_reviews": 0,
+      "distractors_total": 4,
+      "caught": 4,
+      "missed": 0,
+      "silent_false_acceptances": 0,
+      "prediction_items": 5,
+      "prediction_mismatches": 0
+    }
+  },
+  "totals": {
+    "correct_total": 9,
+    "false_reviews": 6,
+    "distractors_total": 40,
+    "caught": 40,
+    "missed": 0,
+    "silent_false_acceptances": 0,
+    "prediction_items": 49,
+    "prediction_mismatches": 0
+  },
+  "r07_decision": {
+    "case_id": "holdout_r07",
+    "role_flags": [],
+    "combined_flags": [
+      "current_bill_amount_missing"
+    ],
+    "status": "needs_review",
+    "matches_label": true,
+    "prediction_match": true
+  },
+  "prediction_mismatches": [],
+  "definitions": {
+    "false_review": "correct non-null amount has flags/status different from handwritten field/presence ground truth",
+    "missed_distractor": "annotated non-current value did not get the role flag",
+    "silent_false_acceptance": "distractor substitution produced processed status"
+  }
+}
