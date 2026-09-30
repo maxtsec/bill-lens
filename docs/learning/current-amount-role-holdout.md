@@ -23,10 +23,15 @@ output overwrite. The evidence includes hashes for each of the 30 PDF/label/
 role-annotation files, their manifest hash
 `15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5`,
 the preregistered prediction hash, and implementation fingerprints.
-The saved evidence reproduced byte for byte at `a8f5706`. After an
-implementation fingerprint changes, the byte-replay test skips with a pointer
-to that commit; the saved input hashes, prediction hash, totals and PDF
-provenance are still checked on every run. Reproduce from `a8f5706` rather
+The saved evidence reproduced byte for byte at `a8f5706`. The current replay
+compares every result and provenance field, excluding only the measurement
+script's own hash, which is still recorded in each output. Changes to that
+runner therefore do not block reproduction, but any changed measurement result
+still fails the comparison. Rule, validation, schema, PDF-reader and
+role-annotation code fingerprints remain locked: if one changes, replay skips
+with a pointer to `a8f5706`, and direct measurement refuses execution. The saved
+evidence hash, input hashes, prediction hash, totals and PDF provenance are
+checked on every run regardless. Reproduce a changed rule from `a8f5706` rather
 than regenerating this one-time evidence with newer code.
 
 No live API call was made. This is a deterministic counterfactual: distractors
