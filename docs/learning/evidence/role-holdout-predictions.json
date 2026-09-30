@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "rule_commit": "940272e",
+  "dataset_commit": "1047d5e",
+  "basis": "Hand predictions from ADR-010 and extract_pdf_text page lines; no role check was run before this file was committed.",
+  "cases": [
+    {
+      "case_id": "holdout_r01",
+      "shape": "A",
+      "correct": {"value": "106.05", "predicted_outcome": "confirmed", "reason": "ADR-010 steps 2-4: same-line Current charges precedes this number without a distractor."},
+      "distractors": [
+        {"value": "55.00", "printed_label": "Opening balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "20.00", "printed_label": "Payments received", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation."},
+        {"value": "-3.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "138.05", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r02",
+      "shape": "B",
+      "correct": {"value": "91.58", "predicted_outcome": "false_review", "reason": "ADR-010 steps 2 and 4: the number-only row borrows its header, which contains both Current charges and due/payment distractors, so veto."},
+      "distractors": [
+        {"value": "42.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 steps 2 and 4: the borrowed table header contains balance and due, so veto."},
+        {"value": "12.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 steps 2 and 4: the borrowed table header contains payment and due, so veto."},
+        {"value": "5.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 steps 2 and 4: the borrowed table header contains due/payment distractors, so veto."},
+        {"value": "116.58", "printed_label": "Amount Due", "predicted_outcome": "caught", "reason": "ADR-010 steps 2 and 4: the borrowed table header contains Amount Due, so veto."}
+      ]
+    },
+    {
+      "case_id": "holdout_r03",
+      "shape": "C",
+      "correct": {"value": "103.20", "predicted_outcome": "false_review", "reason": "ADR-010 steps 2-3: AUD is only decoration; the prior GST note has no current phrase, and the caption comes after the number."},
+      "distractors": [
+        {"value": "25.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "10.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation."},
+        {"value": "-2.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "116.20", "printed_label": "Total amount due", "predicted_outcome": "caught", "reason": "ADR-010 steps 1-3: the caption follows the number; its intervening AUD/prior GST note has no current phrase."}
+      ]
+    },
+    {
+      "case_id": "holdout_r04",
+      "shape": "D",
+      "correct": {"value": "95.60", "predicted_outcome": "false_review", "reason": "ADR-010 steps 1-3: numeric 10 in the known label consumes Current charges; the remaining GST/AUD prefix has no current phrase."},
+      "distractors": [
+        {"value": "30.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "7.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation."},
+        {"value": "-10.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: the signed credit occurrence has no current-charge phrase; the unsigned GST percentage is a different value."},
+        {"value": "108.60", "printed_label": "Amount Due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r05",
+      "shape": "E",
+      "correct": {"value": "101.55", "predicted_outcome": "false_review", "reason": "ADR-010 step 3: Electricity charges is outside the frozen current-label vocabulary."},
+      "distractors": [
+        {"value": "20.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "8.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation."},
+        {"value": "-5.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "108.55", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r06",
+      "shape": "F",
+      "correct": {"value": "120.90", "predicted_outcome": "confirmed", "reason": "ADR-010 steps 2-4: same-line Current charges precedes this number without a distractor."},
+      "distractors": [
+        {"value": "40.00", "printed_label": "Opening balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "85.00", "printed_label": "Payments received", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation."},
+        {"value": "-45.00", "printed_label": "Balance carried forward", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance and carried forward veto the signed CR occurrence."},
+        {"value": "75.90", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r07",
+      "shape": "G",
+      "correct": {"value": null, "predicted_outcome": "missing", "reason": "ADR-010 null rule adds no role flag; the field rule yields current_bill_amount_missing and needs_review."},
+      "distractors": [
+        {"value": "40.00", "printed_label": "Opening balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "10.00", "printed_label": "Payments received", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payments in the same-line label vetoes confirmation."},
+        {"value": "-5.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "112.20", "printed_label": "Total amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r08",
+      "shape": "H",
+      "correct": {"value": "103.11", "predicted_outcome": "confirmed", "reason": "ADR-010 steps 2-4: page 2 has a same-line Current charges label without a distractor."},
+      "distractors": [
+        {"value": "60.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line page-1 label vetoes confirmation."},
+        {"value": "20.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line page-1 label vetoes confirmation."},
+        {"value": "-5.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this page-1 credit label contains no current-charge phrase; no cross-page inheritance."},
+        {"value": "138.11", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line page-1 label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r09",
+      "shape": "E",
+      "correct": {"value": "85.13", "predicted_outcome": "false_review", "reason": "ADR-010 step 3: Total charges is outside the frozen current-label vocabulary."},
+      "distractors": [
+        {"value": "27.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "9.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation."},
+        {"value": "-4.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "99.13", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    },
+    {
+      "case_id": "holdout_r10",
+      "shape": "E",
+      "correct": {"value": "115.50", "predicted_outcome": "false_review", "reason": "ADR-010 step 3: Total electricity charges is outside the frozen current-label vocabulary."},
+      "distractors": [
+        {"value": "32.00", "printed_label": "Previous balance", "predicted_outcome": "caught", "reason": "ADR-010 step 4: balance in the same-line label vetoes confirmation."},
+        {"value": "11.00", "printed_label": "Payment", "predicted_outcome": "caught", "reason": "ADR-010 step 4: payment in the same-line label vetoes confirmation."},
+        {"value": "-6.00", "printed_label": "Account credit", "predicted_outcome": "caught", "reason": "ADR-010 step 3: this same-line credit label contains no current-charge phrase."},
+        {"value": "130.50", "printed_label": "Amount due", "predicted_outcome": "caught", "reason": "ADR-010 step 4: amount due in the same-line label vetoes confirmation."}
+      ]
+    }
+  ]
+}
