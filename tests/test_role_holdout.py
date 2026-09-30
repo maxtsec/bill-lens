@@ -138,8 +138,14 @@ def test_every_account_amount_and_charge_line_reconciles_from_pdf(cases, role_ca
         assert current_from_lines == Decimal(annotation.current_bill_amount)
     by_role = {row.role: account[row.printed_label] for row in annotation.printed_distractors}
     assert set(by_role) == {"previous_balance", "payment", "credit", "amount_due"}
-    assert by_role["amount_due"] == (current_from_lines + by_role["previous_balance"]
-                                     - abs(by_role["payment"]) - abs(by_role["credit"]))
+    if name == "holdout_r06":
+        # Carried forward is the subtotal after the previous payment, not a
+        # third independent credit to subtract again.
+        assert by_role["credit"] == by_role["previous_balance"] - abs(by_role["payment"])
+        assert by_role["amount_due"] == current_from_lines + by_role["credit"]
+    else:
+        assert by_role["amount_due"] == (current_from_lines + by_role["previous_balance"]
+                                         - abs(by_role["payment"]) - abs(by_role["credit"]))
 
 
 def test_all_shapes_and_isolated_vocabulary_allocation(cases, role_cases):
@@ -169,7 +175,11 @@ def test_all_shapes_and_isolated_vocabulary_allocation(cases, role_cases):
     assert any(ch.isdigit() for ch in role_cases["holdout_r04"].current_label)
     assert not known(role_cases["holdout_r05"].current_label)
     assert "Balance carried forward: AUD 45.00 CR" in lines(cases["holdout_r06"])
+    assert "Opening balance: AUD 40.00" in lines(cases["holdout_r06"])
+    assert "Payments received: AUD 85.00" in lines(cases["holdout_r06"])
     assert Decimal(role_cases["holdout_r06"].printed_distractors[2].value) < 0
+    assert all("Balance carried forward" not in "\n".join(lines(cases[name]))
+               for name in NAMES if name != "holdout_r06")
     assert role_cases["holdout_r07"].current_bill_amount is None
     pages = cases["holdout_r08"].document.pages
     assert "Amount due: AUD 138.11" in pages[0].text
