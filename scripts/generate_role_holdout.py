@@ -55,7 +55,7 @@ FIGURES = (
     Figures("Fenwick Grove Sample Power", "2026-09-01", "2026-09-30", 30, 260, "0.27", "1.10", "25.00", "10.00", "2.00"),
     Figures("Quartz Cove Sample Energy", "2026-10-01", "2026-10-31", 31, 198, "0.32", "1.04", "30.00", "7.00", "10.00"),
     Figures("Paper Lantern Sample Power", "2026-11-01", "2026-11-30", 30, 225, "0.31", "1.06", "20.00", "8.00", "5.00"),
-    Figures("Spruce Wattle Sample Electricity", "2026-12-01", "2026-12-31", 31, 310, "0.29", "1.00", "15.00", "5.00", "45.00"),
+    Figures("Spruce Wattle Sample Electricity", "2026-12-01", "2026-12-31", 31, 310, "0.29", "1.00", "40.00", "85.00", "0.00"),
     Figures("Juniper Vale Sample Power", "2027-01-01", "2027-01-31", 31, 175, "0.33", "0.95", "40.00", "10.00", "5.00"),
     Figures("Indigo Meadow Sample Energy", "2027-02-01", "2027-02-28", 28, 205, "0.35", "1.12", "60.00", "20.00", "5.00"),
     Figures("Marsh Silver Sample Power", "2027-03-01", "2027-03-31", 31, 190, "0.28", "1.03", "27.00", "9.00", "4.00"),
@@ -216,16 +216,18 @@ def holdout_r05(root):
 
 def holdout_r06(root):
     f = FIGURES[5]
+    carried_forward = Decimal(f.previous) - Decimal(f.payments)
+    assert carried_forward < 0
     c = new_bill(root, 6)
     page_head(c, 6, f.retailer, accent="#55743D")
     text(c, 50, 119, "Electricity charges and account credit", 16, "Helvetica-Bold")
     charges(c, f, 153)
     period(c, f, 283)
     text(c, 50, 412, f"Current charges: AUD {money(f.current)}", 17, "Helvetica-Bold")
-    text(c, 50, 473, f"Previous balance: AUD {f.previous}")
-    text(c, 50, 498, f"Payment: AUD {f.payments}")
+    text(c, 50, 473, f"Opening balance: AUD {f.previous}")
+    text(c, 50, 498, f"Payments received: AUD {f.payments}")
     box(c, 43, 517, WIDTH - 86, 51, "#EFF5E9")
-    text(c, 54, 551, f"Balance carried forward: AUD {f.credits} CR", 13, "Helvetica-Bold", "#55743D")
+    text(c, 54, 551, f"Balance carried forward: AUD {money(-carried_forward)} CR", 13, "Helvetica-Bold", "#55743D")
     text(c, 50, 620, f"Amount due: AUD {money(f.due)}", 18, "Helvetica-Bold")
     c.save()
 

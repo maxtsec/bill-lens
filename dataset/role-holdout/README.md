@@ -46,7 +46,7 @@ non-current amount; charge-line amounts are excluded from `role_cases.json`.
 | holdout_r03 | C: value-above-caption boxes | `Total current charges` (EA-PDF) | In | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Account credit` (AGL-WA); `Total amount due` (EA-PDF) | 4 |
 | holdout_r04 | D: GST number inside total label | `Current charges (incl. 10% GST)` (EA and AGL-VIC, adapted) | In | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Account credit` (AGL-WA); `Amount Due` (AGL-VIC) | 4 |
 | holdout_r05 | E: current label outside vocabulary | `Electricity charges` (AGL-VIC) | Out | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Account credit` (AGL-WA); `Amount due` (AGL-VIC) | 4 |
-| holdout_r06 | F: credit carried forward | `Current charges` (EA) | In | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Balance carried forward` (EA); `Amount due` (EA) | 4 |
+| holdout_r06 | F: credit carried forward | `Current charges` (EA) | In | `Opening balance` (EA); `Payments received` (EA); `Balance carried forward` (EA); `Amount due` (EA) | 4 |
 | holdout_r07 | G: no printed current total | none | n/a | `Opening balance` (EA); `Payments received` (EA); `Account credit` (AGL-WA); `Total amount due` (EA-PDF) | 4 |
 | holdout_r08 | H: due on page 1, current on page 2 | `Current charges` (EA) | In | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Account credit` (AGL-WA); `Amount due` (AGL-VIC) | 4 |
 | holdout_r09 | E: ordinary summary | `Total charges` (AGL-VIC) | Out | `Previous balance` (AGL-VIC); `Payment` (AGL-VIC); `Account credit` (AGL-WA); `Amount due` (AGL-VIC) | 4 |
@@ -91,11 +91,14 @@ production review flags are checked as one combined decision.
 `role_cases.json` separately records the correct amount (null for R07), its
 printed label (null for R07), shape A-H, and every account-level distractor.
 Each distractor has a signed numeric `value`, exact `printed_label`, and role.
-The R06 `45.00 CR` credit is recorded as `"-45.00"`. A same-line `Account
-credit: AUD 5.00` is also `"-5.00"` under the shared numeric tokenizer's
-credit-prefix rule; the value-only table row in R02 stays `"5.00"` because its
-label is on another line. Both are credits and their positive magnitudes are
-subtracted in account arithmetic. No distractor here equals its bill's correct
+The R06 `45.00 CR` balance carried forward is recorded as `"-45.00"`.
+It is the **subtotal** after the previous bill's opening balance and payments:
+`40.00 - 85.00 = -45.00`; amount due is `-45.00 + 120.90 = 75.90`.
+The opening balance and payments are not subtracted again. A same-line
+`Account credit: AUD 5.00` is also `"-5.00"` under the shared numeric
+tokenizer's credit-prefix rule; the value-only table row in R02 stays
+`"5.00"` because its label is on another line. Those other account credits
+are independent terms deducted from payable balance. No distractor here equals its bill's correct
 current amount; if such a duplicate is added, exclude it from role cases and
 explain the exclusion here. All 40 listed account-level distractors are
 nonzero, so zero balances cannot dilute the later missed-distractor count.
@@ -103,8 +106,9 @@ nonzero, so zero balances cannot dilute the later missed-distractor count.
 All other fields are deliberately straightforward: ISO service dates, a
 period-level day count, printed import usage, one AUD/day supply rate and an
 explicit GST-inclusive basis. Displayed charge lines sum to the current total;
-amount due equals previous balance minus payments and credits plus current
-charges. R07 prints its line items and amount due but **no current total**, so
+amount due equals previous balance minus payments and independent credits plus
+current charges, or (for R06) the carried-forward subtotal plus current charges.
+R07 prints its line items and amount due but **no current total**, so
 its field is null with `current_bill_amount_missing`.
 
 ## Regenerate and inspect offline
