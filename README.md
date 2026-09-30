@@ -26,9 +26,14 @@ attempts, including repeated calls on the same bills; they are not independent l
   still passes presence alone. [Offline replay](docs/learning/retailer-brand-evaluation.md#m3-offline-printed-value-replay)
 - **A Python current-amount label check then reduced 2/88 to 0/88**, with zero
   new false reviews and zero model calls. Both saved amount-due errors now reach
-  review; values are not repaired. This heuristic still needs a fresh holdout
-  with varied wording and an amount-due trap.
+  review; values are not repaired.
   [Role replay and limits](docs/learning/retailer-brand-evaluation.md#m3-offline-current-amount-role-replay)
+- **On a fresh, owner-verified synthetic role holdout**, the frozen check sent
+  **6/9** correct current amounts to review (3/6 layout traps; 3/3 unfamiliar
+  labels) and caught **40/40** chosen signed distractors. Hand predictions and
+  measurements agreed on **49/49** values. This offline counterfactual is not a
+  real-bill error rate or a live model result.
+  [Method, per-shape counts and limits](docs/learning/current-amount-role-holdout.md)
 
 ## Architecture
 

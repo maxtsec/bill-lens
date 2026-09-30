@@ -159,3 +159,15 @@ missed distractors and newly flagged correct answers before claiming broader
 coverage. Request model evidence spans plus context verification only if this
 Python-first approach proves insufficient. No new holdout or live evaluation
 is part of this PR.
+
+## Measured on the fresh holdout (2026-09-30)
+
+The owner-verified, synthetic [role holdout](../learning/current-amount-role-holdout.md)
+was measured offline after [predictions were committed separately](../learning/evidence/role-holdout-predictions.json).
+Correct amounts received false reviews in **6 / 9** cases (layout traps
+**3 / 6**, unfamiliar-vocabulary cases **3 / 3**). The frozen role check caught
+**40 / 40** annotated signed distractors; r07's null amount retained
+`current_bill_amount_missing`. Prediction mismatches were **0 / 49**. The
+[saved evidence](../learning/evidence/role-holdout-measurement.json) records
+per-item PDF locations and hashes. These chosen synthetic cases do not give a
+real-bill error rate. No rule change or live API call was made.
