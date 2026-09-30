@@ -4,8 +4,10 @@ Ten fictional, digitally generated electricity bills in `holdout_r01` through
 `holdout_r10`. Every PDF says `SYNTHETIC SAMPLE - NOT PAYABLE`; organisations and
 figures are invented. **Status: owner (maxtsec) verified all ten PDFs on
 2026-09-30 at commit `8082361` against both `expected.json` and
-`role_cases.json`, including both pages of holdout_r08.** This PR constructs
-inputs only. No current-amount role result or accuracy number is reported here.
+`role_cases.json`, including both pages of holdout_r08.** PR B constructed the
+inputs only; the separate PR C measured the frozen rule offline on 2026-09-30
+in commit `a8f5706`, after predictions were committed at `9fc8131`. This set
+is **no longer unseen** for that rule.
 
 ## Holdout discipline
 
@@ -143,10 +145,13 @@ owner checks that case; later edits to its PDF or labels reset the box.
 - [x] Owner (maxtsec), 2026-09-30: holdout_r09 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
 - [x] Owner (maxtsec), 2026-09-30: holdout_r10 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
 
-## After merge
+## Measurement and future use
 
-PR C will measure the **frozen** role rule offline on correct amounts and every
-listed distractor, reporting confirmed/false-review and caught/missed counts
-**per shape with denominators**. It must preserve PDF, `expected.json` and
-`role_cases.json` hashes and avoid rule changes. An optional live v4 run needs
-new explicit owner authorisation and a budget; this PR authorises none.
+The [PR C offline measurement](../../docs/learning/current-amount-role-holdout.md)
+applied the **frozen** rule once to correct amounts and every listed
+distractor. It reports per-shape counts with denominators and preserves PDF,
+`expected.json` and `role_cases.json` hashes in its separate evidence file.
+The labels, PDFs and production rule were not changed for measurement.
+If these results motivate a rule change, treat this set as development data
+and obtain another fresh holdout. An optional live v4 run still needs new
+explicit owner authorisation and a budget; PR C authorises none.
