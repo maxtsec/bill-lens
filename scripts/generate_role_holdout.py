@@ -1,4 +1,4 @@
-"""Build eight fictional role-holdout PDFs without reading any answer files.
+"""Build ten fictional role-holdout PDFs without reading any answer files.
 
 This is layout/source generation only. In particular, it never invokes review
 logic, reads labels, or measures whether any role trap succeeds.
@@ -50,14 +50,16 @@ class Figures:
 
 
 FIGURES = (
-    Figures("Cedar Arc Sample Energy", "2026-07-01", "2026-07-31", 31, 245, "0.30", "1.05", "55.00", "20.00", "0.00"),
+    Figures("Cedar Arc Sample Energy", "2026-07-01", "2026-07-31", 31, 245, "0.30", "1.05", "55.00", "20.00", "3.00"),
     Figures("Cloud Ember Sample Electric", "2026-08-01", "2026-08-31", 31, 180, "0.34", "0.98", "42.00", "12.00", "5.00"),
-    Figures("Fenwick Grove Sample Power", "2026-09-01", "2026-09-30", 30, 260, "0.27", "1.10", "25.00", "10.00", "0.00"),
-    Figures("Quartz Cove Sample Energy", "2026-10-01", "2026-10-31", 31, 198, "0.32", "1.04", "30.00", "0.00", "10.00"),
-    Figures("Paper Lantern Sample Power", "2026-11-01", "2026-11-30", 30, 225, "0.31", "1.06", "20.00", "0.00", "5.00"),
-    Figures("Spruce Wattle Sample Electricity", "2026-12-01", "2026-12-31", 31, 310, "0.29", "1.00", "0.00", "0.00", "45.00"),
+    Figures("Fenwick Grove Sample Power", "2026-09-01", "2026-09-30", 30, 260, "0.27", "1.10", "25.00", "10.00", "2.00"),
+    Figures("Quartz Cove Sample Energy", "2026-10-01", "2026-10-31", 31, 198, "0.32", "1.04", "30.00", "7.00", "10.00"),
+    Figures("Paper Lantern Sample Power", "2026-11-01", "2026-11-30", 30, 225, "0.31", "1.06", "20.00", "8.00", "5.00"),
+    Figures("Spruce Wattle Sample Electricity", "2026-12-01", "2026-12-31", 31, 310, "0.29", "1.00", "15.00", "5.00", "45.00"),
     Figures("Juniper Vale Sample Power", "2027-01-01", "2027-01-31", 31, 175, "0.33", "0.95", "40.00", "10.00", "5.00"),
     Figures("Indigo Meadow Sample Energy", "2027-02-01", "2027-02-28", 28, 205, "0.35", "1.12", "60.00", "20.00", "5.00"),
+    Figures("Marsh Silver Sample Power", "2027-03-01", "2027-03-31", 31, 190, "0.28", "1.03", "27.00", "9.00", "4.00"),
+    Figures("Copper Rain Sample Electric", "2027-04-01", "2027-04-30", 30, 240, "0.36", "0.97", "32.00", "11.00", "6.00"),
 )
 
 
@@ -145,7 +147,7 @@ def holdout_r02(root):
     text(c, 50, 397, "Account summary", 15, "Helvetica-Bold")
     # Table: every heading is on one row, with the corresponding values below.
     xs = (96, 194, 291, 394, 497)
-    headers = ("Previous balance", "Payment", "Account credit", "Total charges", "Amount Due")
+    headers = ("Previous balance", "Payment", "Account credit", "Current charges", "Amount Due")
     values = (f.previous, f.payments, f.credits, money(f.current), money(f.due))
     box(c, 47, 413, 502, 81, "#F0F2F7")
     for x, header, value in zip(xs, headers, values, strict=True):
@@ -186,7 +188,7 @@ def holdout_r04(root):
     charges(c, f, 163)
     period(c, f, 289)
     rule(c, 50, 410, 495)
-    text(c, 50, 448, f"Total charges (incl. 10% GST): AUD {money(f.current)}", 14, "Helvetica-Bold")
+    text(c, 50, 448, f"Current charges (incl. 10% GST): AUD {money(f.current)}", 14, "Helvetica-Bold")
     text(c, 50, 502, f"Previous balance: AUD {f.previous}")
     text(c, 50, 527, f"Payment: AUD {f.payments}")
     text(c, 50, 552, f"Account credit: AUD {f.credits}")
@@ -263,13 +265,49 @@ def holdout_r08(root):
     text(c, 50, 126, "Electricity charges", 20, "Helvetica-Bold")
     charges(c, f, 184)
     rule(c, 50, 326, 495)
-    text(c, 50, 375, f"Total electricity charges: AUD {money(f.current)}", 16, "Helvetica-Bold")
+    text(c, 50, 375, f"Current charges: AUD {money(f.current)}", 16, "Helvetica-Bold")
     text(c, 50, 433, "This page shows the charges for the service period on page 1.", 10, color=GREY)
     c.save()
 
 
+def holdout_r09(root):
+    """Ordinary one-column summary with an out-of-vocabulary total label."""
+    f = FIGURES[8]
+    c = new_bill(root, 9)
+    page_head(c, 9, f.retailer, accent="#58724B")
+    text(c, 50, 123, "Electricity account | March 2027", 16, "Helvetica-Bold")
+    period(c, f, 160)
+    charges(c, f, 288)
+    rule(c, 50, 408, 495)
+    text(c, 50, 453, f"Total charges: AUD {money(f.current)}", 16, "Helvetica-Bold")
+    text(c, 50, 508, f"Previous balance: AUD {f.previous}")
+    text(c, 50, 535, f"Payment: AUD {f.payments}")
+    text(c, 50, 562, f"Account credit: AUD {f.credits}")
+    text(c, 50, 622, f"Amount due: AUD {money(f.due)}", 18, "Helvetica-Bold")
+    c.save()
+
+
+def holdout_r10(root):
+    """Second ordinary summary with a different out-of-vocabulary label."""
+    f = FIGURES[9]
+    c = new_bill(root, 10)
+    page_head(c, 10, f.retailer, accent="#705D9A")
+    text(c, 50, 121, "April electricity statement", 17, "Times-Bold")
+    period(c, f, 161)
+    charges(c, f, 286)
+    text(c, 50, 429, f"Total electricity charges: AUD {money(f.current)}", 16, "Helvetica-Bold")
+    rule(c, 50, 454, 495)
+    text(c, 50, 505, f"Previous balance: AUD {f.previous}")
+    text(c, 50, 533, f"Payment: AUD {f.payments}")
+    text(c, 50, 561, f"Account credit: AUD {f.credits}")
+    box(c, 43, 605, WIDTH - 86, 63, "#F0EBF7")
+    text(c, 55, 644, f"Amount due: AUD {money(f.due)}", 17, "Helvetica-Bold")
+    c.save()
+
+
 BUILDERS = (holdout_r01, holdout_r02, holdout_r03, holdout_r04,
-            holdout_r05, holdout_r06, holdout_r07, holdout_r08)
+            holdout_r05, holdout_r06, holdout_r07, holdout_r08,
+            holdout_r09, holdout_r10)
 
 
 def main(argv=None):
