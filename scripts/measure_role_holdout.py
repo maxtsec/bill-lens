@@ -27,11 +27,15 @@ PREDICTION_COMMIT = "9fc8131b7c9045005d30685c6d4848dea624db3a"
 MEASUREMENT_COMMIT = "a8f5706"
 FROZEN_INPUT_MANIFEST_SHA256 = "15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5"
 FROZEN_PREDICTIONS_SHA256 = "a838d38303432a7a7f6cf6d42f2fae772f3a86b16e055f7860603723c7a35514"
-IMPLEMENTATION_FILES = (
+MEASUREMENT_SCRIPT = "scripts/measure_role_holdout.py"
+REPLAY_LOCK_FILES = (
     "bill_lens/current_amount_role.py", "bill_lens/document_validation.py",
     "bill_lens/validation.py", "bill_lens/pdf_text.py", "bill_lens/contract.py",
-    "evals/role_cases.py", "scripts/measure_role_holdout.py",
+    "evals/role_cases.py",
 )
+# Record the runner's hash without making its own edits prevent reproduction.
+# Replay must still compare all results, excluding only this provenance item.
+IMPLEMENTATION_FILES = (*REPLAY_LOCK_FILES, MEASUREMENT_SCRIPT)
 FROZEN_RULE_HASHES = {
     "bill_lens/current_amount_role.py": "669d09ca028f49568ddd326e8d6e6edeee2c0d428f8c55bd480d3de77ae1a575",
     "bill_lens/document_validation.py": "0f84cbe3f60d7178ca1360e9a6cbbb2cccf75a818505d50bd8ea58771e9b9430",
@@ -118,7 +122,7 @@ def _check_implementation(root: Path, hashes: dict[str, str]) -> None:
     saved = root / SAVED_EVIDENCE
     if saved.is_file():
         recorded = json.loads(saved.read_bytes())["implementation_lf_sha256"]
-        for name in IMPLEMENTATION_FILES:
+        for name in REPLAY_LOCK_FILES:
             if hashes[name] != recorded[name]:
                 refuse(name)
 

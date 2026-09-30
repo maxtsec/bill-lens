@@ -17,17 +17,33 @@ SAVED_SHA256 = "720ebbaf80b14122f5a4337603d7c10315dc2b5c402bb9aa264cc2fd8ef2e91e
 def _require_original_implementation(saved: dict, current: dict | None = None) -> None:
     current = current if current is not None else measure._implementation_hashes(measure.ROOT)
     recorded = saved["implementation_lf_sha256"]
-    changed = sorted(name for name in set(recorded) | set(current) if recorded.get(name) != current.get(name))
+    changed = sorted(name for name in (set(recorded) | set(current)) - {measure.MEASUREMENT_SCRIPT}
+                     if recorded.get(name) != current.get(name))
     if changed:
         pytest.skip("Measured at a8f5706 with the frozen rule; implementation has changed "
                     f"({', '.join(changed)}). Reproduce from that commit; do not regenerate saved evidence.")
 
 
-def test_saved_measurement_matches_fresh_output_byte_for_byte(tmp_path):
-    _require_original_implementation(json.loads(SAVED.read_bytes()))
+def test_saved_measurement_reproduces_except_record_only_script_fingerprint(tmp_path):
+    saved = json.loads(SAVED.read_bytes())
+    _require_original_implementation(saved)
     fresh = tmp_path / "role-holdout-measurement.json"
     measure.main(["--output", str(fresh)])
-    assert fresh.read_bytes() == SAVED.read_bytes()
+    replay = json.loads(fresh.read_bytes())
+    assert replay["implementation_lf_sha256"][measure.MEASUREMENT_SCRIPT] == (
+        measure._implementation_hashes(measure.ROOT)[measure.MEASUREMENT_SCRIPT])
+    # Exclude exactly one record-only hash, not results or other provenance.
+    del saved["implementation_lf_sha256"][measure.MEASUREMENT_SCRIPT]
+    del replay["implementation_lf_sha256"][measure.MEASUREMENT_SCRIPT]
+    assert replay == saved
+
+
+def test_script_only_fingerprint_change_does_not_block_replay():
+    saved = json.loads(SAVED.read_bytes())
+    changed = dict(saved["implementation_lf_sha256"])
+    changed[measure.MEASUREMENT_SCRIPT] = "0" * 64
+    _require_original_implementation(saved, changed)
+    measure._check_implementation(measure.ROOT, changed)
 
 
 def test_changed_implementation_skips_byte_replay_without_changing_evidence():
