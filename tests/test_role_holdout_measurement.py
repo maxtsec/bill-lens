@@ -20,7 +20,7 @@ def _require_original_implementation(saved: dict, current: dict | None = None) -
     changed = sorted(name for name in (set(recorded) | set(current)) - {measure.MEASUREMENT_SCRIPT}
                      if recorded.get(name) != current.get(name))
     if changed:
-        pytest.skip("Measured at a8f5706 with the frozen rule; implementation has changed "
+        pytest.skip("Measured at ef1bbf7 with the frozen rule; implementation has changed "
                     f"({', '.join(changed)}). Reproduce from that commit; do not regenerate saved evidence.")
 
 
@@ -50,7 +50,7 @@ def test_changed_implementation_skips_byte_replay_without_changing_evidence():
     saved = json.loads(SAVED.read_bytes())
     changed = dict(saved["implementation_lf_sha256"])
     changed["bill_lens/contract.py"] = "0" * 64
-    with pytest.raises(pytest.skip.Exception, match="Measured at a8f5706"):
+    with pytest.raises(pytest.skip.Exception, match="Measured at ef1bbf7"):
         _require_original_implementation(saved, changed)
 
 
@@ -137,5 +137,5 @@ def test_changed_implementation_refuses_replay_and_names_original_commit():
     saved = json.loads(SAVED.read_bytes())
     changed = dict(saved["implementation_lf_sha256"])
     changed["bill_lens/contract.py"] = "0" * 64
-    with pytest.raises(ValueError, match="a8f5706.*do not regenerate"):
+    with pytest.raises(ValueError, match="ef1bbf7.*do not regenerate"):
         measure._check_implementation(measure.ROOT, changed)

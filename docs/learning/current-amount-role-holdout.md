@@ -6,7 +6,8 @@ The ten fictional bills in [role-holdout](../../dataset/role-holdout/README.md)
 were owner-verified before measurement. ADR-010's rule and vocabularies were
 frozen at `940272e`. [Hand predictions](evidence/role-holdout-predictions.json)
 for nine printed correct amounts and 40 annotated account-level distractors
-were committed **first**, alone, at `9fc8131`. They used ADR-010 and the PDF
+were committed **first**, alone, at main commit `bf6f32c` (original PR #21
+branch: `9fc8131`). They used ADR-010 and the PDF
 text extracted by `extract_pdf_text`. The author states that the role check was
 not run before that commit; Git history establishes the commit order, not that
 local execution history. The separately recorded r07 prediction covers its
@@ -23,19 +24,34 @@ output overwrite. The evidence includes hashes for each of the 30 PDF/label/
 role-annotation files, their manifest hash
 `15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5`,
 the preregistered prediction hash, and implementation fingerprints.
-The saved evidence reproduced byte for byte at `a8f5706`. The current replay
+The saved evidence reproduced byte for byte at main commit `ef1bbf7` (original
+PR #21 branch: `a8f5706`). The current replay
 compares every result and provenance field, excluding only the measurement
 script's own hash, which is still recorded in each output. Changes to that
 runner therefore do not block reproduction, but any changed measurement result
 still fails the comparison. Rule, validation, schema, PDF-reader and
 role-annotation code fingerprints remain locked: if one changes, replay skips
-with a pointer to `a8f5706`, and direct measurement refuses execution. The saved
+with a pointer to `ef1bbf7`, and direct measurement refuses execution. The saved
 evidence hash, input hashes, prediction hash, totals and PDF provenance are
-checked on every run regardless. Reproduce a changed rule from `a8f5706` rather
+checked on every run regardless. Reproduce a changed rule from `ef1bbf7` rather
 than regenerating this one-time evidence with newer code.
 
 No live API call was made. This is a deterministic counterfactual: distractors
 were substituted into otherwise correct fields, not emitted by a model.
+
+### Commit identities after rebase merge
+
+Rebase merge rebuilt commits on main. Each pair below has an identical Git
+tree; prediction still precedes measurement in main's ancestry. Use main's
+commits for checkout and reproduction. Saved evidence and predictions remain
+byte-unchanged historical records, including the original prediction commit ID
+in the measurement JSON.
+
+| Purpose | Main commit | Original PR branch commit |
+| --- | --- | --- |
+| Owner-verified PR #20 version | `529d714` | `8082361` |
+| Predictions only | `bf6f32c` | `9fc8131` |
+| Original measurement | `ef1bbf7` | `a8f5706` |
 
 ## Results by case
 

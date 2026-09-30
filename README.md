@@ -33,6 +33,8 @@ attempts, including repeated calls on the same bills; they are not independent l
   labels) and caught **40/40** chosen signed distractors. Hand predictions and
   measurements agreed on **49/49** values. This offline counterfactual is not a
   real-bill error rate or a live model result.
+  Main commits: predictions `bf6f32c` (original branch `9fc8131`), measurement
+  `ef1bbf7` (original branch `a8f5706`).
   [Method, per-shape counts and limits](docs/learning/current-amount-role-holdout.md)
 
 ## Architecture
