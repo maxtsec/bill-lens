@@ -7,8 +7,10 @@ were owner-verified before measurement. ADR-010's rule and vocabularies were
 frozen at `940272e`. [Hand predictions](evidence/role-holdout-predictions.json)
 for nine printed correct amounts and 40 annotated account-level distractors
 were committed **first**, alone, at `9fc8131`. They used ADR-010 and the PDF
-text extracted by `extract_pdf_text`; the role check was not run before that
-commit. The separately recorded r07 prediction covers its null current amount.
+text extracted by `extract_pdf_text`. The author states that the role check was
+not run before that commit; Git history establishes the commit order, not that
+local execution history. The separately recorded r07 prediction covers its
+null current amount.
 
 The [offline measurement](evidence/role-holdout-measurement.json) then applied
 the frozen production role check to each correct amount and to each signed
@@ -21,6 +23,11 @@ output overwrite. The evidence includes hashes for each of the 30 PDF/label/
 role-annotation files, their manifest hash
 `15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5`,
 the preregistered prediction hash, and implementation fingerprints.
+The saved evidence reproduced byte for byte at `a8f5706`. After an
+implementation fingerprint changes, the byte-replay test skips with a pointer
+to that commit; the saved input hashes, prediction hash, totals and PDF
+provenance are still checked on every run. Reproduce from `a8f5706` rather
+than regenerating this one-time evidence with newer code.
 
 No live API call was made. This is a deterministic counterfactual: distractors
 were substituted into otherwise correct fields, not emitted by a model.
@@ -31,7 +38,9 @@ were substituted into otherwise correct fields, not emitted by a model.
 means none does. `Caught` means the **role flag** was raised for the substituted
 distractor. All 40 also produced a review status; silent false acceptances were
 **0 / 40**. r07 has no printed correct current amount and is excluded from the
-correct-amount denominator.
+correct-amount denominator. A **false review** means the **combined flags or
+status** disagree with the handwritten label, not merely that the role flag
+appeared. In these six cases, the role flag was the only difference.
 
 | Case | Shape | Label | Correct amount | Distractors caught / total | Missed values | Prediction mismatches |
 | --- | --- | --- | --- | ---: | --- | ---: |

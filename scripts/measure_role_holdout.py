@@ -24,6 +24,7 @@ ROLE_FLAG = "current_bill_amount_role_unconfirmed"
 RULE_COMMIT = "940272e8cbefb07e9f2bce1bcacd0ec4f3415bbb"
 DATASET_COMMIT = "1047d5e63ba839a66841fc7607a11ec05add3ea3"
 PREDICTION_COMMIT = "9fc8131b7c9045005d30685c6d4848dea624db3a"
+MEASUREMENT_COMMIT = "a8f5706"
 FROZEN_INPUT_MANIFEST_SHA256 = "15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5"
 FROZEN_PREDICTIONS_SHA256 = "a838d38303432a7a7f6cf6d42f2fae772f3a86b16e055f7860603723c7a35514"
 IMPLEMENTATION_FILES = (
@@ -100,6 +101,28 @@ def _prediction_map(root: Path) -> tuple[dict, str]:
     return {row["case_id"]: row for row in cases}, digest
 
 
+def _implementation_hashes(root: Path) -> dict[str, str]:
+    return {name: sha256((root / name).read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+            for name in IMPLEMENTATION_FILES}
+
+
+def _check_implementation(root: Path, hashes: dict[str, str]) -> None:
+    def refuse(name: str) -> None:
+        raise ValueError(f"implementation fingerprint mismatch: {name}; saved evidence was measured "
+                         f"at {MEASUREMENT_COMMIT} with the frozen rule. Reproduce from that commit; "
+                         "do not regenerate the saved evidence")
+
+    for name, frozen_hash in FROZEN_RULE_HASHES.items():
+        if hashes[name] != frozen_hash:
+            refuse(name)
+    saved = root / SAVED_EVIDENCE
+    if saved.is_file():
+        recorded = json.loads(saved.read_bytes())["implementation_lf_sha256"]
+        for name in IMPLEMENTATION_FILES:
+            if hashes[name] != recorded[name]:
+                refuse(name)
+
+
 def _counters() -> dict:
     return {"correct_total": 0, "false_reviews": 0, "distractors_total": 0,
             "caught": 0, "missed": 0, "silent_false_acceptances": 0,
@@ -116,6 +139,8 @@ def build_evidence(root: Path = ROOT, *, dataset: Path | None = None) -> dict:
     manifest, manifest_hash = _manifest(dataset)
     _check_inputs(root, dataset, manifest, manifest_hash)
     predictions, prediction_hash = _prediction_map(root)
+    implementation_hashes = _implementation_hashes(root)
+    _check_implementation(root, implementation_hashes)
     cases = {case.name: case for case in load_cases(dataset)}
     if set(cases) != set(CASE_NAMES):
         raise ValueError("case loader did not return exactly ten bills")
@@ -212,11 +237,6 @@ def build_evidence(root: Path = ROOT, *, dataset: Path | None = None) -> dict:
         raise ValueError("measurement does not cover exactly 49 items")
     if r07 is None:
         raise ValueError("missing r07 null case")
-    implementation_hashes = {name: sha256((root / name).read_text(encoding="utf-8").encode("utf-8")).hexdigest()
-                             for name in IMPLEMENTATION_FILES}
-    for name, frozen_hash in FROZEN_RULE_HASHES.items():
-        if implementation_hashes[name] != frozen_hash:
-            raise ValueError(f"frozen role implementation hash mismatch: {name}")
     return {"schema_version": 1, "live_api_calls": 0, "rule_commit": RULE_COMMIT,
             "dataset_commit": DATASET_COMMIT, "prediction_commit": PREDICTION_COMMIT,
             "prediction_sha256": prediction_hash, "input_hashes": manifest,
