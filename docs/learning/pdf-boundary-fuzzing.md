@@ -9,7 +9,8 @@ sit when a third-party parser can raise ordinary Python exceptions?
 
 ## Reviewer-reported evidence
 
-On 2026-09-27 the owner supplied Claude's review of PR #3 at `b40411d`.
+On 2026-09-27 the owner supplied Claude's review of PR #3 at main commit
+`7b59a40` (original PR #3 branch: `b40411d`).
 The original suite passed all 115 tests. Claude reported mutating PDFs through
 random byte edits, truncations and inserted fragments, with these 9,000 outcomes:
 
@@ -26,19 +27,22 @@ That is 59 escaped exceptions (about 0.66%). These are supplied review results,
 not a run reproduced by Codex. The follow-up supplied by the owner identifies
 seed 1 (3,000 cases: 19 escaped TypeErrors) and seed 7 (6,000 cases: 39 escaped
 TypeErrors and one IndexError). The reviewer reports that a parameterized script
-preserves the original random-call order and reproduces both runs on `b40411d`.
+preserves the original random-call order and reproduces both runs on `7b59a40`
+(original PR #3 branch: `b40411d`).
 The owner subsequently supplied the script and both full baseline CSVs through
 `tmp/fuzz/`, plus `escaped_cases.csv` (59 data rows). The escaped-case file was
 checked against the two baseline files. These artifacts are now preserved below.
 Codex did not rerun the original baseline locally; it reran the post-fix replay
-and compared input identity. The review of `4346400` then cross-verified both
-sides (see below).
+and compared input identity. The review of `98486cc` (original PR #3 branch:
+`4346400`) then cross-verified both sides (see below).
 
 ## Post-fix replay results
 
-Codex ran the supplied script on `4296867` using Python 3.12.14,
+Codex ran the supplied script on `9968120` (original PR #3 branch: `4296867`)
+using Python 3.12.14,
 pdfplumber 0.11.10 and pdfminer.six 20260107. The five source PDFs and pinned
-requirements are unchanged from `b40411d`. Every `(seed, case)`, mutation mode
+requirements are unchanged from `7b59a40` (original PR #3 branch: `b40411d`).
+Every `(seed, case)`, mutation mode
 and SHA-256 matched the baseline; duplicate or missing cases were checked.
 
 | Outcome | Before (reviewer) | After (local replay) |
@@ -61,16 +65,35 @@ or that the parser is safe for public uploads.
 
 ### Cross-verification
 
-Claude's review of `4346400` checked both sides of the comparison independently:
+Claude's review of `98486cc` (original PR #3 branch: `4346400`) checked both sides
+of the comparison independently:
 
 - The decompressed baseline CSVs and `escaped_cases.csv` are byte-identical to
-  the reviewer's original outputs from `b40411d`.
-- An independent re-run of both seeds at `4346400` produced after-CSVs
+  the reviewer's original outputs from `7b59a40` (original PR #3 branch: `b40411d`).
+- An independent re-run of both seeds at `98486cc` (original PR #3 branch:
+  `4346400`) produced after-CSVs
   byte-identical to the committed `after_seed1.csv.gz` and `after_seed7.csv.gz`.
 - A per-case comparison keyed by `(seed, case)` confirmed that the set of changed
   outcomes equals the set of 59 originally escaped cases.
 
 Each side of the before/after table is therefore backed by two independent runs.
+
+### Commit identities after rebase merge
+
+Rebase merge rebuilt these commits on main. Each pair has an identical Git
+tree, and the main commits are reachable from main. Use the main IDs when
+checking out a revision or reproducing a run.
+
+| Purpose | Main commit | Original PR #3 branch commit |
+| --- | --- | --- |
+| Before-fix baseline | `7b59a40` | `b40411d` |
+| Parser-boundary fix and post-fix replay | `9968120` | `4296867` |
+| Preserved evidence and cross-verification | `98486cc` | `4346400` |
+
+The preserved [manifest](evidence/pdf-boundary-fuzzing/manifest.json) retains
+the original branch IDs as historical records, including its before/after
+revisions and cross-verification text. It remains byte-unchanged; this table
+provides the mapping for readers using main's history.
 
 ### Cleanup can fail too
 
