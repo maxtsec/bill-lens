@@ -11,12 +11,39 @@ from scripts import measure_role_holdout as measure
 
 
 SAVED = measure.ROOT / measure.SAVED_EVIDENCE
+SAVED_SHA256 = "720ebbaf80b14122f5a4337603d7c10315dc2b5c402bb9aa264cc2fd8ef2e91e"
+
+
+def _require_original_implementation(saved: dict, current: dict | None = None) -> None:
+    current = current if current is not None else measure._implementation_hashes(measure.ROOT)
+    recorded = saved["implementation_lf_sha256"]
+    changed = sorted(name for name in set(recorded) | set(current) if recorded.get(name) != current.get(name))
+    if changed:
+        pytest.skip("Measured at a8f5706 with the frozen rule; implementation has changed "
+                    f"({', '.join(changed)}). Reproduce from that commit; do not regenerate saved evidence.")
 
 
 def test_saved_measurement_matches_fresh_output_byte_for_byte(tmp_path):
+    _require_original_implementation(json.loads(SAVED.read_bytes()))
     fresh = tmp_path / "role-holdout-measurement.json"
     measure.main(["--output", str(fresh)])
     assert fresh.read_bytes() == SAVED.read_bytes()
+
+
+def test_changed_implementation_skips_byte_replay_without_changing_evidence():
+    saved = json.loads(SAVED.read_bytes())
+    changed = dict(saved["implementation_lf_sha256"])
+    changed["bill_lens/contract.py"] = "0" * 64
+    with pytest.raises(pytest.skip.Exception, match="Measured at a8f5706"):
+        _require_original_implementation(saved, changed)
+
+
+def test_preserved_evidence_and_prediction_hashes_are_always_checked():
+    raw = SAVED.read_bytes()
+    assert sha256(raw).hexdigest() == SAVED_SHA256
+    saved = json.loads(raw)
+    prediction_bytes = (measure.ROOT / measure.PREDICTIONS).read_bytes()
+    assert sha256(prediction_bytes).hexdigest() == saved["prediction_sha256"]
 
 
 def test_all_49_items_and_r07_are_accounted_for_with_page_provenance():
@@ -54,6 +81,8 @@ def test_all_49_items_and_r07_are_accounted_for_with_page_provenance():
 
 def test_every_input_hash_is_preserved_in_evidence():
     result = json.loads(SAVED.read_bytes())
+    canonical = json.dumps(result["input_hashes"], sort_keys=True, separators=(",", ":")).encode("utf-8")
+    assert sha256(canonical).hexdigest() == result["input_manifest_sha256"]
     for case_name, files in result["input_hashes"].items():
         assert set(files) == set(measure.INPUT_FILES)
         for filename, digest in files.items():
@@ -86,3 +115,11 @@ def test_cli_refuses_to_overwrite_output(tmp_path):
     with pytest.raises(FileExistsError):
         measure.main(["--output", str(output)])
     assert output.read_text(encoding="utf-8") == "original"
+
+
+def test_changed_implementation_refuses_replay_and_names_original_commit():
+    saved = json.loads(SAVED.read_bytes())
+    changed = dict(saved["implementation_lf_sha256"])
+    changed["bill_lens/contract.py"] = "0" * 64
+    with pytest.raises(ValueError, match="a8f5706.*do not regenerate"):
+        measure._check_implementation(measure.ROOT, changed)
