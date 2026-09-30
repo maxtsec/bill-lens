@@ -19,7 +19,7 @@ from tests.helpers import CASES, ROOT
 
 
 HOLDOUT = ROOT / "dataset/role-holdout"
-NAMES = [f"holdout_r{n:02}" for n in range(1, 9)]
+NAMES = [f"holdout_r{n:02}" for n in range(1, 11)]
 REAL_NAMES = ("AGL", "Origin Energy", "EnergyAustralia", "Red Energy", "Alinta",
               "AusNet", "CitiPower", "Powercor", "Jemena", "United Energy", "SA Power Networks")
 
@@ -51,11 +51,11 @@ def account_amounts(case):
             # shared tokenizer; a table's value-only row has no such prefix.
             amounts[match[1]] = -amount if match[3] or match[1] == "Account credit" else amount
     if case.name == "holdout_r02":
-        header = "Previous balance Payment Account credit Total charges Amount Due"
+        header = "Previous balance Payment Account credit Current charges Amount Due"
         index = rows.index(header)
         values = rows[index + 1].split()
         assert len(values) == 5
-        amounts.update(zip(("Previous balance", "Payment", "Account credit", "Total charges", "Amount Due"),
+        amounts.update(zip(("Previous balance", "Payment", "Account credit", "Current charges", "Amount Due"),
                            map(Decimal, values), strict=True))
     if case.name == "holdout_r03":
         index = rows.index("Total current charges Total amount due")
@@ -123,6 +123,7 @@ def test_every_account_amount_and_charge_line_reconciles_from_pdf(cases, role_ca
     for row in annotation.printed_distractors:
         assert row.printed_label in all_text
         assert Decimal(row.value) == account[row.printed_label] in printed
+        assert Decimal(row.value) != 0
         assert annotation.current_bill_amount is None or Decimal(row.value) != Decimal(annotation.current_bill_amount)
     if annotation.current_label is not None:
         assert annotation.current_label in all_text
@@ -141,33 +142,38 @@ def test_every_account_amount_and_charge_line_reconciles_from_pdf(cases, role_ca
                                      - abs(by_role["payment"]) - abs(by_role["credit"]))
 
 
-def test_all_eight_shapes_and_frozen_vocabulary_allocation(cases, role_cases):
-    assert {name: role_cases[name].shape for name in NAMES} == dict(zip(NAMES, "ABCDEFGH", strict=True))
-    vocabulary = {label.casefold() for label in CURRENT_LABELS}
-    inside = [name for name in NAMES if role_cases[name].current_label is not None
-              and role_cases[name].current_label.casefold() in vocabulary]
+def test_all_shapes_and_isolated_vocabulary_allocation(cases, role_cases):
+    assert {name: role_cases[name].shape for name in NAMES} == dict(zip(NAMES, "ABCDEFGHEE", strict=True))
+    def known(label):
+        if label is None:
+            return False
+        return any(re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", label.casefold())
+                   for term in CURRENT_LABELS)
+    inside = [name for name in NAMES if known(role_cases[name].current_label)]
     outside = [name for name in NAMES if role_cases[name].current_label is not None
-               and role_cases[name].current_label.casefold() not in vocabulary]
-    assert inside == ["holdout_r01", "holdout_r03", "holdout_r06"]
-    assert outside == ["holdout_r02", "holdout_r04", "holdout_r05", "holdout_r08"]
+               and not known(role_cases[name].current_label)]
+    assert inside == ["holdout_r01", "holdout_r02", "holdout_r03", "holdout_r04", "holdout_r06", "holdout_r08"]
+    assert outside == ["holdout_r05", "holdout_r09", "holdout_r10"]
+    assert all(role_cases[name].shape == "E" for name in outside)
+    assert len({role_cases[name].current_label for name in outside}) == 3
     a = "\n".join(lines(cases["holdout_r01"]))
     assert "Opening balance: AUD" in a and "Payments received: AUD" in a
     b = lines(cases["holdout_r02"])
-    header = b.index("Previous balance Payment Account credit Total charges Amount Due")
-    assert len(re.findall(r"Previous balance|Payment|Account credit|Total charges|Amount Due", b[header])) >= 2
+    header = b.index("Previous balance Payment Account credit Current charges Amount Due")
+    assert len(re.findall(r"Previous balance|Payment|Account credit|Current charges|Amount Due", b[header])) >= 2
     assert not any(c.isdigit() for c in b[header])
     assert re.fullmatch(r"(?:\d+\.\d{2} ){4}\d+\.\d{2}", b[header + 1])
     c = lines(cases["holdout_r03"])
     caption = c.index("Total current charges Total amount due")
     assert re.fullmatch(r"AUD \d+\.\d{2} AUD \d+\.\d{2}", c[caption - 1])
     assert any(ch.isdigit() for ch in role_cases["holdout_r04"].current_label)
-    assert role_cases["holdout_r05"].current_label.casefold() not in vocabulary
+    assert not known(role_cases["holdout_r05"].current_label)
     assert "Balance carried forward: AUD 45.00 CR" in lines(cases["holdout_r06"])
     assert Decimal(role_cases["holdout_r06"].printed_distractors[2].value) < 0
     assert role_cases["holdout_r07"].current_bill_amount is None
     pages = cases["holdout_r08"].document.pages
     assert "Amount due: AUD 138.11" in pages[0].text
-    assert "Total electricity charges: AUD 103.11" in pages[1].text
+    assert "Current charges: AUD 103.11" in pages[1].text
     assert "103.11" not in pages[0].text and "138.11" not in pages[1].text
 
 

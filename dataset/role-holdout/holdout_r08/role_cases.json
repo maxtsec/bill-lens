@@ -1,6 +1,6 @@
 {
   "current_bill_amount": "103.11",
-  "current_label": "Total electricity charges",
+  "current_label": "Current charges",
   "shape": "H",
   "printed_distractors": [
     {"value": "60.00", "printed_label": "Previous balance", "role": "previous_balance"},

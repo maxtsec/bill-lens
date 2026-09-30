@@ -5,7 +5,7 @@
   "printed_distractors": [
     {"value": "25.00", "printed_label": "Previous balance", "role": "previous_balance"},
     {"value": "10.00", "printed_label": "Payment", "role": "payment"},
-    {"value": "0.00", "printed_label": "Account credit", "role": "credit"},
-    {"value": "118.20", "printed_label": "Total amount due", "role": "amount_due"}
+    {"value": "-2.00", "printed_label": "Account credit", "role": "credit"},
+    {"value": "116.20", "printed_label": "Total amount due", "role": "amount_due"}
   ]
 }

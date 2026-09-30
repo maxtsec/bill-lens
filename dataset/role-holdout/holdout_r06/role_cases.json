@@ -3,9 +3,9 @@
   "current_label": "Current charges",
   "shape": "F",
   "printed_distractors": [
-    {"value": "0.00", "printed_label": "Previous balance", "role": "previous_balance"},
-    {"value": "0.00", "printed_label": "Payment", "role": "payment"},
+    {"value": "15.00", "printed_label": "Previous balance", "role": "previous_balance"},
+    {"value": "5.00", "printed_label": "Payment", "role": "payment"},
     {"value": "-45.00", "printed_label": "Balance carried forward", "role": "credit"},
-    {"value": "75.90", "printed_label": "Amount due", "role": "amount_due"}
+    {"value": "85.90", "printed_label": "Amount due", "role": "amount_due"}
   ]
 }

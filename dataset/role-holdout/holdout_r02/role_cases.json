@@ -1,6 +1,6 @@
 {
   "current_bill_amount": "91.58",
-  "current_label": "Total charges",
+  "current_label": "Current charges",
   "shape": "B",
   "printed_distractors": [
     {"value": "42.00", "printed_label": "Previous balance", "role": "previous_balance"},
