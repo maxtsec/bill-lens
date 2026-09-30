@@ -2,7 +2,9 @@
 
 Ten fictional, digitally generated electricity bills in `holdout_r01` through
 `holdout_r10`. Every PDF says `SYNTHETIC SAMPLE - NOT PAYABLE`; organisations and
-figures are invented. **Owner verification is pending.** This PR constructs
+figures are invented. **Status: owner (maxtsec) verified all ten PDFs on
+2026-09-30 at commit `8082361` against both `expected.json` and
+`role_cases.json`, including both pages of holdout_r08.** This PR constructs
 inputs only. No current-amount role result or accuracy number is reported here.
 
 ## Holdout discipline
@@ -130,16 +132,16 @@ fields, flags, status, the shape, and every distractor amount and label. A
 passing test is not independent human ground truth. Mark a box only after the
 owner checks that case; later edits to its PDF or labels reset the box.
 
-- [ ] Owner verifies holdout_r01.
-- [ ] Owner verifies holdout_r02.
-- [ ] Owner verifies holdout_r03.
-- [ ] Owner verifies holdout_r04.
-- [ ] Owner verifies holdout_r05.
-- [ ] Owner verifies holdout_r06.
-- [ ] Owner verifies holdout_r07.
-- [ ] Owner verifies holdout_r08 (both pages).
-- [ ] Owner verifies holdout_r09.
-- [ ] Owner verifies holdout_r10.
+- [x] Owner (maxtsec), 2026-09-30: holdout_r01 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r02 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r03 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r04 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r05 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r06 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r07 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r08 (both pages) matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r09 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
+- [x] Owner (maxtsec), 2026-09-30: holdout_r10 matches `expected.json` (seven fields, flags, status) and `role_cases.json` (shape, current label, every distractor value and label).
 
 ## After merge
 
