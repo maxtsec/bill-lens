@@ -23,8 +23,10 @@ INPUT_FILES = ("bill.pdf", "expected.json", "role_cases.json")
 ROLE_FLAG = "current_bill_amount_role_unconfirmed"
 RULE_COMMIT = "940272e8cbefb07e9f2bce1bcacd0ec4f3415bbb"
 DATASET_COMMIT = "1047d5e63ba839a66841fc7607a11ec05add3ea3"
+# Preserve the original PR-branch identity recorded in the immutable evidence.
+# Its main-history counterpart is bf6f32c; see the learning note's mapping.
 PREDICTION_COMMIT = "9fc8131b7c9045005d30685c6d4848dea624db3a"
-MEASUREMENT_COMMIT = "a8f5706"
+MEASUREMENT_COMMIT = "ef1bbf7"
 FROZEN_INPUT_MANIFEST_SHA256 = "15334a4973dacc340c1bb93f02e04c8f24ec0c678544f8a3257ff7d8f31892e5"
 FROZEN_PREDICTIONS_SHA256 = "a838d38303432a7a7f6cf6d42f2fae772f3a86b16e055f7860603723c7a35514"
 MEASUREMENT_SCRIPT = "scripts/measure_role_holdout.py"

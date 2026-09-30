@@ -3,10 +3,13 @@
 Ten fictional, digitally generated electricity bills in `holdout_r01` through
 `holdout_r10`. Every PDF says `SYNTHETIC SAMPLE - NOT PAYABLE`; organisations and
 figures are invented. **Status: owner (maxtsec) verified all ten PDFs on
-2026-09-30 at commit `8082361` against both `expected.json` and
-`role_cases.json`, including both pages of holdout_r08.** PR B constructed the
+2026-09-30 at main commit `529d714` (original PR #20 branch: `8082361`) against
+both `expected.json` and `role_cases.json`, including both pages of holdout_r08.** PR B constructed the
 inputs only; the separate PR C measured the frozen rule offline on 2026-09-30
-in commit `a8f5706`, after predictions were committed at `9fc8131`. This set
+in main commit `ef1bbf7` (original PR #21 branch: `a8f5706`), after predictions
+were committed at `bf6f32c` (original branch: `9fc8131`). Rebase merge changed
+these commit IDs without changing their trees or order; the preserved evidence
+keeps the original branch IDs. This set
 is **no longer unseen** for that rule.
 
 ## Holdout discipline
