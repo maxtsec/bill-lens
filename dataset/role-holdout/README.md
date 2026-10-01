@@ -12,6 +12,13 @@ these commit IDs without changing their trees or order; the preserved evidence
 keeps the original branch IDs. This set
 is **no longer unseen** for that rule.
 
+The set has also been evaluated once with **extract-v4 / gpt-5.4-mini** on
+**2026-10-01**, run `20261001T015251Z-6495d365da87`, from clean main commit
+`ce5ea6c` (three repeats per bill, 30 calls). It is no longer unseen for that
+model/prompt either. [Saved live results and limits](../../docs/learning/current-amount-role-holdout.md#live-v4-model-run-2026-10-01)
+record the unchanged inputs and frozen rule. Any tuning from these outcomes
+promotes this set to development data and requires a fresh holdout.
+
 ## Holdout discipline
 
 - The production rule and both label vocabularies are frozen at commit
@@ -156,5 +163,6 @@ distractor. It reports per-shape counts with denominators and preserves PDF,
 `expected.json` and `role_cases.json` hashes in its separate evidence file.
 The labels, PDFs and production rule were not changed for measurement.
 If these results motivate a rule change, treat this set as development data
-and obtain another fresh holdout. An optional live v4 run still needs new
-explicit owner authorisation and a budget; PR C authorises none.
+and obtain another fresh holdout. The later D1/D2 live run was separately
+authorised; PR C authorised no paid calls. Any additional run needs new
+explicit owner authorisation and a budget.

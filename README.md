@@ -36,6 +36,12 @@ attempts, including repeated calls on the same bills; they are not independent l
   Main commits: predictions `bf6f32c` (original branch `9fc8131`), measurement
   `ef1bbf7` (original branch `a8f5706`).
   [Method, per-shape counts and limits](docs/learning/current-amount-role-holdout.md)
+- **Live v4 on that role holdout: 27/27 printed current amounts correct; r07
+  correctly null in 3/3 attempts.** There were **0/30** wrong numeric answers
+  and silent false acceptances, but the frozen role check falsely reviewed
+  **18/27** correct printed amounts. This one model/prompt on ten selected
+  synthetic bills does not establish a real-world error rate.
+  [Live results, cost and recommendation](docs/learning/current-amount-role-holdout.md#live-v4-model-run-2026-10-01)
 
 ## Architecture
 

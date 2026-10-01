@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-10-01",
+  "run_id": "20261001T015251Z-6495d365da87",
+  "source_directory": "evals/results/role-v4-20261001T115212",
+  "run_git": {
+    "commit": "ce5ea6cab244a47e80977a7b850f0c49d0861dd7",
+    "dirty": false
+  },
+  "settings": {
+    "requested_model": "gpt-5.4-mini",
+    "resolved_models": [
+      "gpt-5.4-mini-2026-03-17"
+    ],
+    "prompt": "extract-v4",
+    "reasoning_effort": "low",
+    "max_output_tokens": 4096,
+    "sdk_retries": 0,
+    "bills": 10,
+    "repeats": 3,
+    "sequential": true
+  },
+  "authorisation": {
+    "scope": "one role-holdout run only",
+    "calls_cap": 30,
+    "budget_usd": "0.30",
+    "execution": "Owner delegated execution to Codex after D1 merge; owner entered key in a local masked dialog.",
+    "key_in_artifacts_or_tool_output": false
+  },
+  "completed_api_calls": 30,
+  "additional_api_calls_by_preservation_and_analysis": 0,
+  "budget": {
+    "known_settled_usd": "0.06336600",
+    "conservative_spent_usd": "0.06336600",
+    "limit_usd": "0.30"
+  },
+  "analysis_script": {
+    "path": "scripts/analyse_role_holdout_live.py",
+    "committed_before_run": "ce5ea6cab244a47e80977a7b850f0c49d0861dd7",
+    "lf_sha256": "f8d5f57e2087a00ac6f492ca2e9def290c24ee3ad3188b832999f6f6247b71fd",
+    "unchanged": true
+  },
+  "pre_registered_plan": {
+    "path": "docs/learning/role-holdout-live-plan.md",
+    "lf_sha256": "9b51502295c53dc633d9844d2930efc38d1bb9a2500c1badb4f49a633cfa6a6a"
+  },
+  "raw_artifacts": [
+    "summary.json",
+    "attempts.jsonl",
+    "report.md",
+    "budget.json",
+    "pip-freeze.txt"
+  ],
+  "derived_artifacts": [
+    "analysis/analysis.json",
+    "analysis/report.md"
+  ],
+  "artifact_hashes": {
+    "summary.json": {
+      "sha256": "46fbbc5f7abc609c968c76254e440ff76ea9867b908fec7680c0302e1c8efb3d",
+      "bytes": 71757
+    },
+    "attempts.jsonl": {
+      "sha256": "b4ca7e8847f827018188e4e27dcabc75d424974e8caff08d4cb26480f9289bcf",
+      "bytes": 58876
+    },
+    "report.md": {
+      "sha256": "c2bfb23bd6f832eb5f8e301123188230300b96610dc0e862c4e2d08ffac2bb8d",
+      "bytes": 4731
+    },
+    "budget.json": {
+      "sha256": "1f30fda5cdf9b2d8c88da43158863a952f3613b441839d3b89f46cdfe548f859",
+      "bytes": 14030
+    },
+    "pip-freeze.txt": {
+      "sha256": "8bbd07a37cbbd7ac611b98cd2fb0e280dd62cf6f2719ff8207539885ab8392d5",
+      "bytes": 948
+    },
+    "analysis/analysis.json": {
+      "sha256": "54a0028badfa98fa6efb3946865921f420828766e4c212af2c32af3afbfa79e1",
+      "bytes": 59353
+    },
+    "analysis/report.md": {
+      "sha256": "cc891c6362165328a0d19b67c27f7a1b28472855ed01e62ec9821caf92848432",
+      "bytes": 4710
+    }
+  },
+  "limits": "Ten selected synthetic bills; three repeats are not independent documents; one model/prompt; no population error-rate claim."
+}
