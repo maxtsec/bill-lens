@@ -11,7 +11,7 @@ this plan, budget guard and analysis script before the owner runs anything.
   SDK retries zero and the existing adapter settings.
 - **US$0.30 cap**. Historical usage suggests about US$0.06, but that is not a
   guarantee. A budget stop leaves a partial run; only Max can authorise a rerun.
-- Max runs with his own key from a clean main checkout after D1 merges.
+- The owner runs with their own key from a clean main checkout after D1 merges.
   Codex makes no live call and does not receive or inspect the key.
 
 This set was already measured offline against the frozen role heuristic. It
@@ -105,7 +105,9 @@ nonstandard or changed prices require revisiting the policy before the run.
 
 ## Owner commands after D1 merges
 
-Use PowerShell 7 (`Read-Host -MaskInput`). These commands make paid calls. Do
+Use Windows PowerShell 5.1 or newer. `Read-Host -AsSecureString` hides key entry;
+convert it only into the process environment for the Python SDK, and zero/free
+the temporary BSTR in `finally`. These commands make paid calls. Do
 not run before D1 is reviewed/merged, and do not pass a key to Codex. The output
 directory is new and ignored; it must not be reused after an abort.
 
@@ -119,8 +121,19 @@ if (git status --porcelain) { throw "Checkout must be clean" }
 if (Test-Path Env:OPENAI_API_KEY) { throw "Clear the existing session key first" }
 if (Test-Path Env:BILL_LENS_LIVE) { throw "Clear the existing live gate first" }
 $roleRunOutput = "evals/results/role-v4-" + (Get-Date -Format "yyyyMMddTHHmmss")
+$roleKeySecure = $null
+$roleKeyPointer = [IntPtr]::Zero
 try {
-    $env:OPENAI_API_KEY = Read-Host -MaskInput "OpenAI API key (session only)"
+    $roleKeySecure = Read-Host -AsSecureString "OpenAI API key (session only)"
+    try {
+        $roleKeyPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($roleKeySecure)
+        $env:OPENAI_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($roleKeyPointer)
+    } finally {
+        if ($roleKeyPointer -ne [IntPtr]::Zero) {
+            [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($roleKeyPointer)
+            $roleKeyPointer = [IntPtr]::Zero
+        }
+    }
     $env:BILL_LENS_LIVE = "1"
     .\.venv\Scripts\python.exe -m evals.run --extractor openai --model gpt-5.4-mini --repeats 3 --dataset dataset/role-holdout --budget-usd 0.30 --output $roleRunOutput
     $roleRunExit = $LASTEXITCODE
@@ -131,12 +144,19 @@ try {
 } finally {
     Remove-Item Env:OPENAI_API_KEY -ErrorAction SilentlyContinue
     Remove-Item Env:BILL_LENS_LIVE -ErrorAction SilentlyContinue
+    if ($null -ne $roleKeySecure) { $roleKeySecure.Dispose() }
 }
 ```
 
 The CLI additionally refuses budgeted live execution without a clean recorded
 Git commit. Give Codex the **output directory**, not the key. A nonzero exit
 needs inspection and an owner decision; it is not permission for another run.
+
+An early stop is an expected safety outcome: a timeout or provider failure
+without usage leaves that call's full **US$0.043008 reservation retained** and
+ends the run. This is not a broken evaluation or evidence that the charge was
+zero. Preserve the partial output and ask the owner before any rerun; the
+original authorisation covers one run only.
 
 ## Frozen analysis and D2
 
