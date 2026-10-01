@@ -1,0 +1,2317 @@
+{
+  "schema_version": 1,
+  "run_id": "20261001T015251Z-6495d365da87",
+  "git": {
+    "commit": "ce5ea6cab244a47e80977a7b850f0c49d0861dd7",
+    "dirty": false
+  },
+  "completed": true,
+  "abort_reason": null,
+  "live_api_calls_by_analysis": 0,
+  "reference_sha256": "720ebbaf80b14122f5a4337603d7c10315dc2b5c402bb9aa264cc2fd8ef2e91e",
+  "analysis_script_lf_sha256": "f8d5f57e2087a00ac6f492ca2e9def290c24ee3ad3188b832999f6f6247b71fd",
+  "prompt_sha256": "3c6762fc560688769faa74c2866b719beeccf047986f3765929873e0a575a02a",
+  "input_hashes": {
+    "holdout_r01": {
+      "bill.pdf": "a567c99fd22d54fb8af390856955b52ffe9c2f50fff51f61358846ff6f07e112",
+      "expected.json": "b638be9df68463b685aecaa0b75cf9cf442bc7273aced64912e7bb7b864442b2",
+      "role_cases.json": "ca8b4389556f0d2c1d8712c0f72555a5ab24dd20db2e608310169c7ea5cdfe74"
+    },
+    "holdout_r02": {
+      "bill.pdf": "f2184cae89245809ee19827816f98b9c5e5bef97bdcd3c9ca159c16acf2a93f7",
+      "expected.json": "c6db8b0dc2ab6201697a948ecb1d613f67f786dbab3e9be568e5f5e0045ae89e",
+      "role_cases.json": "a7db138f55e354cd8c369f8ee1a6e975565908a1bec01d607d83b9f5b67f18d1"
+    },
+    "holdout_r03": {
+      "bill.pdf": "968eea267e0126ff338930885fd2024c9e0439afdf97ed400e22ef6d37b818ab",
+      "expected.json": "f7aedae34f1d65982303c2276f7fffc8a95f68415dca594b48594647b16b5c65",
+      "role_cases.json": "26fb1604b4d05d7bc2143a944d44364778607470f57542291d9df6c3e99bceb3"
+    },
+    "holdout_r04": {
+      "bill.pdf": "7f07e5ce41477041aa52c66c083e1da6ba4c0d01153a94286a6f4928364e5e5b",
+      "expected.json": "00a487b1aacd050a6dce1e9dc8dfaed4065f01c9b9440ac5a12b558c6c59fdbd",
+      "role_cases.json": "596361ecd223e9a412ff064ab08b3743a4d2545569b7e825c4d1f53934935288"
+    },
+    "holdout_r05": {
+      "bill.pdf": "957fde2df284545b2039b2d837732f246b5822cd924f0861de0be2bbc8062084",
+      "expected.json": "819b326a765a6c77c6194119abbe037901025ad05288f1bf7642971d8ad25a67",
+      "role_cases.json": "1c3f2e13ae9d5805165dd19d726bd361ce45e8e976533d4b2d20311df4def66f"
+    },
+    "holdout_r06": {
+      "bill.pdf": "39fda04c423104ec0d9e11089683b6301edc5dcb07a175acab63d09baf9d3993",
+      "expected.json": "9e4cef51c590169881ea3e4b9307ca6c5d7c8d5970aea7f50d81154a05c4f65b",
+      "role_cases.json": "37aa88c052b0dfdff150df1b26a6db4270a79aed7aabfa84f8428920aad67e88"
+    },
+    "holdout_r07": {
+      "bill.pdf": "5bf1ff28ea5f9acbd3f6aa2898991d86396cf7c82e181a84047478f72868d239",
+      "expected.json": "9c739703559f152ca56305513f8c1f210cfbedd204308464508e0dcd29ac483f",
+      "role_cases.json": "606f49bc343c75bf128afed31a7fc0706cfcdf18ccc01fc46d432fa78603a71f"
+    },
+    "holdout_r08": {
+      "bill.pdf": "617df9eee77f71a39167e028929cc60676015ee9ce135eaf87670305e1c1206b",
+      "expected.json": "883062f0654c1e498f644cecd41a758b6a0da28744ec19e64e437042dee8ec5d",
+      "role_cases.json": "9a11208f6befb53d614666d18717d92734f1f784d9f4f22c9d9a2082021d9eaf"
+    },
+    "holdout_r09": {
+      "bill.pdf": "b193e96110d02714c348fab407f165a4c93bd5643125fe249c59bd25338ac422",
+      "expected.json": "e00b18656c503264af6349fbc61f8a94cc9221c632c03b223eaa3f4701ba23e4",
+      "role_cases.json": "aab6149673c41637c9bbfb558f1ea01e0fe24e495db2664a5ff7224e80a4b0fb"
+    },
+    "holdout_r10": {
+      "bill.pdf": "78cab6090a7f6d6f69e517673b5a9ee6b12236d4b3a518e1ae7d88cc3e08961e",
+      "expected.json": "ee7e799343aa81b089861ebfc9bca2d1560de3f0469c0dca2892009915f49acf",
+      "role_cases.json": "e0fd4b2c3e02b30deec9d7875bcdd2e2b937fdf3c61601f8a5a432abad840d9d"
+    }
+  },
+  "source_sha256": {
+    "summary.json": "46fbbc5f7abc609c968c76254e440ff76ea9867b908fec7680c0302e1c8efb3d",
+    "attempts.jsonl": "b4ca7e8847f827018188e4e27dcabc75d424974e8caff08d4cb26480f9289bcf",
+    "budget.json": "1f30fda5cdf9b2d8c88da43158863a952f3613b441839d3b89f46cdfe548f859"
+  },
+  "budget": {
+    "schema_version": 1,
+    "limit_usd": "0.30",
+    "price_date": "2026-09-29",
+    "requested_model": "gpt-5.4-mini",
+    "provider": "openai",
+    "prices_per_million_usd": [
+      "0.75",
+      "4.50"
+    ],
+    "input_token_allowance": 32768,
+    "request_byte_limit": 16384,
+    "output_token_cap": 4096,
+    "reservation_per_call_usd": "0.043008",
+    "spent_usd": "0.06336600",
+    "known_settled_usd": "0.06336600",
+    "calls": [
+      {
+        "bill": "holdout_r01",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.043008",
+        "settled_usd": "0.0020295",
+        "cumulative_usd": "0.0020295",
+        "input_tokens": 1644,
+        "output_tokens": 177,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r02",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7566,
+        "spent_before_usd": "0.0020295",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.0450375",
+        "settled_usd": "0.00198825",
+        "cumulative_usd": "0.00401775",
+        "input_tokens": 1631,
+        "output_tokens": 170,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r03",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.00401775",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.04702575",
+        "settled_usd": "0.00216975",
+        "cumulative_usd": "0.00618750",
+        "input_tokens": 1609,
+        "output_tokens": 214,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r04",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7553,
+        "spent_before_usd": "0.00618750",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.04919550",
+        "settled_usd": "0.00190575",
+        "cumulative_usd": "0.00809325",
+        "input_tokens": 1611,
+        "output_tokens": 155,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r05",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.00809325",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.05110125",
+        "settled_usd": "0.00212625",
+        "cumulative_usd": "0.01021950",
+        "input_tokens": 1635,
+        "output_tokens": 200,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r06",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7581,
+        "spent_before_usd": "0.01021950",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.05322750",
+        "settled_usd": "0.00200625",
+        "cumulative_usd": "0.01222575",
+        "input_tokens": 1619,
+        "output_tokens": 176,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r07",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0.01222575",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.05523375",
+        "settled_usd": "0.00210225",
+        "cumulative_usd": "0.01432800",
+        "input_tokens": 1639,
+        "output_tokens": 194,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r08",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7899,
+        "spent_before_usd": "0.01432800",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.05733600",
+        "settled_usd": "0.00204525",
+        "cumulative_usd": "0.01637325",
+        "input_tokens": 1731,
+        "output_tokens": 166,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r09",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7542,
+        "spent_before_usd": "0.01637325",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.05938125",
+        "settled_usd": "0.00200025",
+        "cumulative_usd": "0.01837350",
+        "input_tokens": 1629,
+        "output_tokens": 173,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r10",
+        "repeat": 1,
+        "state": "settled",
+        "request_bytes": 7554,
+        "spent_before_usd": "0.01837350",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.06138150",
+        "settled_usd": "0.002157",
+        "cumulative_usd": "0.02053050",
+        "input_tokens": 1616,
+        "output_tokens": 210,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r01",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0.02053050",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.06353850",
+        "settled_usd": "0.0020835",
+        "cumulative_usd": "0.02261400",
+        "input_tokens": 1656,
+        "output_tokens": 187,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r02",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7566,
+        "spent_before_usd": "0.02261400",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.06562200",
+        "settled_usd": "0.00203625",
+        "cumulative_usd": "0.02465025",
+        "input_tokens": 1599,
+        "output_tokens": 186,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r03",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.02465025",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.06765825",
+        "settled_usd": "0.00214275",
+        "cumulative_usd": "0.02679300",
+        "input_tokens": 1621,
+        "output_tokens": 206,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r04",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7553,
+        "spent_before_usd": "0.02679300",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.06980100",
+        "settled_usd": "0.00194025",
+        "cumulative_usd": "0.02873325",
+        "input_tokens": 1627,
+        "output_tokens": 160,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r05",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.02873325",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.07174125",
+        "settled_usd": "0.00207825",
+        "cumulative_usd": "0.03081150",
+        "input_tokens": 1607,
+        "output_tokens": 194,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r06",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7581,
+        "spent_before_usd": "0.03081150",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.07381950",
+        "settled_usd": "0.00203775",
+        "cumulative_usd": "0.03284925",
+        "input_tokens": 1619,
+        "output_tokens": 183,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r07",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0.03284925",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.07585725",
+        "settled_usd": "0.00262575",
+        "cumulative_usd": "0.03547500",
+        "input_tokens": 1635,
+        "output_tokens": 311,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r08",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7899,
+        "spent_before_usd": "0.03547500",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.07848300",
+        "settled_usd": "0.00209025",
+        "cumulative_usd": "0.03756525",
+        "input_tokens": 1737,
+        "output_tokens": 175,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r09",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7542,
+        "spent_before_usd": "0.03756525",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.08057325",
+        "settled_usd": "0.00242775",
+        "cumulative_usd": "0.03999300",
+        "input_tokens": 1629,
+        "output_tokens": 268,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r10",
+        "repeat": 2,
+        "state": "settled",
+        "request_bytes": 7554,
+        "spent_before_usd": "0.03999300",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.08300100",
+        "settled_usd": "0.0020805",
+        "cumulative_usd": "0.04207350",
+        "input_tokens": 1628,
+        "output_tokens": 191,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r01",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0.04207350",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.08508150",
+        "settled_usd": "0.0020415",
+        "cumulative_usd": "0.04411500",
+        "input_tokens": 1636,
+        "output_tokens": 181,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r02",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7566,
+        "spent_before_usd": "0.04411500",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.08712300",
+        "settled_usd": "0.00193725",
+        "cumulative_usd": "0.04605225",
+        "input_tokens": 1611,
+        "output_tokens": 162,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r03",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.04605225",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.08906025",
+        "settled_usd": "0.00192675",
+        "cumulative_usd": "0.04797900",
+        "input_tokens": 1621,
+        "output_tokens": 158,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r04",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7553,
+        "spent_before_usd": "0.04797900",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.09098700",
+        "settled_usd": "0.00185175",
+        "cumulative_usd": "0.04983075",
+        "input_tokens": 1623,
+        "output_tokens": 141,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r05",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7564,
+        "spent_before_usd": "0.04983075",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.09283875",
+        "settled_usd": "0.00211425",
+        "cumulative_usd": "0.05194500",
+        "input_tokens": 1619,
+        "output_tokens": 200,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r06",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7581,
+        "spent_before_usd": "0.05194500",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.09495300",
+        "settled_usd": "0.00212325",
+        "cumulative_usd": "0.05406825",
+        "input_tokens": 1631,
+        "output_tokens": 200,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r07",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7613,
+        "spent_before_usd": "0.05406825",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.09707625",
+        "settled_usd": "0.00234225",
+        "cumulative_usd": "0.05641050",
+        "input_tokens": 1623,
+        "output_tokens": 250,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r08",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7899,
+        "spent_before_usd": "0.05641050",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.09941850",
+        "settled_usd": "0.00220275",
+        "cumulative_usd": "0.05861325",
+        "input_tokens": 1749,
+        "output_tokens": 198,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r09",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7542,
+        "spent_before_usd": "0.05861325",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.10162125",
+        "settled_usd": "0.00228675",
+        "cumulative_usd": "0.06090000",
+        "input_tokens": 1621,
+        "output_tokens": 238,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      },
+      {
+        "bill": "holdout_r10",
+        "repeat": 3,
+        "state": "settled",
+        "request_bytes": 7554,
+        "spent_before_usd": "0.06090000",
+        "reserved_usd": "0.043008",
+        "reserved_total_usd": "0.10390800",
+        "settled_usd": "0.002466",
+        "cumulative_usd": "0.06336600",
+        "input_tokens": 1632,
+        "output_tokens": 276,
+        "resolved_model": "gpt-5.4-mini-2026-03-17",
+        "stop_reason": null
+      }
+    ],
+    "stopped_before": null
+  },
+  "per_attempt": [
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r01",
+      "repeat": 1,
+      "shape": "A",
+      "value": "106.05",
+      "expected": "106.05",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 15,
+          "line": "Current charges: AUD 106.05"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r02",
+      "repeat": 1,
+      "shape": "B",
+      "value": "91.58",
+      "expected": "91.58",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "42.00 12.00 5.00 91.58 116.58"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r03",
+      "repeat": 1,
+      "shape": "C",
+      "value": "103.20",
+      "expected": "103.20",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "AUD 103.20 AUD 116.20"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r04",
+      "repeat": 1,
+      "shape": "D",
+      "value": "95.60",
+      "expected": "95.60",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges (incl. 10% GST): AUD 95.60"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r05",
+      "repeat": 1,
+      "shape": "E",
+      "value": "101.55",
+      "expected": "101.55",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "Electricity charges: AUD 101.55"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r06",
+      "repeat": 1,
+      "shape": "F",
+      "value": "120.90",
+      "expected": "120.90",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges: AUD 120.90"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "null",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r07",
+      "repeat": 1,
+      "shape": "G",
+      "value": null,
+      "expected": null,
+      "flags": [
+        "current_bill_amount_missing"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": true,
+      "incorrect_current": false,
+      "occurrences": [],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r08",
+      "repeat": 1,
+      "shape": "H",
+      "value": "103.11",
+      "expected": "103.11",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 2,
+          "line_number": 8,
+          "line": "Current charges: AUD 103.11"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r09",
+      "repeat": 1,
+      "shape": "E",
+      "value": "85.13",
+      "expected": "85.13",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total charges: AUD 85.13"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r10",
+      "repeat": 1,
+      "shape": "E",
+      "value": "115.50",
+      "expected": "115.50",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total electricity charges: AUD 115.50"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r01",
+      "repeat": 2,
+      "shape": "A",
+      "value": "106.05",
+      "expected": "106.05",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 15,
+          "line": "Current charges: AUD 106.05"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r02",
+      "repeat": 2,
+      "shape": "B",
+      "value": "91.58",
+      "expected": "91.58",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "42.00 12.00 5.00 91.58 116.58"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r03",
+      "repeat": 2,
+      "shape": "C",
+      "value": "103.20",
+      "expected": "103.20",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "AUD 103.20 AUD 116.20"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r04",
+      "repeat": 2,
+      "shape": "D",
+      "value": "95.60",
+      "expected": "95.60",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges (incl. 10% GST): AUD 95.60"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r05",
+      "repeat": 2,
+      "shape": "E",
+      "value": "101.55",
+      "expected": "101.55",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "Electricity charges: AUD 101.55"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r06",
+      "repeat": 2,
+      "shape": "F",
+      "value": "120.90",
+      "expected": "120.90",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges: AUD 120.90"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "null",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r07",
+      "repeat": 2,
+      "shape": "G",
+      "value": null,
+      "expected": null,
+      "flags": [
+        "current_bill_amount_missing"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": true,
+      "incorrect_current": false,
+      "occurrences": [],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r08",
+      "repeat": 2,
+      "shape": "H",
+      "value": "103.11",
+      "expected": "103.11",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 2,
+          "line_number": 8,
+          "line": "Current charges: AUD 103.11"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r09",
+      "repeat": 2,
+      "shape": "E",
+      "value": "85.13",
+      "expected": "85.13",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total charges: AUD 85.13"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r10",
+      "repeat": 2,
+      "shape": "E",
+      "value": "115.50",
+      "expected": "115.50",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total electricity charges: AUD 115.50"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r01",
+      "repeat": 3,
+      "shape": "A",
+      "value": "106.05",
+      "expected": "106.05",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 15,
+          "line": "Current charges: AUD 106.05"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r02",
+      "repeat": 3,
+      "shape": "B",
+      "value": "91.58",
+      "expected": "91.58",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "42.00 12.00 5.00 91.58 116.58"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r03",
+      "repeat": 3,
+      "shape": "C",
+      "value": "103.20",
+      "expected": "103.20",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "AUD 103.20 AUD 116.20"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r04",
+      "repeat": 3,
+      "shape": "D",
+      "value": "95.60",
+      "expected": "95.60",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges (incl. 10% GST): AUD 95.60"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r05",
+      "repeat": 3,
+      "shape": "E",
+      "value": "101.55",
+      "expected": "101.55",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 13,
+          "line": "Electricity charges: AUD 101.55"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r06",
+      "repeat": 3,
+      "shape": "F",
+      "value": "120.90",
+      "expected": "120.90",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Current charges: AUD 120.90"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "null",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r07",
+      "repeat": 3,
+      "shape": "G",
+      "value": null,
+      "expected": null,
+      "flags": [
+        "current_bill_amount_missing"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": true,
+      "incorrect_current": false,
+      "occurrences": [],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r08",
+      "repeat": 3,
+      "shape": "H",
+      "value": "103.11",
+      "expected": "103.11",
+      "flags": [],
+      "status": "processed",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": false,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": false,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 2,
+          "line_number": 8,
+          "line": "Current charges: AUD 103.11"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r09",
+      "repeat": 3,
+      "shape": "E",
+      "value": "85.13",
+      "expected": "85.13",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total charges: AUD 85.13"
+        }
+      ],
+      "r07_computed_87_20": false
+    },
+    {
+      "category": "correct",
+      "correct": true,
+      "distractor_matches": [],
+      "bill": "holdout_r10",
+      "repeat": 3,
+      "shape": "E",
+      "value": "115.50",
+      "expected": "115.50",
+      "flags": [
+        "current_bill_amount_role_unconfirmed"
+      ],
+      "status": "needs_review",
+      "error_code": null,
+      "wrong_value": false,
+      "no_fields": false,
+      "silent_false_acceptance": false,
+      "caught": false,
+      "false_review": true,
+      "current_amount_presence_flag": false,
+      "current_amount_role_flag": true,
+      "null": false,
+      "incorrect_current": false,
+      "occurrences": [
+        {
+          "page": 1,
+          "line_number": 12,
+          "line": "Total electricity charges: AUD 115.50"
+        }
+      ],
+      "r07_computed_87_20": false
+    }
+  ],
+  "totals": {
+    "observed_attempts": 30,
+    "planned_attempts": 30,
+    "categories": {
+      "correct": 27,
+      "null": 3
+    },
+    "correct": {
+      "count": 30,
+      "total": 30
+    },
+    "incorrect_current": {
+      "count": 0,
+      "total": 30
+    },
+    "null": {
+      "count": 3,
+      "total": 30
+    },
+    "wrong_value": {
+      "count": 0,
+      "total": 30
+    },
+    "caught": {
+      "count": 0,
+      "total": 30
+    },
+    "silent_false_acceptance": {
+      "count": 0,
+      "total": 30
+    },
+    "false_review": {
+      "count": 18,
+      "total": 30
+    },
+    "no_fields": {
+      "count": 0,
+      "total": 30
+    }
+  },
+  "printed_current": {
+    "observed_attempts": 27,
+    "planned_attempts": 27,
+    "categories": {
+      "correct": 27
+    },
+    "correct": {
+      "count": 27,
+      "total": 27
+    },
+    "incorrect_current": {
+      "count": 0,
+      "total": 27
+    },
+    "null": {
+      "count": 0,
+      "total": 27
+    },
+    "wrong_value": {
+      "count": 0,
+      "total": 27
+    },
+    "caught": {
+      "count": 0,
+      "total": 27
+    },
+    "silent_false_acceptance": {
+      "count": 0,
+      "total": 27
+    },
+    "false_review": {
+      "count": 18,
+      "total": 27
+    },
+    "no_fields": {
+      "count": 0,
+      "total": 27
+    }
+  },
+  "r07": {
+    "observed_attempts": 3,
+    "planned_attempts": 3,
+    "categories": {
+      "null": 3
+    },
+    "correct": {
+      "count": 3,
+      "total": 3
+    },
+    "incorrect_current": {
+      "count": 0,
+      "total": 3
+    },
+    "null": {
+      "count": 3,
+      "total": 3
+    },
+    "wrong_value": {
+      "count": 0,
+      "total": 3
+    },
+    "caught": {
+      "count": 0,
+      "total": 3
+    },
+    "silent_false_acceptance": {
+      "count": 0,
+      "total": 3
+    },
+    "false_review": {
+      "count": 0,
+      "total": 3
+    },
+    "no_fields": {
+      "count": 0,
+      "total": 3
+    }
+  },
+  "per_case": {
+    "holdout_r01": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r02": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r03": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r04": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r05": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r06": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r07": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "null": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 3,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r08": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r09": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "holdout_r10": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    }
+  },
+  "per_shape": {
+    "A": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "B": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "C": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "D": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 3,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "E": {
+      "observed_attempts": 9,
+      "planned_attempts": 9,
+      "categories": {
+        "correct": 9
+      },
+      "correct": {
+        "count": 9,
+        "total": 9
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 9
+      },
+      "null": {
+        "count": 0,
+        "total": 9
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 9
+      },
+      "caught": {
+        "count": 0,
+        "total": 9
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 9
+      },
+      "false_review": {
+        "count": 9,
+        "total": 9
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 9
+      }
+    },
+    "F": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "G": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "null": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 3,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    },
+    "H": {
+      "observed_attempts": 3,
+      "planned_attempts": 3,
+      "categories": {
+        "correct": 3
+      },
+      "correct": {
+        "count": 3,
+        "total": 3
+      },
+      "incorrect_current": {
+        "count": 0,
+        "total": 3
+      },
+      "null": {
+        "count": 0,
+        "total": 3
+      },
+      "wrong_value": {
+        "count": 0,
+        "total": 3
+      },
+      "caught": {
+        "count": 0,
+        "total": 3
+      },
+      "silent_false_acceptance": {
+        "count": 0,
+        "total": 3
+      },
+      "false_review": {
+        "count": 0,
+        "total": 3
+      },
+      "no_fields": {
+        "count": 0,
+        "total": 3
+      }
+    }
+  },
+  "other_fields": {
+    "retailer": {
+      "correct": 30,
+      "total": 30
+    },
+    "period_start": {
+      "correct": 30,
+      "total": 30
+    },
+    "period_end": {
+      "correct": 30,
+      "total": 30
+    },
+    "stated_billing_days": {
+      "correct": 30,
+      "total": 30
+    },
+    "total_usage_kwh": {
+      "correct": 30,
+      "total": 30
+    },
+    "daily_supply_rate": {
+      "correct": 30,
+      "total": 30
+    }
+  }
+}
