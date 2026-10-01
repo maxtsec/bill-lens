@@ -89,6 +89,13 @@ def render_report(summary: dict) -> str:
     lines += [f"Latency ms: median={summary['latency_ms']['median']}; max={summary['latency_ms']['max']}",
               f"Estimated cost US$: {summary['cost']['total_estimated_usd']}; known subtotal={summary['cost']['known_estimated_usd']}; coverage={fraction(summary['cost']['calls_with_estimate'])}",
               f"Prices dated {summary['price_date']}; uncached standard-price estimate, not actual billing. Fake costs zero; absent usage stays unknown.",
-              "", "## Dataset hashes", "", "| Bill | PDF SHA-256 | Label SHA-256 |", "| --- | --- | --- |"]
+              ""]
+    if "budget" in summary:
+        budget = summary["budget"]
+        lines += ["## Budget ledger", "",
+                  f"Cap US${budget['limit_usd']}; conservative spent/reserved US${budget['spent_usd']}; "
+                  f"known settled estimate US${budget['known_settled_usd']}.",
+                  "Reservations are persisted before calls; unresolved usage is not refunded or treated as zero.", ""]
+    lines += ["## Dataset hashes", "", "| Bill | PDF SHA-256 | Label SHA-256 |", "| --- | --- | --- |"]
     lines += [f"| {name} | {hashes['pdf_sha256']} | {hashes['label_sha256']} |" for name, hashes in summary["dataset"].items()]
     return "\n".join(lines) + "\n"

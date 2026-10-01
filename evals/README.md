@@ -221,6 +221,21 @@ See [ADR-009](../docs/adr/009-printed-value-check.md) and
 [ADR-010](../docs/adr/010-current-amount-role-check.md). Neither replay makes a
 model call or changes the preserved source artifacts.
 
+## Opt-in budget ceiling and pre-registered role-holdout run
+
+`--budget-usd <positive USD amount>` enables a sequential reservation ledger
+in `budget.json`. Budgeted OpenAI runs require a clean recorded Git commit.
+The guard reserves before each call, settles from known token usage, and stops
+before a reservation would exceed the cap. Unknown usage/model or an exceeded
+token allowance stops with the reservation retained, never a fabricated zero.
+Aborts keep attempts, ledger, summary and report as a clearly marked partial
+run; `evals.compare` refuses it. Existing runs without this option are uncapped.
+
+For the owner-only 30-call v4 role-holdout run, the exact US$0.30 profile,
+allowance assumptions, key-entry/cleanup commands and frozen analysis method
+are in the [pre-registered plan](../docs/learning/role-holdout-live-plan.md).
+No live call is part of preparation/tests. Do not automatically resume or rerun.
+
 ## Tests
 
 ```powershell
