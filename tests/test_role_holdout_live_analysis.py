@@ -108,6 +108,41 @@ def test_wrong_due_unprinted_value_and_unsigned_credit_are_counted_with_flags(tm
     assert r01["category"] == "other_wrong" and r01["current_amount_presence_flag"]
 
 
+def test_silent_false_acceptance_is_nonzero_for_processed_wrong_numeric_value(tmp_path):
+    # Stub response, not a live result. r04's unsigned credit magnitude 10.00
+    # also occurs as 10% in a current-charges label, so the frozen rule confirms
+    # it despite the handwritten current total being 95.60. Do not alter the
+    # rule to manufacture a flag: this test needs a real processed wrong value.
+    source = prepare(tmp_path, {"holdout_r04": "10.00"})
+    result = analysis.analyse(source)
+    wrong = [row for row in result["per_attempt"] if row["bill"] == "holdout_r04"]
+    assert len(wrong) == 3
+    assert all(row["wrong_value"] and row["status"] == "processed" and row["flags"] == [] for row in wrong)
+    assert all(row["silent_false_acceptance"] and not row["caught"] for row in wrong)
+    assert all(row["category"] == "distractor:credit" for row in wrong)
+    assert result["totals"]["silent_false_acceptance"] == {"count": 3, "total": 30}
+    assert result["printed_current"]["silent_false_acceptance"] == {"count": 3, "total": 27}
+    assert result["per_case"]["holdout_r04"]["silent_false_acceptance"] == {"count": 3, "total": 3}
+    assert result["per_shape"]["D"]["silent_false_acceptance"] == {"count": 3, "total": 3}
+    report = analysis.render_report(result)
+    assert "| holdout_r04 | 3/3 | 0/3 | 3/3 | 0/3 | 3/3 | 0/3 | 0/3 |" in report
+
+
+@pytest.mark.parametrize("revision", [
+    {"commit": "uncommitted-stub", "dirty": True},
+    {"commit": "unknown-state-stub", "dirty": None},
+    {"commit": None, "dirty": False},
+])
+def test_analysis_refuses_dirty_unknown_or_missing_commit(tmp_path, revision):
+    source = prepare(tmp_path)
+    path = source / "summary.json"
+    summary = json.loads(path.read_text())
+    summary["git"] = revision
+    path.write_text(json.dumps(summary), encoding="utf-8")
+    with pytest.raises(ValueError, match="run must record a clean commit"):
+        analysis.analyse(source)
+
+
 def test_r07_reconstructed_amount_is_explicitly_reported(tmp_path):
     result = analysis.analyse(prepare(tmp_path, {"holdout_r07": "87.20"}))
     r07 = [r for r in result["per_attempt"] if r["bill"] == "holdout_r07"]
