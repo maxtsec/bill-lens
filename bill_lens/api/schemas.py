@@ -54,6 +54,22 @@ class ReviewRequest(BaseModel):
 
     @field_validator("reviewer")
     @classmethod
+    def visible_reviewer(cls, value: str) -> str:
+        if any(unicodedata.category(c) in {"Cf", "Zl", "Zp"} for c in value):
+            raise ValueError("reviewer must not contain invisible formatting or line separators")
+        if not any(unicodedata.category(c)[0] in "LNPS" for c in value):
+            raise ValueError("reviewer must contain visible characters")
+        return value
+
+    @field_validator("reviewer", mode="before")
+    @classmethod
+    def single_line_reviewer(cls, value):
+        if isinstance(value, str) and any(unicodedata.category(c) in {"Cc", "Cs", "Cf", "Zl", "Zp"} for c in value):
+            raise ValueError("reviewer must be a single-line name without control characters")
+        return value
+
+    @field_validator("reviewer")
+    @classmethod
     def named_reviewer(cls, value: str) -> str:
         if not value or "\n" in value or "\t" in value:
             raise ValueError("reviewer must be a nonblank single-line name")
@@ -79,11 +95,18 @@ class BillDetail(BillResponse):
     effective_fields: ExtractionFields | None
 
 
+class BillCounts(BaseModel):
+    all: int
+    pending: int
+    reviewed: int
+
+
 class BillList(BaseModel):
     items: list[BillDetail]
     total: int
     limit: int
     offset: int
+    counts: BillCounts
 
 
 class ReviewHistory(BaseModel):
@@ -91,3 +114,4 @@ class ReviewHistory(BaseModel):
     total: int
     limit: int
     offset: int
+    next_before_revision: int | None

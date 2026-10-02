@@ -51,7 +51,8 @@ let offset = 0,
   current = null,
   dirty = false,
   busy = false,
-  historyOffset = 0,
+  historyCursor = null,
+  historyLoadingGeneration = null,
   listGeneration = 0,
   detailGeneration = 0;
 let previewGeneration = 0,
@@ -71,13 +72,29 @@ function notice(message, error = false) {
   $("notice").hidden = false;
 }
 async function api(path, options = {}) {
-  const response = await fetch(path, { cache: "no-store", ...options });
-  const body = await response.json();
+  let response;
+  try {
+    response = await fetch(path, { cache: "no-store", ...options });
+  } catch {
+    throw new Error(
+      "Could not connect to the API. Check your connection and try again.",
+    );
+  }
+  const fallback = response.ok
+    ? "The API returned an unexpected response. Please try again."
+    : `The request could not be completed (${response.status}). Please try again.`;
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    throw new Error(fallback);
+  }
   if (!response.ok)
     throw new Error(
-      errors[body.error] ||
-        `The request could not be completed (${response.status}). Please try again.`,
+      body && Object.hasOwn(errors, body.error) ? errors[body.error] : fallback,
     );
+  if (!body || typeof body !== "object" || Array.isArray(body))
+    throw new Error(fallback);
   return body;
 }
 function badge(text, cls = "") {
@@ -123,21 +140,16 @@ async function loadList() {
     if ($("review-filter").value)
       query.set("review_state", $("review-filter").value);
     if ($("status-filter").value) query.set("status", $("status-filter").value);
-    const [page, all, pending, reviewed] = await Promise.all([
-      api(`/bills?${query}`),
-      api("/bills?limit=1"),
-      api("/bills?limit=1&review_state=pending"),
-      api("/bills?limit=1&review_state=reviewed"),
-    ]);
+    const page = await api(`/bills?${query}`);
     if (generation !== listGeneration) return;
     total = page.total;
     if (offset && offset >= total) {
       offset = Math.max(0, Math.floor((total - 1) / 20) * 20);
       return loadList();
     }
-    $("count-all").textContent = all.total;
-    $("count-pending").textContent = pending.total;
-    $("count-reviewed").textContent = reviewed.total;
+    $("count-all").textContent = page.counts.all;
+    $("count-pending").textContent = page.counts.pending;
+    $("count-reviewed").textContent = page.counts.reviewed;
     $("result-count").textContent = total;
     for (const bill of page.items) {
       const fields = bill.effective_fields || {};
@@ -195,7 +207,7 @@ async function loadList() {
       $("bill-rows").append(tr);
     }
     $("list-state").hidden = page.items.length > 0;
-    $("list-state").textContent = all.total
+    $("list-state").textContent = page.counts.all
       ? "No bills match these filters."
       : "No bills yet. Upload a sample PDF to get started.";
     $("page-label").textContent = total
@@ -326,7 +338,7 @@ async function loadDetail(id) {
     if (generation !== detailGeneration) return;
     fillDetail(bill);
     $("review-form").inert = false;
-    historyOffset = 0;
+    historyCursor = null;
     $("history").replaceChildren();
     await loadHistory(id, generation);
   } catch (error) {
@@ -363,16 +375,18 @@ async function loadPreview(id, page) {
     $("pdf-next").disabled = page >= previewCount;
   } catch (error) {
     if (generation === previewGeneration)
-      $("preview-state").textContent = error.message;
+      $("preview-state").textContent =
+        "Preview unavailable. Select Open PDF to view the original.";
   }
 }
 async function loadHistory(id = current?.id, generation = detailGeneration) {
-  if (!id) return;
+  if (!id || historyLoadingGeneration === generation) return;
+  historyLoadingGeneration = generation;
   $("more-history").disabled = true;
   try {
-    const page = await api(
-      `/bills/${id}/reviews?limit=20&offset=${historyOffset}`,
-    );
+    const query = new URLSearchParams({ limit: 20 });
+    if (historyCursor !== null) query.set("before_revision", historyCursor);
+    const page = await api(`/bills/${id}/reviews?${query}`);
     if (generation !== detailGeneration) return;
     $("history-count").textContent = `${page.total} review records`;
     if (!page.total)
@@ -408,12 +422,15 @@ async function loadHistory(id = current?.id, generation = detailGeneration) {
       entry.append(details);
       $("history").append(entry);
     }
-    historyOffset += page.items.length;
-    $("more-history").hidden = historyOffset >= page.total;
+    historyCursor = page.next_before_revision;
+    $("more-history").hidden = historyCursor === null;
   } catch (error) {
-    notice(error.message, true);
+    if (generation === detailGeneration) notice(error.message, true);
   } finally {
-    $("more-history").disabled = false;
+    if (historyLoadingGeneration === generation) {
+      historyLoadingGeneration = null;
+      $("more-history").disabled = false;
+    }
   }
 }
 function navigate(id) {

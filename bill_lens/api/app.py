@@ -15,7 +15,7 @@ from bill_lens.api.errors import UploadError
 from bill_lens.api.limits import UploadBodyLimit, read_pdf
 from bill_lens.api.schemas import BillResponse, BillDetail, BillList, ReviewHistory, ReviewRequest, ReviewResponse
 from bill_lens.api import reviews
-from bill_lens.api.preview import render_page
+from bill_lens.api.preview import clear_preview_cache, render_page
 from bill_lens.api.service import get_bill, upload_bill
 from bill_lens.db.config import make_engine
 from bill_lens.extraction import BillExtractor
@@ -47,6 +47,7 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
         try:
             yield
         finally:
+            clear_preview_cache()
             try:
                 if extractor is None and isinstance(adapter, OpenAIExtractor):
                     adapter.close()
@@ -134,8 +135,9 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
 
     @app.get("/bills/{bill_id}/reviews", response_model=ReviewHistory)
     def read_reviews(bill_id: UUID, limit: Annotated[int, Query(ge=1, le=100)] = 20,
-                     offset: Annotated[int, Query(ge=0)] = 0):
-        return reviews.history(database, bill_id, limit=limit, offset=offset)
+                     offset: Annotated[int, Query(ge=0)] = 0,
+                     before_revision: Annotated[int | None, Query(ge=1)] = None):
+        return reviews.history(database, bill_id, limit=limit, offset=offset, before_revision=before_revision)
 
     @app.post("/bills/{bill_id}/reviews", response_model=ReviewResponse, status_code=201)
     def write_review(bill_id: UUID, request: ReviewRequest):

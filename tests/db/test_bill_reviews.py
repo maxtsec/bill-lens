@@ -88,11 +88,13 @@ def test_list_pagination_and_independent_filters(client):
     assert save(client, two).status_code == 201
     page = client.get("/bills?limit=2").json()
     assert page["total"] == 3 and len(page["items"]) == 2
+    assert page["counts"] == {"all": 3, "pending": 2, "reviewed": 1}
     rest = client.get("/bills?limit=2&offset=2").json()
     assert len(rest["items"]) == 1
     assert len({b["id"] for b in page["items"] + rest["items"]}) == 3
     filtered = client.get("/bills?status=needs_review&review_state=reviewed").json()
     assert filtered["total"] == 1 and filtered["items"][0]["id"] == two["id"]
+    assert filtered["counts"] == page["counts"]
     assert client.get("/bills?review_state=pending").json()["total"] == 2
     assert client.get("/bills?offset=100").json()["items"] == []
 
@@ -235,3 +237,64 @@ def test_late_failure_does_not_invalidate_review(client, db_engine):
     detail = client.get(f'/bills/{bill["id"]}/detail').json()
     assert detail["review_state"] == "reviewed" and detail["review"]["id"] == first["id"]
     assert client.get("/bills?status=processed&review_state=reviewed").json()["total"] == 1
+
+
+@pytest.mark.parametrize("fill_values", [True, False])
+def test_all_failed_retries_preserve_manual_review_until_success(db_engine, tmp_path, valid_fields, fill_values):
+    data = (ROOT / "dataset/bill_001/bill.pdf").read_bytes()
+    document = extract_pdf_text(data)
+    extractor = FakeExtractor({document.file_sha256: ScriptedResponse(raw_response=None, error_code="timeout")})
+    app = create_app(engine=db_engine, storage_root=tmp_path, extractor=extractor)
+    with TestClient(app) as client:
+        bill = upload(client)
+        fields = valid_fields if fill_values else dict.fromkeys(valid_fields)
+        first = save(client, bill, request(bill, fields=fields)).json()
+        assert first["action"] == ("corrected" if fill_values else "confirmed")
+        payload = request(bill, fields=fields, expected_review_id=first["id"])
+        for _ in range(2):
+            retry = client.post("/bills", files={"file": ("bill.pdf", data, "application/pdf")})
+            assert retry.status_code == 200 and retry.json()["status"] == "failed"
+            detail = client.get(f'/bills/{bill["id"]}/detail').json()
+            assert detail["run"]["id"] != first["source_run_id"]
+            assert detail["fields"] is None and detail["review"] == first
+            assert detail["effective_fields"] == fields and detail["review_state"] == "reviewed"
+            page = client.get("/bills?status=failed&review_state=reviewed").json()
+            assert page["total"] == 1 and page["items"][0] == detail
+            assert page["counts"] == {"all": 1, "pending": 0, "reviewed": 1}
+            assert client.get("/bills?review_state=pending").json()["total"] == 0
+        # Retry tokens still detect a changed current run, even though the review survives.
+        assert save(client, bill, payload).status_code == 409
+        second = save(client, bill, payload | {"source_run_id": detail["run"]["id"]}).json()
+        assert second["action"] == "confirmed" and second["revision"] == 2
+        # A successful extraction supplies new evidence and invalidates the old review.
+        app.state.extractor = FakeExtractor.from_dataset(ROOT / "dataset")
+        assert client.post("/bills", files={"file": ("bill.pdf", data, "application/pdf")}).status_code == 200
+        detail = client.get(f'/bills/{bill["id"]}/detail').json()
+        assert detail["status"] == "processed" and detail["review_state"] == "pending"
+        assert detail["review"] is None and detail["latest_review_id"] == second["id"]
+        assert client.get(f'/bills/{bill["id"]}/reviews').json()["total"] == 2
+        assert client.get("/bills").json()["counts"] == {"all": 1, "pending": 1, "reviewed": 0}
+
+
+def test_history_cursor_does_not_repeat_when_reviews_are_appended(client):
+    bill = upload(client)
+    latest = None
+    for _ in range(3):
+        latest = save(client, bill, request(bill, expected_review_id=latest)).json()["id"]
+    url = f'/bills/{bill["id"]}/reviews'
+    first = client.get(url + "?limit=2").json()
+    assert [r["revision"] for r in first["items"]] == [3, 2]
+    assert first["next_before_revision"] == 2
+    assert save(client, bill, request(bill, expected_review_id=latest)).status_code == 201
+    rest = client.get(url + "?limit=2&before_revision=2").json()
+    assert rest["total"] == 4 and rest["next_before_revision"] is None
+    assert [r["revision"] for r in rest["items"]] == [1]
+    assert client.get(url + "?before_revision=1").json()["items"] == []
+    for query in ("before_revision=0", "before_revision=-1", "before_revision=2&offset=1"):
+        assert client.get(url + "?" + query).status_code == 422
+
+
+def test_empty_list_has_zero_summary_counts(client):
+    page = client.get("/bills?review_state=reviewed").json()
+    assert page["total"] == 0 and page["items"] == []
+    assert page["counts"] == {"all": 0, "pending": 0, "reviewed": 0}
