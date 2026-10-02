@@ -68,3 +68,29 @@ class ExtractionRun(Base):
     output_tokens: Mapped[int | None] = mapped_column(BigInteger)
     latency_ms: Mapped[int] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("now()"))
+
+
+class BillReview(Base):
+    """Append-only application records; extraction evidence remains untouched."""
+    __tablename__ = "bill_reviews"
+    __table_args__ = (
+        UniqueConstraint("bill_id", "revision", name="uq_reviews_revision"),
+        CheckConstraint("revision > 0", name="ck_reviews_revision"),
+        CheckConstraint("action IN ('confirmed', 'corrected')", name="ck_reviews_action"),
+        CheckConstraint("length(btrim(reviewer)) BETWEEN 1 AND 80", name="ck_reviews_reviewer"),
+        CheckConstraint("length(note) <= 2000", name="ck_reviews_note"),
+        CheckConstraint("jsonb_typeof(fields) = 'object'", name="ck_reviews_fields"),
+        CheckConstraint("jsonb_typeof(review_flags) = 'array'", name="ck_reviews_flags"),
+        CheckConstraint("fields_schema_version = 1", name="ck_reviews_schema"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, server_default=text("gen_random_uuid()"))
+    bill_id: Mapped[UUID] = mapped_column(ForeignKey("bills.id", name="fk_reviews_bill"))
+    source_run_id: Mapped[UUID] = mapped_column(ForeignKey("extraction_runs.id", name="fk_reviews_run"))
+    revision: Mapped[int] = mapped_column(Integer)
+    action: Mapped[str] = mapped_column(Text)
+    reviewer: Mapped[str] = mapped_column(Text)
+    note: Mapped[str] = mapped_column(Text)
+    fields: Mapped[dict[str, Any]] = mapped_column(JSONB(none_as_null=True))
+    fields_schema_version: Mapped[int] = mapped_column(Integer)
+    review_flags: Mapped[list[str]] = mapped_column(JSONB(none_as_null=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("clock_timestamp()"))

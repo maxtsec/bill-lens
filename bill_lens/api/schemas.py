@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel
+import unicodedata
+
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 from bill_lens.contract import ExtractionFields, ReviewFlag
 from bill_lens.extraction import ExtractionErrorCode
@@ -32,3 +34,60 @@ class BillResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     run: RunMetadata
+
+
+class ReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_run_id: UUID
+    expected_review_id: UUID | None  # Required, including null for the first review.
+    fields: ExtractionFields
+    reviewer: str = Field(min_length=1, max_length=80, strict=True)
+    note: str = Field(default="", max_length=2000, strict=True)
+    acknowledged: StrictBool
+
+    @field_validator("reviewer", "note")
+    @classmethod
+    def safe_text(cls, value: str) -> str:
+        if any(unicodedata.category(c) in {"Cc", "Cs"} and c not in "\n\t" for c in value):
+            raise ValueError("invalid control character")
+        return value.strip()
+
+    @field_validator("reviewer")
+    @classmethod
+    def named_reviewer(cls, value: str) -> str:
+        if not value or "\n" in value or "\t" in value:
+            raise ValueError("reviewer must be a nonblank single-line name")
+        return value
+
+
+class ReviewResponse(BaseModel):
+    id: UUID
+    source_run_id: UUID
+    revision: int
+    action: Literal["confirmed", "corrected"]
+    reviewer: str
+    note: str
+    fields: ExtractionFields
+    review_flags: list[ReviewFlag]
+    created_at: datetime
+
+
+class BillDetail(BillResponse):
+    review_state: Literal["pending", "reviewed"]
+    latest_review_id: UUID | None
+    review: ReviewResponse | None
+    effective_fields: ExtractionFields | None
+
+
+class BillList(BaseModel):
+    items: list[BillDetail]
+    total: int
+    limit: int
+    offset: int
+
+
+class ReviewHistory(BaseModel):
+    items: list[ReviewResponse]
+    total: int
+    limit: int
+    offset: int

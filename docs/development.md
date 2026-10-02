@@ -203,6 +203,8 @@ call cost, and the crash window between file rename and DB commit.
 
 ### OpenAI upload API (opt-in, spends credit)
 
+See the [bill workbench](#bill-workbench-and-human-review) for the local review UI.
+
 Install the updated requirements first. To enable the adapter, set these values
 in your ignored `.env`, import them into the server's PowerShell process using
 the earlier snippet, and start/restart the Uvicorn factory command above:
@@ -338,3 +340,39 @@ listed explicitly; GitHub links are limited to this project and pdfplumber's
 official documentation repository. New destinations require a deliberate
 allowlist change. Check external availability separately when editing sources.
 The former copy-and-run checker is now replaced by this single implementation.
+
+## Bill workbench and human review
+
+After installing requirements, importing local configuration, starting PostgreSQL
+and running `python -m alembic upgrade head`, start the API as above and open
+`http://127.0.0.1:8000/`. The Traditional Chinese workbench runs in the same process.
+Use the five synthetic `dataset/bill_*/bill.pdf` fixtures with the default fake.
+Arbitrary real bills are not supported by the fake extractor.
+
+The list shows effective values from the latest applicable human review, falling
+back to the current extraction. Filter automatic status and human-review status
+independently. Open a bill, inspect its page preview or original PDF, edit any
+fields, enter a reviewer name and explicitly acknowledge the PDF before saving.
+Blank values are stored as null. Original values remain beside the editable
+fields, and each saved version appears in history. Remaining warnings stay visible.
+
+A 409 conflict means another review or current extraction changed since loading.
+The editor retains your input; note any intended changes, reload the latest version,
+and reconcile before submitting again. A failed extraction can also be manually
+reviewed; its original failed status stays unchanged.
+
+New endpoints:
+
+| Endpoint | Result |
+| --- | --- |
+| `GET /bills` | Paginated bill details; `limit`, `offset`, `status`, `review_state` filters |
+| `GET /bills/{id}/detail` | Original extraction plus applicable review/effective fields |
+| `GET /bills/{id}/pdf` | Original PDF with opaque filename |
+| `GET /bills/{id}/preview/{page}` | One-based PNG page and `X-Page-Count` header |
+| `GET /bills/{id}/reviews` | Paginated human-review history, newest first |
+| `POST /bills/{id}/reviews` | Append confirmation/correction with both version tokens |
+
+The existing GET-by-id and upload response formats stay unchanged. Reviewer names
+are self-reported local labels. There is no authentication; keep the server on
+loopback. See [ADR-011](adr/011-human-review-workbench.md) for concurrency,
+state semantics, preview limits and migration rollback implications.

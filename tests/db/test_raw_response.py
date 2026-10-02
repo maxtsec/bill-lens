@@ -89,5 +89,5 @@ def test_downgrade_refuses_unrepresentable_evidence_without_data_loss(db_engine,
     with pytest.raises(DataError), db_engine.begin() as connection:
         command.downgrade(migration_config(connection), "0001")
     with Session(db_engine) as session:
-        assert session.scalar(text("SELECT version_num FROM alembic_version")) == "0002"
+        assert session.scalar(text("SELECT version_num FROM alembic_version")) == "0003"
         assert session.scalar(select(ExtractionRun)).raw_response == raw
