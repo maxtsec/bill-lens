@@ -8,23 +8,24 @@
     <script src="/assets/app.js" defer></script>
   </head>
   <body>
-    <aside class="sidebar">
-      <a class="brand" href="/" aria-label="Bill Lens home"
-        ><span class="brand-icon">b.</span> Bill Lens</a
-      >
-      <div class="workspace-label">YOUR WORKSPACE</div>
-      <a class="nav-item active" href="/">▤ <span>Bill workspace</span></a>
-      <div class="sidebar-bottom">
-        <span class="live-dot"></span> Local workspace
-        <p>From original bills to traceable data.</p>
-        <a href="/docs" target="_blank" rel="noopener">API documentation ↗</a>
+    <header class="app-header">
+      <div class="header-inner">
+        <a class="brand" href="/" aria-label="Bill Lens home"
+          ><span class="brand-icon" aria-hidden="true">b</span>Bill Lens</a
+        >
+        <nav aria-label="Main navigation">
+          <a class="nav-link" href="/" aria-current="page">Bills</a>
+        </nav>
+        <div class="header-links">
+          <span class="local-badge"
+            ><span class="live-dot"></span>Local workspace</span
+          ><a href="/docs" target="_blank" rel="noopener"
+            >API docs <span aria-hidden="true">↗</span></a
+          >
+        </div>
       </div>
-    </aside>
+    </header>
     <main>
-      <header class="topbar">
-        <span>Workspace <span class="slash">/</span> Bills</span
-        ><span class="local-badge">LOCAL DEVELOPMENT</span>
-      </header>
       <div
         id="notice"
         class="notice"
@@ -35,14 +36,14 @@
       <section id="list-view" class="page">
         <div class="page-heading">
           <div>
-            <div class="eyebrow">A CLEARER VIEW</div>
-            <h1>Every bill, clearly understood.</h1>
+            <h1>Bills</h1>
             <p class="muted">
-              Check extracted values against the original and keep a record of
-              every review.
+              Your electricity bills, organised and ready to review.
             </p>
           </div>
-          <button id="upload" class="primary">+ Upload bill</button>
+          <button id="upload" class="primary">
+            <span aria-hidden="true">＋</span> Upload bill
+          </button>
         </div>
         <input
           id="upload-file"
@@ -52,21 +53,20 @@
         />
         <div class="metrics">
           <div class="metric">
-            <span>All bills</span><strong id="count-all">—</strong
-            ><small>Saved PDFs</small>
+            <span>All bills</span><strong id="count-all">—</strong>
           </div>
           <div class="metric">
-            <span>Awaiting review</span><strong id="count-pending">—</strong
-            ><small>Current version not yet reviewed</small>
+            <span>Awaiting review</span><strong id="count-pending">—</strong>
           </div>
           <div class="metric">
-            <span>Reviewed</span><strong id="count-reviewed">—</strong
-            ><small>Original results and changes retained</small>
+            <span>Reviewed</span><strong id="count-reviewed">—</strong>
           </div>
         </div>
         <section class="panel">
           <div class="panel-toolbar">
-            <h2>Bills <span id="result-count" class="count-pill">—</span></h2>
+            <h2>
+              All records <span id="result-count" class="count-pill">—</span>
+            </h2>
             <div class="filters">
               <label
                 >Manual review<select id="review-filter">
@@ -94,11 +94,11 @@
             <table>
               <thead>
                 <tr>
-                  <th>Retailer / bill</th>
+                  <th>Retailer</th>
                   <th>Billing period</th>
-                  <th>Current charges (AUD)</th>
-                  <th>Automated checks</th>
-                  <th>Manual review</th>
+                  <th>Amount <span class="muted">AUD</span></th>
+                  <th>Checks</th>
+                  <th>Review</th>
                   <th><span class="sr-only">Open</span></th>
                 </tr>
               </thead>
@@ -115,16 +115,14 @@
           </div>
         </section>
         <p class="footnote">
-          Passing automated checks does not guarantee accuracy. Manual review
-          preserves the original warnings. Amounts are current-period charges,
-          not the account balance due.
+          Amounts shown are current-period charges. Review the original bill to
+          confirm accuracy.
         </p>
       </section>
       <section id="detail-view" class="page" hidden>
         <button id="back" class="text-button">← Back to bills</button>
         <div class="detail-heading">
           <div>
-            <div class="eyebrow">BILL REVIEW</div>
             <h1 id="detail-title">Bill details</h1>
             <p id="detail-subtitle" class="muted"></p>
           </div>
@@ -152,16 +150,20 @@
               <div>
                 <h2>Review and correct</h2>
                 <p class="muted small">
-                  Leave a field blank if it cannot be confirmed. Blank does not
-                  mean zero.
+                  Check the original. Edit only what needs changing.
                 </p>
               </div>
               <button id="reload-detail" class="secondary">Reload</button>
             </div>
             <div class="form-content">
               <div id="flags" class="flags"></div>
+              <label class="original-toggle"
+                ><input id="show-original" type="checkbox" />Show originally
+                extracted values</label
+              >
               <form id="review-form">
                 <div class="field-grid">
+                  <p class="field-section">Bill information</p>
                   <label class="full"
                     >Electricity retailer<input
                       id="retailer"
@@ -201,6 +203,7 @@
                       data-original="total_usage_kwh"
                     ></small
                   ></label>
+                  <p class="field-section">Charges</p>
                   <label class="full amount-field"
                     >Current charges (AUD)<input
                       id="current_bill_amount"
@@ -232,6 +235,7 @@
                   ></label>
                 </div>
                 <div id="changes" class="changes" aria-live="polite"></div>
+                <p class="section-label">Complete review</p>
                 <div class="review-inputs">
                   <label
                     >Reviewer name<input
@@ -259,8 +263,8 @@
                     type="checkbox"
                     required
                   /><span
-                    >I have checked the original PDF and considered the warnings
-                    and unconfirmed fields above.</span
+                    >I have checked the PDF, including any warnings and
+                    unconfirmed values.</span
                   ></label
                 >
                 <button
@@ -268,27 +272,26 @@
                   class="primary save-button"
                   type="submit"
                 >
-                  Confirm and save review
+                  Save review
                 </button>
                 <p class="small muted">
-                  The reviewer name is self-reported, not account-verified.
-                  Saving adds a review record and preserves the original
-                  extraction.
+                  Every change is recorded. The original extraction is always
+                  preserved.
                 </p>
               </form>
             </div>
           </section>
         </div>
-        <section class="panel history-panel">
-          <div class="panel-toolbar">
+        <details class="panel history-panel">
+          <summary class="panel-toolbar">
             <h2>Review history</h2>
             <span id="history-count" class="muted small"></span>
-          </div>
+          </summary>
           <div id="history"></div>
           <button id="more-history" class="secondary" hidden>
             Load more reviews
           </button>
-        </section>
+        </details>
       </section>
     </main>
   </body>
