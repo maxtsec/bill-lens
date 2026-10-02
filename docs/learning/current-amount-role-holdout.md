@@ -184,6 +184,10 @@ Reproduce offline from this checkout into a new directory:
 
 If a later rule or analysis change blocks reproduction, use **`ce5ea6c`**;
 do not overwrite this saved run or regenerate its evidence using a new method.
+The replay test fails explicitly when a frozen source file changes or disappears;
+it never silently skips. Before changing those files, migrate the historical
+replay check to the pinned implementation deliberately, retaining the saved
+artifact hashes and result comparison.
 
 ### Outcomes by case and shape
 
