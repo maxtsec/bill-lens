@@ -203,7 +203,7 @@ def test_tampered_pdf_cannot_be_reviewed(client, db_engine, tmp_path):
 
 def test_workbench_assets_are_served_without_remote_dependencies(client):
     response = client.get("/")
-    assert response.status_code == 200 and 'lang="zh-Hant"' in response.text
+    assert response.status_code == 200 and 'lang="en-AU"' in response.text
     assert "default-src 'self'" in response.headers["content-security-policy"]
     for asset in ("app.js", "styles.css"):
         assert client.get("/assets/" + asset).status_code == 200

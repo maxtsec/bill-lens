@@ -345,7 +345,7 @@ The former copy-and-run checker is now replaced by this single implementation.
 
 After installing requirements, importing local configuration, starting PostgreSQL
 and running `python -m alembic upgrade head`, start the API as above and open
-`http://127.0.0.1:8000/`. The Traditional Chinese workbench runs in the same process.
+`http://127.0.0.1:8000/`. The English workbench runs in the same process.
 Use the five synthetic `dataset/bill_*/bill.pdf` fixtures with the default fake.
 Arbitrary real bills are not supported by the fake extractor.
 

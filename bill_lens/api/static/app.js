@@ -1,43 +1,50 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const labels = {
-  retailer: "供應商",
-  period_start: "期間開始",
-  period_end: "期間結束",
-  stated_billing_days: "列明日數",
-  total_usage_kwh: "總用電量",
-  daily_supply_rate: "每日供電費率",
-  current_bill_amount: "本期費用",
+  retailer: "Retailer",
+  period_start: "Period start",
+  period_end: "Period end",
+  stated_billing_days: "Stated days",
+  total_usage_kwh: "Total usage",
+  daily_supply_rate: "Daily supply rate",
+  current_bill_amount: "Current charges",
 };
 const flags = {
   current_bill_amount_role_unconfirmed:
-    "本期金額附近嘅標籤未能確認，請避免將應繳結餘當成本期費用。",
-  current_bill_amount_not_printed: "未能喺 PDF 文字中找到本期金額。",
-  total_usage_kwh_not_printed: "未能喺 PDF 文字中找到總用電量。",
-  daily_supply_rate_not_printed: "未能喺 PDF 文字中找到每日供電費率。",
-  stated_billing_days_not_printed: "未能喺 PDF 文字中找到列明日數。",
-  retailer_not_printed: "未能喺 PDF 文字中找到供應商名稱。",
-  current_bill_amount_missing: "未能確認本期費用。",
-  daily_supply_rate_missing: "未能確認每日供電費率。",
-  period_end_before_start: "結束日期早於開始日期。",
-  period_end_missing: "未能確認期間結束日期。",
-  period_start_missing: "未能確認期間開始日期。",
-  retailer_missing: "未能確認供應商。",
-  stated_days_mismatch: "列明日數與起止日期計算不一致。",
-  supply_rate_gst_basis_unknown: "未能確認費率有冇包含 GST。",
-  total_usage_kwh_missing: "未能確認總用電量。",
+    "The label near this amount could not be confirmed. Check that this is the current-period total, not the account balance due.",
+  current_bill_amount_not_printed:
+    "The current-period amount was not found in the PDF text.",
+  total_usage_kwh_not_printed: "The total usage was not found in the PDF text.",
+  daily_supply_rate_not_printed:
+    "The daily supply rate was not found in the PDF text.",
+  stated_billing_days_not_printed:
+    "The stated billing days were not found in the PDF text.",
+  retailer_not_printed: "The retailer name was not found in the PDF text.",
+  current_bill_amount_missing:
+    "The current-period charges could not be confirmed.",
+  daily_supply_rate_missing: "The daily supply rate could not be confirmed.",
+  period_end_before_start: "The end date is before the start date.",
+  period_end_missing: "The period end date could not be confirmed.",
+  period_start_missing: "The period start date could not be confirmed.",
+  retailer_missing: "The retailer could not be confirmed.",
+  stated_days_mismatch:
+    "The stated billing days do not match the start and end dates.",
+  supply_rate_gst_basis_unknown: "It is unclear whether the rate includes GST.",
+  total_usage_kwh_missing: "The total usage could not be confirmed.",
 };
 const errors = {
   review_conflict:
-    "呢張帳單已有新版本。你嘅輸入仍然保留，請記低修改後按「重新載入」核對最新紀錄。",
+    "This bill has a newer version. Your input is still here. Note your changes, then select Reload to reconcile them with the latest record.",
   unsupported_fixture:
-    "目前使用本地示範抽取器，只支援 dataset 入面 5 份原始測試 PDF。",
-  invalid_request: "欄位格式不正確。請檢查日期、數值同覆核者名稱。",
-  file_too_large: "檔案過大，PDF 上限為 10 MiB。",
-  invalid_pdf_signature: "呢個檔案唔係有效 PDF。",
-  pdf_not_found: "搵唔到已儲存嘅 PDF，請檢查本地檔案。",
-  bill_not_found: "搵唔到呢張帳單。",
-  pdf_integrity_error: "PDF 與原始檔案記錄不符，暫時無法儲存覆核。",
+    "The local demo extractor supports only the five original sample PDFs in the dataset folder.",
+  invalid_request:
+    "Some fields are invalid. Check the dates, numbers and reviewer name.",
+  file_too_large: "The PDF is too large. The limit is 10 MiB.",
+  invalid_pdf_signature: "This file is not a valid PDF.",
+  pdf_not_found: "The saved PDF was not found. Check the local file.",
+  bill_not_found: "This bill was not found.",
+  pdf_integrity_error:
+    "The PDF does not match the original file record. The review cannot be saved.",
 };
 let offset = 0,
   total = 0,
@@ -68,7 +75,8 @@ async function api(path, options = {}) {
   const body = await response.json();
   if (!response.ok)
     throw new Error(
-      errors[body.error] || `操作未完成（${response.status}）。請稍後重試。`,
+      errors[body.error] ||
+        `The request could not be completed (${response.status}). Please try again.`,
     );
   return body;
 }
@@ -77,26 +85,28 @@ function badge(text, cls = "") {
 }
 function machineBadge(status) {
   return badge(
-    { processed: "自動檢查通過", needs_review: "有警告", failed: "抽取失敗" }[
-      status
-    ],
+    {
+      processed: "Checks passed",
+      needs_review: "Warnings",
+      failed: "Extraction failed",
+    }[status],
     { processed: "success", needs_review: "warning", failed: "failed" }[status],
   );
 }
 function reviewBadge(state) {
   return badge(
-    state === "reviewed" ? "已覆核" : "待覆核",
+    state === "reviewed" ? "Reviewed" : "Pending",
     state === "reviewed" ? "success" : "warning",
   );
 }
 function display(value) {
-  if (value === null || value === undefined) return "未能確認";
+  if (value === null || value === undefined) return "Not confirmed";
   if (typeof value === "object")
-    return `${value.value} ${value.unit} · GST ${{ inclusive: "已包含", exclusive: "未包含", unknown: "未能確認" }[value.gst_basis]}`;
+    return `${value.value} ${value.unit} · GST ${{ inclusive: "inclusive", exclusive: "exclusive", unknown: "Not confirmed" }[value.gst_basis]}`;
   return String(value);
 }
 function dateTime(value) {
-  return new Date(value).toLocaleString("zh-HK", {
+  return new Date(value).toLocaleString("en-AU", {
     dateStyle: "medium",
     timeStyle: "short",
   });
@@ -104,7 +114,7 @@ function dateTime(value) {
 async function loadList() {
   const generation = ++listGeneration;
   $("list-state").hidden = false;
-  $("list-state").textContent = "正在載入帳單…";
+  $("list-state").textContent = "Loading bills…";
   $("bill-rows").replaceChildren();
   $("previous").disabled = true;
   $("next").disabled = true;
@@ -132,11 +142,14 @@ async function loadList() {
     for (const bill of page.items) {
       const fields = bill.effective_fields || {};
       const tr = element("tr");
-      const retailer = element("td", fields.retailer || "未能確認供應商");
+      const retailer = element(
+        "td",
+        fields.retailer || "Retailer not confirmed",
+      );
       retailer.append(
         element(
           "small",
-          `${bill.id.slice(0, 8)} · ${bill.review ? "人工覆核版本" : "原始抽取版本"}`,
+          `${bill.id.slice(0, 8)} · ${bill.review ? "Reviewed values" : "Original extraction"}`,
         ),
       );
       tr.append(
@@ -158,10 +171,10 @@ async function loadList() {
       auto.append(machineBadge(bill.status));
       const reviewed = element("td");
       reviewed.append(reviewBadge(bill.review_state));
-      const open = element("button", "檢視 →", "row-open");
+      const open = element("button", "View →", "row-open");
       open.setAttribute(
         "aria-label",
-        `檢視 ${fields.retailer || bill.id} 帳單`,
+        `View bill from ${fields.retailer || bill.id}`,
       );
       open.addEventListener("click", () => navigate(bill.id));
       const action = element("td");
@@ -171,17 +184,17 @@ async function loadList() {
     }
     $("list-state").hidden = page.items.length > 0;
     $("list-state").textContent = all.total
-      ? "冇符合篩選條件嘅帳單。"
-      : "未有帳單。上傳第一份測試 PDF，開始核對。";
+      ? "No bills match these filters."
+      : "No bills yet. Upload a sample PDF to get started.";
     $("page-label").textContent = total
-      ? `${offset + 1}–${Math.min(offset + 20, total)} / ${total} 張帳單`
-      : "0 張帳單";
+      ? `${offset + 1}–${Math.min(offset + 20, total)} / ${total} bills`
+      : "0 bills";
     $("previous").disabled = offset === 0;
     $("next").disabled = offset + 20 >= total;
   } catch (error) {
     if (generation !== listGeneration) return;
     $("list-state").textContent =
-      "未能載入帳單，請確認本地 API 同資料庫已啟動，再按重新整理。";
+      "Could not load bills. Check that the local API and database are running, then select Refresh.";
     notice(error.message, true);
   }
 }
@@ -209,19 +222,19 @@ function updateChanges() {
   if (!current) return;
   const changed = changedKeys(readFields(), current.effective_fields);
   $("changes").textContent = changed.length
-    ? `今次修改：${changed.map((key) => labels[key]).join("、")}`
-    : "數值未有修改，儲存將記錄為確認。";
+    ? `Changes: ${changed.map((key) => labels[key]).join(", ")}`
+    : "No values changed. Saving will record a confirmation.";
   $("save-review").textContent = changed.length
-    ? "儲存修正並完成覆核"
-    : "確認並儲存覆核";
+    ? "Save corrections and review"
+    : "Confirm and save review";
 }
 function fillDetail(bill) {
   current = bill;
   dirty = false;
   $("detail-title").textContent =
-    bill.effective_fields?.retailer || "未能確認供應商";
+    bill.effective_fields?.retailer || "Retailer not confirmed";
   $("detail-subtitle").textContent =
-    `帳單 ${bill.id.slice(0, 8)} · 上傳於 ${dateTime(bill.created_at)}`;
+    `Bill ${bill.id.slice(0, 8)} · Uploaded ${dateTime(bill.created_at)}`;
   $("detail-badges").replaceChildren(
     machineBadge(bill.status),
     reviewBadge(bill.review_state),
@@ -232,7 +245,7 @@ function fillDetail(bill) {
   for (const key of Object.keys(labels)) {
     if (key !== "daily_supply_rate") $(key).value = fields[key] ?? "";
     document.querySelector(`[data-original="${key}"]`).textContent =
-      `原始抽取：${display(bill.fields?.[key])}`;
+      `Originally extracted: ${display(bill.fields?.[key])}`;
   }
   $("rate_value").value = fields.daily_supply_rate?.value ?? "";
   $("rate_unit").value = fields.daily_supply_rate?.unit || "cents/day";
@@ -246,14 +259,16 @@ function fillDetail(bill) {
   $("flags").append(
     element(
       "strong",
-      bill.review ? "覆核版本嘅自動提示" : "原始抽取嘅自動提示",
+      bill.review
+        ? "Automated checks on reviewed values"
+        : "Automated checks on the original extraction",
     ),
   );
   if (bill.status === "failed")
     $("flags").append(
       element(
         "p",
-        "自動抽取失敗。你可以對照 PDF 手動填寫；原始失敗紀錄會保留。",
+        "Extraction failed. You can enter values manually using the PDF. The original failure record will be preserved.",
       ),
     );
   if (activeFlags.length) {
@@ -263,13 +278,16 @@ function fillDetail(bill) {
     $("flags").append(ul);
   } else
     $("flags").append(
-      element("p", "未發現自動檢查警告，仍請對照原始帳單核實。"),
+      element(
+        "p",
+        "No automated warnings. Please still check the original bill.",
+      ),
     );
   if (bill.review)
     $("flags").append(
       element(
         "p",
-        `最近覆核：${bill.review.reviewer} · 第 ${bill.review.revision} 版。原始警告：${bill.flags.length} 項。`,
+        `Last reviewed by ${bill.review.reviewer} · Revision ${bill.review.revision}. Original warnings: ${bill.flags.length}.`,
       ),
     );
   updateChanges();
@@ -293,7 +311,7 @@ async function loadDetail(id) {
 async function loadPreview(id, page) {
   const generation = ++previewGeneration;
   $("preview-state").hidden = false;
-  $("preview-state").textContent = "正在載入預覽…";
+  $("preview-state").textContent = "Loading preview…";
   $("pdf-preview").hidden = true;
   $("pdf-previous").disabled = true;
   $("pdf-next").disabled = true;
@@ -302,13 +320,15 @@ async function loadPreview(id, page) {
       cache: "no-store",
     });
     if (!response.ok)
-      throw new Error("無法產生預覽，請使用「開啟 PDF」查看原文。");
+      throw new Error(
+        "Preview unavailable. Select Open PDF to view the original.",
+      );
     const blob = await response.blob();
     if (generation !== previewGeneration || current?.id !== id) return;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = URL.createObjectURL(blob);
     $("pdf-preview").src = previewUrl;
-    $("pdf-preview").alt = `原始帳單第 ${page} 頁`;
+    $("pdf-preview").alt = `Original bill, page ${page}`;
     $("pdf-preview").hidden = false;
     $("preview-state").hidden = true;
     previewPage = page;
@@ -329,22 +349,22 @@ async function loadHistory(id = current?.id, generation = detailGeneration) {
       `/bills/${id}/reviews?limit=20&offset=${historyOffset}`,
     );
     if (generation !== detailGeneration) return;
-    $("history-count").textContent = `${page.total} 次覆核`;
+    $("history-count").textContent = `${page.total} review records`;
     if (!page.total)
-      $("history").append(element("div", "未有覆核紀錄。", "empty-state"));
+      $("history").append(element("div", "No reviews yet.", "empty-state"));
     for (const review of page.items) {
       const entry = element("article", undefined, "history-entry");
       const header = element("header");
       header.append(
-        element("strong", `第 ${review.revision} 版`),
-        badge(review.action === "corrected" ? "修正" : "確認"),
+        element("strong", `Revision ${review.revision}`),
+        badge(review.action === "corrected" ? "Correction" : "Confirmation"),
         element("span", review.reviewer),
         element("time", dateTime(review.created_at)),
       );
       entry.append(header);
       if (review.note) entry.append(element("p", review.note));
       const details = element("details");
-      details.append(element("summary", "查看當時數值與警告"));
+      details.append(element("summary", "View saved values and warnings"));
       const dl = element("dl");
       for (const [key, label] of Object.entries(labels))
         dl.append(
@@ -357,7 +377,7 @@ async function loadHistory(id = current?.id, generation = detailGeneration) {
           "p",
           review.review_flags.length
             ? review.review_flags.map((f) => flags[f] || f).join("\n")
-            : "當時無自動檢查警告。",
+            : "No automated warnings at the time of review.",
         ),
       );
       entry.append(details);
@@ -373,12 +393,16 @@ async function loadHistory(id = current?.id, generation = detailGeneration) {
 }
 function navigate(id) {
   if (busy) return;
-  if (dirty && !confirm("未儲存嘅修改會失去，要離開嗎？")) return;
+  if (dirty && !confirm("You have unsaved changes. Leave without saving?"))
+    return;
   dirty = false;
   location.hash = id ? `bill/${id}` : "";
 }
 function route() {
-  if (busy || (dirty && !confirm("未儲存嘅修改會失去，要離開嗎？"))) {
+  if (
+    busy ||
+    (dirty && !confirm("You have unsaved changes. Leave without saving?"))
+  ) {
     history.replaceState(null, "", location.pathname + lastHash);
     return;
   }
@@ -426,7 +450,7 @@ $("review-form").addEventListener("submit", async (event) => {
     });
     dirty = false;
     await loadDetail(id);
-    notice("覆核已儲存。原始抽取結果保留不變。");
+    notice("Review saved. The original extraction has been preserved.");
   } catch (error) {
     notice(error.message, true);
   } finally {
@@ -437,7 +461,10 @@ $("review-form").addEventListener("submit", async (event) => {
 });
 $("back").addEventListener("click", () => navigate(null));
 $("reload-detail").addEventListener("click", () => {
-  if (!busy && (!dirty || confirm("重新載入會清除未儲存修改，繼續嗎？")))
+  if (
+    !busy &&
+    (!dirty || confirm("Reloading will discard unsaved changes. Continue?"))
+  )
     loadDetail(current?.id || location.hash.slice(6));
 });
 $("more-history").addEventListener("click", () => loadHistory());
@@ -472,7 +499,7 @@ $("upload-file").addEventListener("change", async () => {
     return;
   }
   $("upload").disabled = true;
-  $("upload").textContent = "上傳中…";
+  $("upload").textContent = "Uploading…";
   try {
     const form = new FormData();
     form.append("file", file);
@@ -482,7 +509,7 @@ $("upload-file").addEventListener("change", async () => {
     notice(error.message, true);
   } finally {
     $("upload").disabled = false;
-    $("upload").textContent = "＋ 上傳帳單";
+    $("upload").textContent = "+ Upload bill";
     $("upload-file").value = "";
   }
 });
