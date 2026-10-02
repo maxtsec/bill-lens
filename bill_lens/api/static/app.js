@@ -152,12 +152,14 @@ async function loadList() {
           `${bill.id.slice(0, 8)} · ${bill.review ? "Reviewed values" : "Original extraction"}`,
         ),
       );
+      const period = element("td", undefined, "period");
+      period.append(
+        element("span", fields.period_start || "—"),
+        element("span", `to ${fields.period_end || "—"}`),
+      );
       tr.append(
         retailer,
-        element(
-          "td",
-          `${fields.period_start || "—"} → ${fields.period_end || "—"}`,
-        ),
+        period,
         element(
           "td",
           fields.current_bill_amount === null ||
@@ -171,7 +173,7 @@ async function loadList() {
       auto.append(machineBadge(bill.status));
       const reviewed = element("td");
       reviewed.append(reviewBadge(bill.review_state));
-      const open = element("button", "View →", "row-open");
+      const open = element("button", "Review →", "row-open");
       open.setAttribute(
         "aria-label",
         `View bill from ${fields.retailer || bill.id}`,
@@ -180,6 +182,16 @@ async function loadList() {
       const action = element("td");
       action.append(open);
       tr.append(auto, reviewed, action);
+      [
+        "Retailer",
+        "Billing period",
+        "Amount · AUD",
+        "Checks",
+        "Review",
+        "",
+      ].forEach((label, index) => {
+        tr.children[index].dataset.label = label;
+      });
       $("bill-rows").append(tr);
     }
     $("list-state").hidden = page.items.length > 0;
@@ -225,8 +237,8 @@ function updateChanges() {
     ? `Changes: ${changed.map((key) => labels[key]).join(", ")}`
     : "No values changed. Saving will record a confirmation.";
   $("save-review").textContent = changed.length
-    ? "Save corrections and review"
-    : "Confirm and save review";
+    ? "Save changes and review"
+    : "Save review";
 }
 function fillDetail(bill) {
   current = bill;
@@ -256,16 +268,29 @@ function fillDetail(bill) {
   $("flags").replaceChildren();
   $("flags").className =
     "flags" + (activeFlags.length || bill.status === "failed" ? "" : " clear");
-  $("flags").append(
+  const checkDetails = element("details");
+  checkDetails.open = activeFlags.length > 0 || bill.status === "failed";
+  checkDetails.append(
     element(
-      "strong",
+      "summary",
+      bill.status === "failed"
+        ? "Extraction needs attention"
+        : activeFlags.length
+          ? `${activeFlags.length} automated ${activeFlags.length === 1 ? "warning" : "warnings"}`
+          : "No automated warnings",
+    ),
+  );
+  $("flags").append(checkDetails);
+  checkDetails.append(
+    element(
+      "p",
       bill.review
         ? "Automated checks on reviewed values"
         : "Automated checks on the original extraction",
     ),
   );
   if (bill.status === "failed")
-    $("flags").append(
+    checkDetails.append(
       element(
         "p",
         "Extraction failed. You can enter values manually using the PDF. The original failure record will be preserved.",
@@ -275,16 +300,16 @@ function fillDetail(bill) {
     const ul = element("ul");
     for (const flag of activeFlags)
       ul.append(element("li", flags[flag] || flag));
-    $("flags").append(ul);
+    checkDetails.append(ul);
   } else
-    $("flags").append(
+    checkDetails.append(
       element(
         "p",
         "No automated warnings. Please still check the original bill.",
       ),
     );
   if (bill.review)
-    $("flags").append(
+    checkDetails.append(
       element(
         "p",
         `Last reviewed by ${bill.review.reviewer} · Revision ${bill.review.revision}. Original warnings: ${bill.flags.length}.`,
@@ -412,6 +437,7 @@ function route() {
   $("notice").hidden = true;
   $("list-view").hidden = !!match;
   $("detail-view").hidden = !match;
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   if (match) loadDetail(match[1]);
   else {
     ++detailGeneration;
@@ -427,6 +453,12 @@ function route() {
 $("review-form").addEventListener("input", () => {
   dirty = true;
   updateChanges();
+});
+$("show-original").addEventListener("change", () => {
+  $("review-form").classList.toggle(
+    "show-original",
+    $("show-original").checked,
+  );
 });
 $("review-form").addEventListener("submit", async (event) => {
   event.preventDefault();
