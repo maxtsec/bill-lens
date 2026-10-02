@@ -201,6 +201,11 @@ These are candidates, not delivered features or delivery promises.
 
 ## Quick start
 
+The local [bill workbench](docs/development.md#bill-workbench-and-human-review)
+now provides bill browsing, PDF previews and versioned human confirmation or
+correction. Extraction results and human decisions remain separate; see
+[ADR-011](docs/adr/011-human-review-workbench.md).
+
 From the repository root, using Python 3.12+ in PowerShell:
 
 ```powershell

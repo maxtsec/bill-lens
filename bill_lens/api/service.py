@@ -29,6 +29,11 @@ def _response(session: Session, bill: Bill) -> BillResponse:
         .join(Bill, Bill.id == ExtractionRun.bill_id)
         .execution_options(populate_existing=True)
     ).one()
+    return bill_response(bill, run)
+
+
+def bill_response(bill: Bill, run: ExtractionRun) -> BillResponse:
+    """Serialize already-selected records without fetching raw model output."""
     fields = load_fields(run)
     days = billing_days(fields) if fields else None
     rate = supply_rate_aud(fields.daily_supply_rate) if fields else None

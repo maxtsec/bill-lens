@@ -40,12 +40,13 @@ def empty_tables(db_engine):
     # Committed writes are necessary for the multi-session race test. Clean up
     # after *every* test, including assertion failures, inside our own schema.
     with db_engine.connect() as connection:
-        for table in ("bills", "extraction_runs"):
+        for table in ("bills", "extraction_runs", "bill_reviews"):
             assert connection.scalar(text(f"SELECT count(*) FROM {table}")) == 0
     try:
         yield
     finally:
         with db_engine.begin() as connection:
+            connection.execute(text("DELETE FROM bill_reviews"))
             connection.execute(text("DELETE FROM extraction_runs"))
             connection.execute(text("DELETE FROM bills"))
             assert connection.scalar(text("SELECT count(*) FROM extraction_runs")) == 0
