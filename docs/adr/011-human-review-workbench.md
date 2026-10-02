@@ -2,7 +2,7 @@
 
 ## Decision
 
-Serve a Traditional Chinese workbench from the existing FastAPI app at `/`.
+Serve a English workbench from the existing FastAPI app at `/`.
 It lists bills with bounded offset pagination, independent extraction-status
 and human-review filters, PDF page previews, editable fields and review history.
 No frontend build service or external asset host is required.

@@ -1,28 +1,28 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="en-AU">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bill Lens · 帳單工作台</title>
+    <title>Bill Lens · Bill workspace</title>
     <link rel="stylesheet" href="/assets/styles.css" />
     <script src="/assets/app.js" defer></script>
   </head>
   <body>
     <aside class="sidebar">
-      <a class="brand" href="/" aria-label="Bill Lens 首頁"
+      <a class="brand" href="/" aria-label="Bill Lens home"
         ><span class="brand-icon">b.</span> Bill Lens</a
       >
       <div class="workspace-label">YOUR WORKSPACE</div>
-      <a class="nav-item active" href="/">▤ <span>帳單工作台</span></a>
+      <a class="nav-item active" href="/">▤ <span>Bill workspace</span></a>
       <div class="sidebar-bottom">
-        <span class="live-dot"></span> 本地工作空間
-        <p>從帳單原文，到可追溯嘅數據。</p>
-        <a href="/docs" target="_blank" rel="noopener">API 文件 ↗</a>
+        <span class="live-dot"></span> Local workspace
+        <p>From original bills to traceable data.</p>
+        <a href="/docs" target="_blank" rel="noopener">API documentation ↗</a>
       </div>
     </aside>
     <main>
       <header class="topbar">
-        <span>工作空間 <span class="slash">/</span> 帳單</span
+        <span>Workspace <span class="slash">/</span> Bills</span
         ><span class="local-badge">LOCAL DEVELOPMENT</span>
       </header>
       <div
@@ -36,12 +36,13 @@
         <div class="page-heading">
           <div>
             <div class="eyebrow">A CLEARER VIEW</div>
-            <h1>每張帳單，都睇清楚。</h1>
+            <h1>Every bill, clearly understood.</h1>
             <p class="muted">
-              集中檢視抽取結果，對照原文，留下每一次覆核紀錄。
+              Check extracted values against the original and keep a record of
+              every review.
             </p>
           </div>
-          <button id="upload" class="primary">＋ 上傳帳單</button>
+          <button id="upload" class="primary">+ Upload bill</button>
         </div>
         <input
           id="upload-file"
@@ -51,39 +52,41 @@
         />
         <div class="metrics">
           <div class="metric">
-            <span>全部帳單</span><strong id="count-all">—</strong
-            ><small>已儲存嘅 PDF</small>
+            <span>All bills</span><strong id="count-all">—</strong
+            ><small>Saved PDFs</small>
           </div>
           <div class="metric">
-            <span>待人工覆核</span><strong id="count-pending">—</strong
-            ><small>未有目前版本嘅覆核紀錄</small>
+            <span>Awaiting review</span><strong id="count-pending">—</strong
+            ><small>Current version not yet reviewed</small>
           </div>
           <div class="metric">
-            <span>已人工覆核</span><strong id="count-reviewed">—</strong
-            ><small>保留原始結果與修正歷史</small>
+            <span>Reviewed</span><strong id="count-reviewed">—</strong
+            ><small>Original results and changes retained</small>
           </div>
         </div>
         <section class="panel">
           <div class="panel-toolbar">
-            <h2>
-              帳單紀錄 <span id="result-count" class="count-pill">—</span>
-            </h2>
+            <h2>Bills <span id="result-count" class="count-pill">—</span></h2>
             <div class="filters">
               <label
-                >人工覆核<select id="review-filter">
-                  <option value="">全部</option>
-                  <option value="pending">待覆核</option>
-                  <option value="reviewed">已覆核</option>
+                >Manual review<select id="review-filter">
+                  <option value="">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="reviewed">Reviewed</option>
                 </select></label
               ><label
-                >自動檢查<select id="status-filter">
-                  <option value="">全部</option>
-                  <option value="needs_review">有警告</option>
-                  <option value="processed">通過</option>
-                  <option value="failed">抽取失敗</option>
+                >Automated checks<select id="status-filter">
+                  <option value="">All</option>
+                  <option value="needs_review">Warnings</option>
+                  <option value="processed">Passed</option>
+                  <option value="failed">Extraction failed</option>
                 </select></label
-              ><button id="refresh" class="secondary" aria-label="重新整理帳單">
-                ↻ 重新整理
+              ><button
+                id="refresh"
+                class="secondary"
+                aria-label="Refresh bills"
+              >
+                ↻ Refresh
               </button>
             </div>
           </div>
@@ -91,36 +94,38 @@
             <table>
               <thead>
                 <tr>
-                  <th>供應商 / 帳單</th>
-                  <th>用電期間</th>
-                  <th>本期金額 (AUD)</th>
-                  <th>自動檢查</th>
-                  <th>人工覆核</th>
-                  <th><span class="sr-only">開啟</span></th>
+                  <th>Retailer / bill</th>
+                  <th>Billing period</th>
+                  <th>Current charges (AUD)</th>
+                  <th>Automated checks</th>
+                  <th>Manual review</th>
+                  <th><span class="sr-only">Open</span></th>
                 </tr>
               </thead>
               <tbody id="bill-rows"></tbody>
             </table>
           </div>
-          <div id="list-state" class="empty-state">正在載入帳單…</div>
+          <div id="list-state" class="empty-state">Loading bills…</div>
           <div class="pagination">
             <span id="page-label"></span>
             <div>
-              <button id="previous" class="secondary">← 上一頁</button
-              ><button id="next" class="secondary">下一頁 →</button>
+              <button id="previous" class="secondary">← Previous</button
+              ><button id="next" class="secondary">Next →</button>
             </div>
           </div>
         </section>
         <p class="footnote">
-          自動檢查通過唔代表資料一定正確；人工覆核亦唔會移除原始警告。金額為本期費用，並非帳戶應繳結餘。
+          Passing automated checks does not guarantee accuracy. Manual review
+          preserves the original warnings. Amounts are current-period charges,
+          not the account balance due.
         </p>
       </section>
       <section id="detail-view" class="page" hidden>
-        <button id="back" class="text-button">← 返回帳單紀錄</button>
+        <button id="back" class="text-button">← Back to bills</button>
         <div class="detail-heading">
           <div>
             <div class="eyebrow">BILL REVIEW</div>
-            <h1 id="detail-title">帳單詳情</h1>
+            <h1 id="detail-title">Bill details</h1>
             <p id="detail-subtitle" class="muted"></p>
           </div>
           <div id="detail-badges" class="badges"></div>
@@ -128,38 +133,37 @@
         <div class="review-grid">
           <section class="panel pdf-panel">
             <div class="panel-toolbar">
-              <h2>原始帳單</h2>
-              <a id="pdf-link" target="_blank" rel="noopener">開啟 PDF ↗</a>
+              <h2>Original bill</h2>
+              <a id="pdf-link" target="_blank" rel="noopener">Open PDF ↗</a>
             </div>
             <div class="pdf-image-wrap">
-              <p id="preview-state" role="status">正在載入預覽…</p>
-              <img id="pdf-preview" alt="原始帳單頁面預覽" hidden />
+              <p id="preview-state" role="status">Loading preview…</p>
+              <img id="pdf-preview" alt="Original bill page preview" hidden />
             </div>
             <div class="pagination">
               <button id="pdf-previous" class="secondary" disabled>
-                ← 上一頁</button
+                ← Previous</button
               ><span id="pdf-page-label"></span
-              ><button id="pdf-next" class="secondary" disabled>
-                下一頁 →
-              </button>
+              ><button id="pdf-next" class="secondary" disabled>Next →</button>
             </div>
           </section>
           <section class="panel form-panel">
             <div class="panel-toolbar">
               <div>
-                <h2>核對與修正</h2>
+                <h2>Review and correct</h2>
                 <p class="muted small">
-                  留空代表帳單未能確認，唔會自動當作 0。
+                  Leave a field blank if it cannot be confirmed. Blank does not
+                  mean zero.
                 </p>
               </div>
-              <button id="reload-detail" class="secondary">重新載入</button>
+              <button id="reload-detail" class="secondary">Reload</button>
             </div>
             <div class="form-content">
               <div id="flags" class="flags"></div>
               <form id="review-form">
                 <div class="field-grid">
                   <label class="full"
-                    >電力供應商<input
+                    >Electricity retailer<input
                       id="retailer"
                       name="retailer"
                       maxlength="500"
@@ -168,19 +172,19 @@
                     ></small
                   ></label>
                   <label
-                    >期間開始<input
+                    >Period start<input
                       id="period_start"
                       name="period_start"
                       type="date" /><small data-original="period_start"></small
                   ></label>
                   <label
-                    >期間結束<input
+                    >Period end<input
                       id="period_end"
                       name="period_end"
                       type="date" /><small data-original="period_end"></small
                   ></label>
                   <label
-                    >列明帳單日數<input
+                    >Stated billing days<input
                       id="stated_billing_days"
                       name="stated_billing_days"
                       inputmode="numeric"
@@ -189,7 +193,7 @@
                     ></small
                   ></label>
                   <label
-                    >總用電量 (kWh)<input
+                    >Total usage (kWh)<input
                       id="total_usage_kwh"
                       name="total_usage_kwh"
                       inputmode="decimal"
@@ -198,7 +202,7 @@
                     ></small
                   ></label>
                   <label class="full amount-field"
-                    >本期費用 (AUD)<input
+                    >Current charges (AUD)<input
                       id="current_bill_amount"
                       name="current_bill_amount"
                       inputmode="decimal"
@@ -207,44 +211,44 @@
                     ></small
                   ></label>
                   <label
-                    >每日供電費率<input
+                    >Daily supply rate<input
                       id="rate_value"
                       name="rate_value"
                       inputmode="decimal"
                       pattern="[0-9]+([.][0-9]+)?"
                   /></label>
                   <label
-                    >費率單位<select id="rate_unit" name="rate_unit">
+                    >Rate unit<select id="rate_unit" name="rate_unit">
                       <option value="cents/day">cents / day</option>
                       <option value="AUD/day">AUD / day</option>
                     </select></label
                   >
                   <label class="full"
-                    >費率 GST<select id="rate_gst" name="rate_gst">
-                      <option value="unknown">未能確認</option>
-                      <option value="inclusive">已包含 GST</option>
-                      <option value="exclusive">未包含 GST</option></select
+                    >Rate GST basis<select id="rate_gst" name="rate_gst">
+                      <option value="unknown">Not confirmed</option>
+                      <option value="inclusive">GST inclusive</option>
+                      <option value="exclusive">GST exclusive</option></select
                     ><small data-original="daily_supply_rate"></small
                   ></label>
                 </div>
                 <div id="changes" class="changes" aria-live="polite"></div>
                 <div class="review-inputs">
                   <label
-                    >覆核者名稱<input
+                    >Reviewer name<input
                       id="reviewer"
                       name="reviewer"
                       required
                       maxlength="80"
-                      placeholder="例如：Max"
+                      placeholder="e.g. Max"
                       autocomplete="name" /></label
                   ><label
-                    >覆核備註 <span class="muted">（選填）</span
+                    >Review note <span class="muted">(optional)</span
                     ><textarea
                       id="note"
                       name="note"
                       rows="2"
                       maxlength="2000"
-                      placeholder="例如：已核對第二頁本期費用"
+                      placeholder="e.g. Checked current-period charges on page 2"
                     ></textarea>
                   </label>
                 </div>
@@ -255,7 +259,8 @@
                     type="checkbox"
                     required
                   /><span
-                    >我已對照原始 PDF，並留意以上警告及未能確認嘅欄位。</span
+                    >I have checked the original PDF and considered the warnings
+                    and unconfirmed fields above.</span
                   ></label
                 >
                 <button
@@ -263,10 +268,12 @@
                   class="primary save-button"
                   type="submit"
                 >
-                  確認並儲存覆核
+                  Confirm and save review
                 </button>
                 <p class="small muted">
-                  名稱由本機使用者填寫，未經帳戶驗證。儲存會新增紀錄，原始抽取結果會保留。
+                  The reviewer name is self-reported, not account-verified.
+                  Saving adds a review record and preserves the original
+                  extraction.
                 </p>
               </form>
             </div>
@@ -274,12 +281,12 @@
         </div>
         <section class="panel history-panel">
           <div class="panel-toolbar">
-            <h2>覆核歷史</h2>
+            <h2>Review history</h2>
             <span id="history-count" class="muted small"></span>
           </div>
           <div id="history"></div>
           <button id="more-history" class="secondary" hidden>
-            載入更多紀錄
+            Load more reviews
           </button>
         </section>
       </section>
