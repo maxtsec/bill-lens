@@ -78,6 +78,25 @@ def test_analysis_counts_inputs_and_source_hashes_are_preserved():
     assert all(not row['r07_computed_87_20'] for row in result['per_attempt'])
 
 
+def require_frozen_implementation(root, hashes):
+    changed = [name for name, digest in hashes.items()
+               if not (root / name).is_file()
+               or sha256((root / name).read_text(encoding='utf-8').encode('utf-8')).hexdigest() != digest]
+    if changed:
+        pytest.fail('Live analysis recorded at ce5ea6c; frozen implementation changed '
+                    f'({", ".join(changed)}). Replay must not silently skip. Reproduce with '
+                    'the pinned implementation and explicitly migrate the replay check before '
+                    'accepting new implementation fingerprints; do not regenerate saved evidence.')
+
+
+@pytest.mark.parametrize('content', [None, 'changed source\n'])
+def test_frozen_source_drift_fails_instead_of_skipping(tmp_path, content):
+    if content is not None:
+        (tmp_path / 'source.py').write_text(content, encoding='utf-8')
+    with pytest.raises(pytest.fail.Exception, match='Replay must not silently skip'):
+        require_frozen_implementation(tmp_path, {'source.py': sha256(b'original\n').hexdigest()})
+
+
 def test_saved_live_analysis_reproduces_with_frozen_implementation():
     saved = load('analysis/analysis.json')
     reference = json.loads(analysis.REFERENCE.read_bytes())
@@ -85,10 +104,6 @@ def test_saved_live_analysis_reproduces_with_frozen_implementation():
               if not name.startswith('scripts/')}
     hashes['scripts/analyse_role_holdout_live.py'] = saved['analysis_script_lf_sha256']
     hashes['bill_lens/extraction/prompts/extract_v4.md'] = saved['prompt_sha256']
-    changed = [name for name, digest in hashes.items()
-               if sha256((analysis.ROOT / name).read_text(encoding='utf-8').encode('utf-8')).hexdigest() != digest]
-    if changed:
-        pytest.skip('Live analysis recorded at ce5ea6c; frozen implementation changed '
-                    f'({", ".join(changed)}). Reproduce from that commit; do not regenerate evidence.')
+    require_frozen_implementation(analysis.ROOT, hashes)
     assert analysis.analyse(SAVED) == saved
     assert analysis.render_report(saved) == (SAVED / 'analysis/report.md').read_text(encoding='utf-8')
