@@ -2,7 +2,7 @@
 from pathlib import Path
 from uuid import UUID
 
-from sqlalchemy import Engine, func, select, update
+from sqlalchemy import Engine, func, or_, select, update
 from sqlalchemy.orm import Session, aliased, defer
 
 from bill_lens.api.errors import UploadError
@@ -25,9 +25,15 @@ def review_response(review: BillReview) -> ReviewResponse:
     return ReviewResponse.model_validate(review, from_attributes=True)
 
 
+def review_applies(latest, run):
+    # Successful-first current-run selection means a current failure has no
+    # successful extraction to supersede a manual review of this same PDF.
+    return latest is not None and (latest.source_run_id == run.id or run.error_code is not None)
+
+
 def _detail(original, latest):
-    review = review_response(latest) if latest and latest.source_run_id == original.run.id else None
-    return BillDetail(**original.model_dump(mode="json"), review_state="reviewed" if review else "pending",
+    review = review_response(latest) if review_applies(latest, original.run) else None
+    return BillDetail(**dict(original), review_state="reviewed" if review else "pending",
                       latest_review_id=latest.id if latest else None, review=review,
                       effective_fields=review.fields if review else original.fields)
 
@@ -49,22 +55,30 @@ def list_bills(engine: Engine, *, limit=20, offset=0, status=None, review_state=
     review_id = (select(BillReview.id).where(BillReview.bill_id == Bill.id)
                  .order_by(BillReview.revision.desc()).limit(1).correlate(Bill).scalar_subquery())
     latest = aliased(BillReview)
-    statement = (select(Bill, ExtractionRun, latest)
-                 .join(ExtractionRun, ExtractionRun.id == run_id).outerjoin(latest, latest.id == review_id)
-                 .options(defer(ExtractionRun.raw_response, raiseload=True)))
+    statement = (select(Bill, ExtractionRun, latest).select_from(Bill)
+                 .join(ExtractionRun, ExtractionRun.id == run_id).outerjoin(latest, latest.id == review_id))
+    base = statement
+    applicable = latest.id.is_not(None) & or_(latest.source_run_id == ExtractionRun.id,
+                                            ExtractionRun.error_code.is_not(None))
     if status:
         statement = statement.where(ExtractionRun.status == status)
     if review_state == "reviewed":
-        statement = statement.where(latest.source_run_id == ExtractionRun.id)
+        statement = statement.where(applicable)
     elif review_state == "pending":
-        statement = statement.where((latest.id.is_(None)) | (latest.source_run_id != ExtractionRun.id))
+        statement = statement.where(~applicable)
     with Session(engine) as session:
         # Repeatable read keeps count, filtering and all page details in one snapshot.
         session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
         total = session.scalar(select(func.count()).select_from(statement.subquery()))
-        records = session.execute(statement.order_by(Bill.created_at.desc(), Bill.id.desc()).offset(offset).limit(limit)).all()
+        counts = session.execute(base.with_only_columns(
+            func.count().label("all"),
+            func.count().filter(~applicable).label("pending"),
+            func.count().filter(applicable).label("reviewed"),
+        )).mappings().one()
+        records = session.execute(statement.options(defer(ExtractionRun.raw_response, raiseload=True))
+                                  .order_by(Bill.created_at.desc(), Bill.id.desc()).offset(offset).limit(limit)).all()
         return BillList(items=[_detail(bill_response(bill, run), review) for bill, run, review in records],
-                        total=total, limit=limit, offset=offset)
+                        total=total, limit=limit, offset=offset, counts=dict(counts))
 
 
 def pdf_path(session: Session, bill_id: UUID, storage_root: Path) -> Path:
@@ -83,15 +97,21 @@ def get_pdf(engine: Engine, bill_id: UUID, storage_root: Path) -> Path:
         return pdf_path(session, bill_id, storage_root)
 
 
-def history(engine: Engine, bill_id: UUID, *, limit=20, offset=0):
+def history(engine: Engine, bill_id: UUID, *, limit=20, offset=0, before_revision=None):
+    if before_revision is not None and offset:
+        raise UploadError("invalid_request", 422)
     with Session(engine) as session:
         session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
         if session.get(Bill, bill_id) is None:
             raise UploadError("bill_not_found", 404)
         query = select(BillReview).where(BillReview.bill_id == bill_id)
         total = session.scalar(select(func.count()).select_from(query.subquery()))
-        records = session.scalars(query.order_by(BillReview.revision.desc()).offset(offset).limit(limit)).all()
-        return ReviewHistory(items=[review_response(r) for r in records], total=total, limit=limit, offset=offset)
+        if before_revision is not None:
+            query = query.where(BillReview.revision < before_revision)
+        records = session.scalars(query.order_by(BillReview.revision.desc()).offset(offset).limit(limit + 1)).all()
+        next_cursor = records[limit - 1].revision if len(records) > limit else None
+        return ReviewHistory(items=[review_response(r) for r in records[:limit]], total=total,
+                             limit=limit, offset=offset, next_before_revision=next_cursor)
 
 
 def save_review(engine: Engine, storage_root: Path, bill_id: UUID, request: ReviewRequest):
@@ -114,8 +134,10 @@ def save_review(engine: Engine, storage_root: Path, bill_id: UUID, request: Revi
         latest = session.scalar(latest_review_statement(bill_id))
         if (run.id != request.source_run_id or (latest.id if latest else None) != request.expected_review_id):
             raise UploadError("review_conflict", 409)
-        previous = (ExtractionFields.model_validate(latest.fields) if latest and latest.source_run_id == run.id
+        previous = (ExtractionFields.model_validate(latest.fields) if review_applies(latest, run)
                     else load_fields(run))
+        if previous is None:
+            previous = ExtractionFields.model_validate({key: None for key in ExtractionFields.model_fields})
         review = BillReview(bill_id=bill.id, source_run_id=run.id, revision=latest.revision + 1 if latest else 1,
                             action="confirmed" if fields == previous else "corrected", reviewer=request.reviewer,
                             note=request.note, fields=fields.model_dump(mode="json"), fields_schema_version=1,

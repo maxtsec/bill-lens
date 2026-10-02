@@ -353,26 +353,39 @@ The list shows effective values from the latest applicable human review, falling
 back to the current extraction. Filter automatic status and human-review status
 independently. Open a bill, inspect its page preview or original PDF, edit any
 fields, enter a reviewer name and explicitly acknowledge the PDF before saving.
-Blank values are stored as null. Original values remain beside the editable
-fields, and each saved version appears in history. Remaining warnings stay visible.
+Blank values are stored as null. Use "Show originally extracted values" to compare
+the editable fields with the source extraction. Each saved version appears in the
+expandable history. Remaining warnings stay visible. History uses revision cursors
+so new reviews submitted while paging do not duplicate older entries.
 
 A 409 conflict means another review or current extraction changed since loading.
 The editor retains your input; note any intended changes, reload the latest version,
 and reconcile before submitting again. A failed extraction can also be manually
 reviewed; its original failed status stays unchanged.
+Further failed retries preserve that review, even if the bill has never had a
+successful extraction. A new successful extraction returns it to pending.
 
 New endpoints:
 
 | Endpoint | Result |
 | --- | --- |
-| `GET /bills` | Paginated bill details; `limit`, `offset`, `status`, `review_state` filters |
+| `GET /bills` | Paginated bill details and global review counts; `limit`, `offset`, `status`, `review_state` filters |
 | `GET /bills/{id}/detail` | Original extraction plus applicable review/effective fields |
 | `GET /bills/{id}/pdf` | Original PDF with opaque filename |
 | `GET /bills/{id}/preview/{page}` | One-based PNG page and `X-Page-Count` header |
-| `GET /bills/{id}/reviews` | Paginated human-review history, newest first |
+| `GET /bills/{id}/reviews` | Newest-first history; pass `next_before_revision` as `before_revision` for the next page |
 | `POST /bills/{id}/reviews` | Append confirmation/correction with both version tokens |
 
 The existing GET-by-id and upload response formats stay unchanged. Reviewer names
 are self-reported local labels. There is no authentication; keep the server on
 loopback. See [ADR-011](adr/011-human-review-workbench.md) for concurrency,
 state semantics, preview limits and migration rollback implications.
+
+Run the frontend regression tests with Node.js (no npm dependencies):
+
+```powershell
+node --test tests/js/workbench.test.cjs
+```
+
+These cover safe transport errors, single-request list refreshes, empty failed-bill
+confirmation text, and cursor-based history loading, including overlapping requests.
