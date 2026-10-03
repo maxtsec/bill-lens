@@ -150,14 +150,18 @@ textarea:focus-visible {
 .app-header nav {
   height: 100%;
   display: flex;
+  gap: 26px;
 }
 .nav-link {
   display: flex;
   align-items: center;
-  border-bottom: 2px solid var(--accent);
+  border-bottom: 2px solid transparent;
   padding: 2px 4px 0;
   font-weight: 600;
   font-size: 13px;
+}
+.nav-link[aria-current="page"] {
+  border-bottom-color: var(--accent);
 }
 .header-links {
   margin-left: auto;
@@ -933,5 +937,307 @@ form.show-original label small {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+}
+
+.compare-picker {
+  margin-top: 28px;
+}
+#compare-form {
+  padding: 24px;
+}
+.compare-selectors {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: end;
+}
+.compare-selectors select {
+  font-size: 12px;
+  padding: 12px;
+  text-overflow: ellipsis;
+}
+.bill-letter {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid #e0e4e8;
+  border-radius: 5px;
+  width: 23px;
+  height: 23px;
+  font-size: 11px;
+  color: #596574;
+  background: #f7f8f9;
+  margin-right: 4px;
+}
+#swap-bills {
+  font-size: 20px;
+  font-weight: 400;
+  height: 44px;
+  width: 44px;
+  padding: 0;
+}
+.compare-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin: 18px 0 12px;
+}
+.compare-actions .acknowledge {
+  margin: 0;
+}
+#compare-picker-state {
+  font-size: 11px;
+}
+#more-comparison-bills {
+  margin-top: 14px;
+}
+.comparison-empty {
+  padding: 64px 20px;
+  text-align: center;
+  color: var(--muted);
+}
+.comparison-empty h2 {
+  color: #414c58;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.comparison-empty p {
+  font-size: 12px;
+  max-width: 410px;
+  margin: 0 auto;
+}
+.comparison-symbol {
+  display: block;
+  font-size: 36px;
+  font-weight: 300;
+  margin-bottom: 12px;
+  color: #9aa5af;
+}
+.review-bills-link {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #404e5c;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.comparison-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 32px 0 16px;
+}
+.comparison-sources,
+.comparison-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+.comparison-source {
+  padding: 20px 24px;
+}
+.comparison-source-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.comparison-source-heading a {
+  margin-left: auto;
+  font-size: 11px;
+  color: #647181;
+}
+.comparison-source h2 {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+  margin-bottom: 5px;
+}
+.comparison-source p + p {
+  margin-top: 4px;
+}
+.comparison-source .badges {
+  margin-top: 14px;
+}
+.comparison-warnings {
+  border-left: 2px solid #d7c599;
+  padding: 2px 0 2px 14px;
+  color: #8b713d;
+  font-size: 12px;
+  margin: 20px 0;
+}
+.comparison-warnings p + p {
+  margin-top: 6px;
+}
+.comparison-metrics {
+  margin-top: 20px;
+}
+.comparison-metric {
+  padding: 24px;
+}
+.comparison-featured {
+  border-color: #c5d4cc;
+  background: #fbfdfb;
+}
+.comparison-metric h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.metric-unit {
+  margin-top: 4px;
+  color: #9299a1;
+  font-size: 11px;
+}
+.comparison-values {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  margin: 22px 0;
+}
+.comparison-values > div + div {
+  border-left: 1px solid var(--line);
+  padding-left: 20px;
+}
+.comparison-values strong {
+  display: block;
+  font-size: 29px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.comparison-values small {
+  font-size: 10px;
+}
+.comparison-change {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.comparison-change strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.change-percent {
+  font-size: 11px;
+  border-radius: 4px;
+  background: #f0f3f5;
+  color: #5c6978;
+  padding: 3px 7px;
+}
+.metric-explanation {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #89919a;
+  line-height: 1.6;
+}
+@media (max-width: 800px) {
+  .compare-selectors {
+    gap: 12px;
+  }
+  .comparison-source,
+  .comparison-metric {
+    padding: 18px;
+  }
+  .comparison-values strong {
+    font-size: 24px;
+  }
+  .comparison-sources,
+  .comparison-metrics {
+    gap: 14px;
+  }
+}
+@media (max-width: 600px) {
+  .app-header nav {
+    gap: 16px;
+  }
+  .header-inner {
+    gap: 20px;
+  }
+  .nav-link {
+    font-size: 12px;
+  }
+  #compare-form {
+    padding: 18px 16px;
+  }
+  .compare-selectors {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    gap: 14px 10px;
+    align-items: center;
+  }
+  .compare-selectors label:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .compare-selectors label:last-child {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  #swap-bills {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    width: 36px;
+  }
+  .compare-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .compare-actions .acknowledge {
+    font-size: 11px;
+  }
+  .comparison-sources {
+    gap: 10px;
+  }
+  .comparison-source {
+    padding: 14px 12px;
+  }
+  .comparison-source-heading {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .comparison-source-heading .small {
+    font-size: 10px;
+  }
+  .comparison-source-heading a {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .comparison-source h2 {
+    font-size: 13px;
+  }
+  .comparison-source p {
+    font-size: 10px;
+  }
+  .comparison-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .comparison-values strong {
+    font-size: 29px;
+  }
+  .comparison-heading .small {
+    font-size: 10px;
+  }
+  #compare-view .page-heading {
+    flex-direction: column;
+  }
+  #compare-view .page-heading .muted {
+    max-width: none;
+  }
+}
+@media (max-width: 410px) {
+  .header-links {
+    display: none;
   }
 }

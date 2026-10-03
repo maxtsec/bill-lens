@@ -33,6 +33,11 @@ const flags = {
   total_usage_kwh_missing: "The total usage could not be confirmed.",
 };
 const errors = {
+  comparison_requires_two_bills: "Choose two different bills to compare.",
+  comparison_household_required:
+    "Confirm that both bills are for the same home.",
+  comparison_requires_review:
+    "A selected bill needs review. Refresh the bill list, review it, then compare again.",
   review_conflict:
     "This bill has a newer version. Your input is still here. Note your changes, then select Reload to reconcile them with the latest record.",
   unsupported_fixture:
@@ -451,9 +456,14 @@ function route() {
   dirty = false;
   lastHash = location.hash;
   const match = location.hash.match(/^#bill\/([0-9a-f-]{36})$/i);
+  const comparing = location.hash === "#compare";
+  cancelComparison();
   $("notice").hidden = true;
-  $("list-view").hidden = !!match;
+  $("list-view").hidden = !!match || comparing;
   $("detail-view").hidden = !match;
+  $("compare-view").hidden = !comparing;
+  $("nav-bills").setAttribute("aria-current", comparing ? "false" : "page");
+  $("nav-compare").setAttribute("aria-current", comparing ? "page" : "false");
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   if (match) loadDetail(match[1]);
   else {
@@ -464,7 +474,8 @@ function route() {
       URL.revokeObjectURL(previewUrl);
       previewUrl = null;
     }
-    loadList();
+    if (comparing) loadComparisonBills();
+    else loadList();
   }
 }
 $("review-form").addEventListener("input", () => {
@@ -569,4 +580,5 @@ window.addEventListener("beforeunload", (event) => {
   }
 });
 window.addEventListener("hashchange", route);
+initComparison();
 route();

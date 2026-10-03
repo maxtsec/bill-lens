@@ -41,10 +41,14 @@ def _detail(original, latest):
 def get_detail(engine: Engine, bill_id: UUID) -> BillDetail:
     with Session(engine) as session:
         session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
-        bill = session.get(Bill, bill_id)
-        if bill is None:
-            raise UploadError("bill_not_found", 404)
-        return _detail(_response(session, bill), session.scalar(latest_review_statement(bill.id)))
+        return detail_in_session(session, bill_id)
+
+
+def detail_in_session(session: Session, bill_id: UUID) -> BillDetail:
+    bill = session.get(Bill, bill_id)
+    if bill is None:
+        raise UploadError("bill_not_found", 404)
+    return _detail(_response(session, bill), session.scalar(latest_review_statement(bill.id)))
 
 
 def list_bills(engine: Engine, *, limit=20, offset=0, status=None, review_state=None):

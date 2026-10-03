@@ -115,3 +115,27 @@ class ReviewHistory(BaseModel):
     limit: int
     offset: int
     next_before_revision: int | None
+
+
+class ComparisonMetric(BaseModel):
+    key: str
+    label: str
+    unit: str
+    precision: int
+    baseline: str | None
+    comparison: str | None
+    delta: str | None
+    percent_change: str | None
+    direction: Literal["increase", "decrease", "unchanged", "unavailable"]
+    unavailable_reason: str | None
+    percent_unavailable_reason: str | None
+    note: str
+
+
+class BillComparison(BaseModel):
+    baseline: BillDetail
+    comparison: BillDetail
+    baseline_days: int | None
+    comparison_days: int | None
+    metrics: list[ComparisonMetric]
+    warnings: list[str]
