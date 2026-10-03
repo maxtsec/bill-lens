@@ -389,3 +389,17 @@ node --test tests/js/workbench.test.cjs
 
 These cover safe transport errors, single-request list refreshes, empty failed-bill
 confirmation text, and cursor-based history loading, including overlapping requests.
+
+## Compare reviewed bills
+
+Open **Compare** in the workbench and select two reviewed bills for the same home.
+Confirm the household checkbox, then select **Compare bills**. Review at least two
+bills first if the picker is empty. The results compare current-period charges,
+total usage, average daily usage and daily supply rates; each source links back to
+its review page. Use **Swap bills** to reverse the baseline, then compare again.
+
+The read-only API is `GET /comparisons` with `baseline_id`, `comparison_id` and
+`same_household=true`. No migration or paid extraction is required. The response
+contains review provenance, decimal-string metrics and explanations for unavailable
+differences. See [ADR-012](adr/012-reviewed-bill-comparison.md) for calculation rules,
+rounding, GST constraints and concurrent-review behavior.

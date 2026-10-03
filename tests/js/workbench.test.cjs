@@ -4,10 +4,17 @@ const path = require("node:path");
 const { test } = require("node:test");
 const vm = require("node:vm");
 
-const source = readFileSync(
-  path.join(__dirname, "../../bill_lens/api/static/app.js"),
+const comparisonSourceCode = readFileSync(
+  path.join(__dirname, "../../bill_lens/api/static/comparison.js"),
   "utf8",
 );
+const source =
+  comparisonSourceCode +
+  "\n" +
+  readFileSync(
+    path.join(__dirname, "../../bill_lens/api/static/app.js"),
+    "utf8",
+  );
 
 function setup() {
   function element() {
@@ -15,8 +22,14 @@ function setup() {
       value: "",
       textContent: "",
       hidden: false,
+      get options() {
+        return this.children;
+      },
       children: [],
-      addEventListener() {},
+      listeners: {},
+      addEventListener(name, callback) {
+        this.listeners[name] = callback;
+      },
       setAttribute() {},
       append(...nodes) {
         this.children.push(...nodes);
@@ -171,4 +184,107 @@ test("history uses the revision cursor and prevents overlapping loads", async ()
   await next;
   assert.equal(node("history").children.length, 3);
   assert.equal(node("more-history").hidden, true);
+});
+
+test("comparison requires two different bills and household acknowledgement", async () => {
+  const { context, node, run } = setup();
+  let calls = 0;
+  context.fetch = () => {
+    calls++;
+    return new Promise(() => {});
+  };
+  node("baseline-bill").value = "one";
+  node("comparison-bill").value = "one";
+  node("same-household").checked = true;
+  await run("runComparison()");
+  node("comparison-bill").value = "two";
+  node("same-household").checked = false;
+  await run("runComparison()");
+  assert.equal(calls, 0);
+  node("same-household").checked = true;
+  run("updateComparisonButton()");
+  assert.equal(node("run-comparison").disabled, false);
+  node("baseline-bill").listeners.change();
+  assert.equal(node("same-household").checked, false);
+  assert.equal(node("run-comparison").disabled, true);
+});
+
+test("obsolete comparison responses cannot replace a new selection", async () => {
+  const { context, node, run } = setup();
+  node("baseline-bill").value = "one";
+  node("comparison-bill").value = "two";
+  node("same-household").checked = true;
+  let finish;
+  context.fetch = () =>
+    new Promise((resolve) => {
+      finish = resolve;
+    });
+  const pending = run("runComparison()");
+  node("comparison-bill").listeners.change();
+  finish({ ok: true, json: async () => ({ obsolete: true }) });
+  await pending;
+  assert.equal(node("comparison-results").hidden, true);
+  assert.equal(
+    node("comparison-state").children[1].textContent,
+    "See what changed",
+  );
+});
+
+test("picker pages deduplicate options and preserve selection", async () => {
+  const { context, node, run } = setup();
+  const bill = (id) => ({
+    id,
+    effective_fields: {
+      retailer: "Example",
+      period_start: "2026-01-01",
+      period_end: "2026-01-31",
+    },
+  });
+  const calls = [];
+  context.fetch = async (url) => {
+    calls.push(url);
+    return {
+      ok: true,
+      json: async () => ({
+        items:
+          calls.length === 1
+            ? [bill("one"), bill("two")]
+            : [bill("two"), bill("three")],
+        total: 4,
+      }),
+    };
+  };
+  await run("loadComparisonBills()");
+  node("baseline-bill").value = "one";
+  node("comparison-bill").value = "two";
+  await run("loadComparisonBills(true)");
+  assert.deepEqual(calls, [
+    "/bills?review_state=reviewed&limit=100&offset=0",
+    "/bills?review_state=reviewed&limit=100&offset=2",
+  ]);
+  assert.equal(node("baseline-bill").options.length, 4);
+  assert.equal(node("baseline-bill").value, "one");
+  assert.equal(node("more-comparison-bills").hidden, true);
+});
+
+test("comparison formats large decimals and tiny changes without binary floats", () => {
+  const { run } = setup();
+  assert.equal(
+    run('comparisonNumber("100000000000000000000.01")'),
+    "100,000,000,000,000,000,000.01",
+  );
+  assert.equal(run("comparisonNumber(null)"), "—");
+  assert.equal(
+    run(
+      'comparisonDelta({delta:"0.00",direction:"increase",precision:2,unit:"AUD"})',
+    ),
+    "+<0.01 AUD",
+  );
+  assert.equal(run("comparisonDelta({delta:null})"), "Not comparable");
+  assert.equal(
+    run(
+      'comparisonDelta({delta:"-9.00",direction:"decrease",precision:2,unit:"AUD"})',
+    ),
+    "−9.00 AUD",
+  );
 });
