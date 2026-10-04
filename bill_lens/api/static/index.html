@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Bill Lens · Bill workspace</title>
     <link rel="stylesheet" href="/assets/styles.css" />
+    <script src="/assets/comparison.js" defer></script>
     <script src="/assets/app.js" defer></script>
   </head>
   <body>
@@ -14,7 +15,10 @@
           ><span class="brand-icon" aria-hidden="true">b</span>Bill Lens</a
         >
         <nav aria-label="Main navigation">
-          <a class="nav-link" href="/" aria-current="page">Bills</a>
+          <a id="nav-bills" class="nav-link" href="#" aria-current="page"
+            >Bills</a
+          >
+          <a id="nav-compare" class="nav-link" href="#compare">Compare</a>
         </nav>
         <div class="header-links">
           <span class="local-badge"
@@ -118,6 +122,114 @@
           Amounts shown are current-period charges. Review the original bill to
           confirm accuracy.
         </p>
+      </section>
+      <section id="compare-view" class="page" hidden>
+        <div class="page-heading">
+          <div>
+            <h1>Compare bills</h1>
+            <p class="muted">
+              Two periods. A clearer picture of your electricity use.
+            </p>
+          </div>
+          <button id="refresh-comparison-bills" class="secondary">
+            ↻ Refresh bills
+          </button>
+        </div>
+        <section class="panel compare-picker">
+          <div class="panel-toolbar">
+            <h2>Choose your bills</h2>
+            <span class="small muted">Reviewed bills only</span>
+          </div>
+          <form id="compare-form">
+            <div class="compare-selectors">
+              <label
+                ><span class="bill-letter">A</span> Baseline bill<select
+                  id="baseline-bill"
+                  required
+                  disabled
+                >
+                  <option value="">Loading bills…</option>
+                </select></label
+              >
+              <button
+                id="swap-bills"
+                type="button"
+                class="secondary"
+                aria-label="Swap baseline and comparison bills"
+                disabled
+              >
+                ⇄
+              </button>
+              <label
+                ><span class="bill-letter">B</span> Compare with<select
+                  id="comparison-bill"
+                  required
+                  disabled
+                >
+                  <option value="">Loading bills…</option>
+                </select></label
+              >
+            </div>
+            <div class="compare-actions">
+              <label class="acknowledge"
+                ><input id="same-household" type="checkbox" required /><span
+                  >These bills are for the same home.</span
+                ></label
+              >
+              <button
+                id="run-comparison"
+                class="primary"
+                type="submit"
+                disabled
+              >
+                Compare bills →
+              </button>
+            </div>
+            <p id="compare-picker-state" class="small muted" role="status">
+              Loading reviewed bills…
+            </p>
+            <button
+              id="more-comparison-bills"
+              class="text-button"
+              type="button"
+              hidden
+            >
+              Load more reviewed bills
+            </button>
+          </form>
+        </section>
+        <div id="comparison-state" class="comparison-empty" role="status">
+          <span aria-hidden="true" class="comparison-symbol">⇄</span>
+          <h2>See what changed</h2>
+          <p>
+            Choose two reviewed bills for the same home to compare usage and
+            charges.
+          </p>
+          <a class="review-bills-link" href="#">Go to your bills →</a>
+        </div>
+        <section
+          id="comparison-results"
+          hidden
+          aria-label="Bill comparison results"
+        >
+          <div class="comparison-heading">
+            <h2>Your comparison</h2>
+            <span class="small muted">Change from A to B</span>
+          </div>
+          <div id="comparison-sources" class="comparison-sources"></div>
+          <div
+            id="comparison-warnings"
+            class="comparison-warnings"
+            role="status"
+            hidden
+          ></div>
+          <div id="comparison-metrics" class="comparison-metrics"></div>
+          <p class="footnote">
+            Based on the latest reviews at the time of comparison. Values are
+            rounded for display; differences use unrounded values. Percentage
+            changes need a positive baseline that does not round to zero.
+          </p>
+        </section>
       </section>
       <section id="detail-view" class="page" hidden>
         <button id="back" class="text-button">← Back to bills</button>

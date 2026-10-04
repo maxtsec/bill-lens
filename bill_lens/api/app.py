@@ -13,7 +13,8 @@ from starlette.staticfiles import StaticFiles
 
 from bill_lens.api.errors import UploadError
 from bill_lens.api.limits import UploadBodyLimit, read_pdf
-from bill_lens.api.schemas import BillResponse, BillDetail, BillList, ReviewHistory, ReviewRequest, ReviewResponse
+from bill_lens.api.schemas import BillComparison, BillResponse, BillDetail, BillList, ReviewHistory, ReviewRequest, ReviewResponse
+from bill_lens.api.comparison import compare_bills
 from bill_lens.api import reviews
 from bill_lens.api.preview import clear_preview_cache, render_page
 from bill_lens.api.service import get_bill, upload_bill
@@ -109,8 +110,14 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
     def list_bills(limit: Annotated[int, Query(ge=1, le=100)] = 20,
                    offset: Annotated[int, Query(ge=0)] = 0,
                    status: Literal["processed", "needs_review", "failed"] | None = None,
-                   review_state: Literal["pending", "reviewed"] | None = None):
-        return reviews.list_bills(database, limit=limit, offset=offset, status=status, review_state=review_state)
+                   review_state: Literal["pending", "reviewed"] | None = None,
+                   before_bill_id: UUID | None = None):
+        return reviews.list_bills(database, limit=limit, offset=offset, status=status,
+                                  review_state=review_state, before_bill_id=before_bill_id)
+
+    @app.get("/comparisons", response_model=BillComparison)
+    def read_comparison(baseline_id: UUID, comparison_id: UUID, same_household: bool = False):
+        return compare_bills(database, baseline_id, comparison_id, same_household=same_household)
 
     @app.get("/bills/{bill_id}", response_model=BillResponse)
     def read_bill(bill_id: UUID):

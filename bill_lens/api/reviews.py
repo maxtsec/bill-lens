@@ -41,13 +41,19 @@ def _detail(original, latest):
 def get_detail(engine: Engine, bill_id: UUID) -> BillDetail:
     with Session(engine) as session:
         session.connection(execution_options={"isolation_level": "REPEATABLE READ"})
-        bill = session.get(Bill, bill_id)
-        if bill is None:
-            raise UploadError("bill_not_found", 404)
-        return _detail(_response(session, bill), session.scalar(latest_review_statement(bill.id)))
+        return detail_in_session(session, bill_id)
 
 
-def list_bills(engine: Engine, *, limit=20, offset=0, status=None, review_state=None):
+def detail_in_session(session: Session, bill_id: UUID) -> BillDetail:
+    bill = session.get(Bill, bill_id)
+    if bill is None:
+        raise UploadError("bill_not_found", 404)
+    return _detail(_response(session, bill), session.scalar(latest_review_statement(bill.id)))
+
+
+def list_bills(engine: Engine, *, limit=20, offset=0, status=None, review_state=None, before_bill_id=None):
+    if before_bill_id is not None and offset:
+        raise UploadError("invalid_request", 422)
     # Correlated scalar IDs use the same successful-first ordering as GET/upload.
     run_id = (select(ExtractionRun.id).where(ExtractionRun.bill_id == Bill.id)
               .order_by(ExtractionRun.error_code.is_(None).desc(), ExtractionRun.created_at.desc(),
@@ -75,10 +81,20 @@ def list_bills(engine: Engine, *, limit=20, offset=0, status=None, review_state=
             func.count().filter(~applicable).label("pending"),
             func.count().filter(applicable).label("reviewed"),
         )).mappings().one()
+        if before_bill_id is not None:
+            # Bill creation time and ID are stable even if its review expires.
+            cursor = session.get(Bill, before_bill_id)
+            if cursor is None:
+                raise UploadError("invalid_request", 422)
+            statement = statement.where(or_(
+                Bill.created_at < cursor.created_at,
+                (Bill.created_at == cursor.created_at) & (Bill.id < cursor.id),
+            ))
         records = session.execute(statement.options(defer(ExtractionRun.raw_response, raiseload=True))
-                                  .order_by(Bill.created_at.desc(), Bill.id.desc()).offset(offset).limit(limit)).all()
-        return BillList(items=[_detail(bill_response(bill, run), review) for bill, run, review in records],
-                        total=total, limit=limit, offset=offset, counts=dict(counts))
+                                  .order_by(Bill.created_at.desc(), Bill.id.desc()).offset(offset).limit(limit + 1)).all()
+        next_cursor = records[limit - 1][0].id if len(records) > limit else None
+        return BillList(items=[_detail(bill_response(bill, run), review) for bill, run, review in records[:limit]],
+                        total=total, limit=limit, offset=offset, counts=dict(counts), next_before_bill_id=next_cursor)
 
 
 def pdf_path(session: Session, bill_id: UUID, storage_root: Path) -> Path:

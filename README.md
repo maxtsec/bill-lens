@@ -195,7 +195,7 @@ owner judgement or independently measured evidence.
   and number-above-label boxes before claiming the role safeguard generalises.
 - Evidence spans **plus label/context verification** only if the Python-first
   check proves insufficient; a matching span alone cannot establish a role.
-- M4 period comparison, once extraction and review semantics support it.
+- Further M4 work: household/meter identity and comparisons across a longer history.
 
 These are candidates, not delivered features or delivery promises.
 
@@ -205,6 +205,9 @@ The local [bill workbench](docs/development.md#bill-workbench-and-human-review)
 now provides bill browsing, PDF previews and versioned human confirmation or
 correction. Extraction results and human decisions remain separate; see
 [ADR-011](docs/adr/011-human-review-workbench.md).
+The **Compare** page compares two reviewed bills for the same home, including
+daily usage normalised by billing-period length. See
+[comparison rules and limitations](docs/adr/012-reviewed-bill-comparison.md).
 
 From the repository root, using Python 3.12+ in PowerShell:
 
