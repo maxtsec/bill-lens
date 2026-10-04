@@ -403,3 +403,9 @@ The read-only API is `GET /comparisons` with `baseline_id`, `comparison_id` and
 contains review provenance, decimal-string metrics and explanations for unavailable
 differences. See [ADR-012](adr/012-reviewed-bill-comparison.md) for calculation rules,
 rounding, GST constraints and concurrent-review behavior.
+
+The picker follows `next_before_bill_id` from `GET /bills` as `before_bill_id` on
+the next request. This stable creation-time/ID cursor survives review eligibility
+changes; refresh to include newly reviewed bills ahead of it. Do not combine
+`before_bill_id` with a nonzero `offset`. A failed Load more leaves the previously
+loaded bills usable and can be retried.

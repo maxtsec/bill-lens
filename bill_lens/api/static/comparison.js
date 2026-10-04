@@ -1,7 +1,7 @@
 "use strict";
 let comparisonGeneration = 0,
   pickerGeneration = 0,
-  pickerOffset = 0;
+  pickerCursor = null;
 let comparisonBillOptions = new Map();
 let pickerLoading = false,
   comparisonLoading = false;
@@ -66,7 +66,7 @@ async function loadComparisonBills(append = false) {
   pickerLoading = true;
   const selected = [$("baseline-bill").value, $("comparison-bill").value];
   if (!append) {
-    pickerOffset = 0;
+    pickerCursor = null;
     comparisonBillOptions.clear();
     $("same-household").checked = false;
   }
@@ -75,12 +75,15 @@ async function loadComparisonBills(append = false) {
   $("compare-picker-state").textContent = "Loading reviewed bills…";
   updateComparisonButton();
   try {
-    const page = await api(
-      `/bills?review_state=reviewed&limit=100&offset=${pickerOffset}`,
-    );
+    const query = new URLSearchParams({
+      review_state: "reviewed",
+      limit: "100",
+    });
+    if (pickerCursor) query.set("before_bill_id", pickerCursor);
+    const page = await api(`/bills?${query}`);
     if (generation !== pickerGeneration) return;
     for (const bill of page.items) comparisonBillOptions.set(bill.id, bill);
-    pickerOffset += page.items.length;
+    pickerCursor = page.next_before_bill_id;
     for (const [index, id] of ["baseline-bill", "comparison-bill"].entries()) {
       const placeholder = element(
         "option",
@@ -96,9 +99,8 @@ async function loadComparisonBills(append = false) {
       $(id).value = comparisonBillOptions.has(selected[index])
         ? selected[index]
         : "";
-      $(id).disabled = comparisonBillOptions.size < 2;
     }
-    $("more-comparison-bills").hidden = pickerOffset >= page.total;
+    $("more-comparison-bills").hidden = !pickerCursor;
     $("compare-picker-state").textContent =
       comparisonBillOptions.size < 2
         ? "Review at least two bills to start a comparison."
@@ -115,6 +117,8 @@ async function loadComparisonBills(append = false) {
   } finally {
     if (generation === pickerGeneration) {
       pickerLoading = false;
+      for (const id of ["baseline-bill", "comparison-bill"])
+        $(id).disabled = comparisonBillOptions.size < 2;
       updateComparisonButton();
     }
   }

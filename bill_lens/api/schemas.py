@@ -107,6 +107,7 @@ class BillList(BaseModel):
     limit: int
     offset: int
     counts: BillCounts
+    next_before_bill_id: UUID | None = None
 
 
 class ReviewHistory(BaseModel):

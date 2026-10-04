@@ -104,3 +104,55 @@ def test_missing_values_and_overlapping_periods_are_explicit(client):
     payload["fields"].update(period_start=a["fields"]["period_start"], period_end=a["fields"]["period_end"], stated_billing_days=30)
     assert save(client, b, payload).status_code == 201
     assert any("overlap" in warning for warning in compare(client, a, b).json()["warnings"])
+
+
+def test_picker_cursor_survives_review_invalidation_and_new_review(client, db_engine):
+    a, b, c = [upload(client, case) for case in ("bill_001", "bill_002", "bill_003")]
+    for bill in (a, b, c):
+        assert save(client, bill).status_code == 201
+    page = client.get("/bills?review_state=reviewed&limit=2").json()
+    assert [bill["id"] for bill in page["items"]] == [c["id"], b["id"]]
+    cursor = page["next_before_bill_id"]
+    assert cursor == b["id"]
+    attempt = FakeExtractor.from_dataset(ROOT / "dataset").extract(
+        extract_pdf_text((ROOT / "dataset/bill_002/bill.pdf").read_bytes()))
+    with Session(db_engine) as session, session.begin():
+        append_extraction_run(session, bill_id=UUID(b["id"]), attempt=attempt, flags=b["flags"], status=b["status"])
+    # The cursor bill itself no longer matches the filter. Offset=2 would now skip A.
+    query = {"review_state": "reviewed", "limit": 2, "before_bill_id": cursor}
+    rest = client.get("/bills", params=query).json()
+    assert [bill["id"] for bill in rest["items"]] == [a["id"]]
+    assert rest["next_before_bill_id"] is None
+    newer = upload(client, "bill_004")
+    assert save(client, newer).status_code == 201
+    rest = client.get("/bills", params=query).json()
+    assert [bill["id"] for bill in rest["items"]] == [a["id"]]
+    assert rest["total"] == 3 and rest["counts"] == {"all": 4, "reviewed": 3, "pending": 1}
+    refreshed = client.get("/bills?review_state=reviewed&limit=2").json()
+    assert refreshed["items"][0]["id"] == newer["id"]
+
+
+def test_picker_cursor_breaks_timestamp_ties_by_bill_id(client, db_engine):
+    bills = [upload(client, case) for case in ("bill_001", "bill_002", "bill_003")]
+    for bill in bills:
+        assert save(client, bill).status_code == 201
+    with db_engine.begin() as connection:
+        connection.execute(text("UPDATE bills SET created_at = '2026-01-01T00:00:00Z'"))
+    seen, cursor = [], None
+    for _ in bills:
+        params = {"review_state": "reviewed", "limit": 1}
+        if cursor:
+            params["before_bill_id"] = cursor
+        response = client.get("/bills", params=params)
+        assert response.status_code == 200
+        page = response.json()
+        seen.extend(bill["id"] for bill in page["items"])
+        cursor = page["next_before_bill_id"]
+    assert seen == sorted((bill["id"] for bill in bills), reverse=True)
+    assert cursor is None
+
+
+def test_picker_rejects_unknown_malformed_and_mixed_offset_cursors(client):
+    for params in ({"before_bill_id": str(uuid4())}, {"before_bill_id": "invalid"},
+                   {"before_bill_id": str(uuid4()), "offset": 1}):
+        assert client.get("/bills", params=params).status_code == 422

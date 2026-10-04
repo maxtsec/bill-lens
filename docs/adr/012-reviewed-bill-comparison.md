@@ -27,10 +27,13 @@ No comparison, review or extraction record is written by this endpoint.
   is available only when both GST bases are known and equal. No GST rate or tax
   adjustment is assumed; the individual rates and bases remain visible.
 - Absolute change is B minus A. Percentage change is `(B - A) / A * 100` only
-  when A is positive. Zero/credit baselines keep their absolute change but have
-  no percentage. Missing values remain missing, never zero.
+  when A is positive and does not round to zero at the metric's display precision.
+  Zero/credit and positive-but-rounded-to-zero baselines keep their absolute change
+  but have no percentage, with distinct explanations. Missing values remain
+  missing, never zero.
 - Python Decimal arithmetic calculates changes before display rounding, with
-  precision sized for the input strings. Display uses half-up rounding: two
+  precision sized from the numeric strings only, independent of retailer text.
+  Display uses half-up rounding: two
   places for charges/usage, four for supply rates, one for percentages. Tiny
   nonzero changes render with a less-than threshold rather than implying equality.
 
@@ -40,6 +43,14 @@ extraction, and unresolved automated flags. Human review is not proof of accurac
 remaining flags do not automatically suppress a known value. Source links allow
 the user to inspect or revise each bill. Changing a selection hides the previous
 result and cancels stale UI responses. Comparison always reloads current reviews.
+
+The reviewed-bill picker uses `next_before_bill_id` / `before_bill_id` pagination
+in descending immutable `(created_at, id)` order. A review added or invalidated
+before the cursor cannot shift the next page; an invalidated cursor bill still
+anchors the page. This is not a frozen multi-page snapshot: newly eligible bills
+ahead of the cursor appear on refresh, and comparison revalidates eligibility.
+The existing offset API remains available but cannot be mixed with a cursor.
+Failed Load more requests preserve selected options and retry the same cursor.
 
 These are descriptive differences, not a tariff comparison, savings forecast or
 explanation of causation. Seasons, occupancy, tariff changes and credits can affect

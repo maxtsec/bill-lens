@@ -9,18 +9,25 @@ from bill_lens.api.errors import UploadError
 from bill_lens.api.reviews import detail_in_session
 from bill_lens.api.schemas import BillComparison, ComparisonMetric
 from bill_lens.contract import ExtractionFields
-from bill_lens.validation import billing_days, supply_rate_aud
+from bill_lens.validation import billing_days, derive_flags, supply_rate_aud
 
 
 def comparable_days(fields: ExtractionFields) -> int | None:
-    days = billing_days(fields)
-    if fields.stated_billing_days is not None and days != fields.stated_billing_days:
-        return None
-    return days
+    return None if "stated_days_mismatch" in derive_flags(fields) else billing_days(fields)
 
 
 def _decimal(value):
     return Decimal(value) if value is not None else None
+
+
+def _comparison_precision(*fields: ExtractionFields) -> int:
+    values = [value for field in fields for value in (
+        field.total_usage_kwh, field.current_bill_amount,
+        field.daily_supply_rate.value if field.daily_supply_rate else None,
+    ) if value is not None]
+    # Plain decimal strings include fractional leading zeros. Twice the widest
+    # input covers subtraction across magnitudes; guard digits cover division.
+    return 2 * max((len(value.lstrip("-").replace(".", "")) for value in values), default=1) + 32
 
 
 def _metric(key, label, unit, a, b, *, precision=2, reason=None, note=""):
@@ -33,13 +40,20 @@ def _metric(key, label, unit, a, b, *, precision=2, reason=None, note=""):
     if a is None or b is None:
         reason = reason or "A value is missing from one or both reviewed bills."
     delta = b - a if not reason else None
-    percentage = delta / a * 100 if delta is not None and a > 0 else None
+    baseline = shown(a)
+    percent_reason = reason
+    if not percent_reason:
+        if a <= 0:
+            percent_reason = "Percentage change needs a positive baseline."
+        elif Decimal(baseline) == 0:
+            percent_reason = "The positive baseline rounds to zero at this display precision; percentage change is not shown."
+    percentage = delta / a * 100 if not percent_reason else None
     return ComparisonMetric(
         key=key, label=label, unit=unit, precision=precision,
-        baseline=shown(a), comparison=shown(b), delta=shown(delta), percent_change=shown(percentage, 1),
+        baseline=baseline, comparison=shown(b), delta=shown(delta), percent_change=shown(percentage, 1),
         direction=("unavailable" if delta is None else "increase" if delta > 0 else "decrease" if delta < 0 else "unchanged"),
         unavailable_reason=reason,
-        percent_unavailable_reason=(reason if reason else "Percentage change needs a positive baseline." if a <= 0 else None),
+        percent_unavailable_reason=percent_reason,
         note=note,
     )
 
@@ -47,7 +61,7 @@ def _metric(key, label, unit, a, b, *, precision=2, reason=None, note=""):
 def compare_fields(a: ExtractionFields, b: ExtractionFields) -> list[ComparisonMetric]:
     # Preserve long printed decimals and round only the displayed results.
     with localcontext() as context:
-        context.prec = max(len(a.model_dump_json()), len(b.model_dump_json())) * 2 + 32
+        context.prec = _comparison_precision(a, b)
         days_a, days_b = comparable_days(a), comparable_days(b)
         usage_a, usage_b = _decimal(a.total_usage_kwh), _decimal(b.total_usage_kwh)
         daily_a = usage_a / days_a if usage_a is not None and days_a else None

@@ -110,8 +110,10 @@ def create_app(*, engine: Engine | None = None, storage_root: Path | None = None
     def list_bills(limit: Annotated[int, Query(ge=1, le=100)] = 20,
                    offset: Annotated[int, Query(ge=0)] = 0,
                    status: Literal["processed", "needs_review", "failed"] | None = None,
-                   review_state: Literal["pending", "reviewed"] | None = None):
-        return reviews.list_bills(database, limit=limit, offset=offset, status=status, review_state=review_state)
+                   review_state: Literal["pending", "reviewed"] | None = None,
+                   before_bill_id: UUID | None = None):
+        return reviews.list_bills(database, limit=limit, offset=offset, status=status,
+                                  review_state=review_state, before_bill_id=before_bill_id)
 
     @app.get("/comparisons", response_model=BillComparison)
     def read_comparison(baseline_id: UUID, comparison_id: UUID, same_household: bool = False):

@@ -251,6 +251,7 @@ test("picker pages deduplicate options and preserve selection", async () => {
             ? [bill("one"), bill("two")]
             : [bill("two"), bill("three")],
         total: 4,
+        next_before_bill_id: calls.length === 1 ? "two" : null,
       }),
     };
   };
@@ -259,12 +260,66 @@ test("picker pages deduplicate options and preserve selection", async () => {
   node("comparison-bill").value = "two";
   await run("loadComparisonBills(true)");
   assert.deepEqual(calls, [
-    "/bills?review_state=reviewed&limit=100&offset=0",
-    "/bills?review_state=reviewed&limit=100&offset=2",
+    "/bills?review_state=reviewed&limit=100",
+    "/bills?review_state=reviewed&limit=100&before_bill_id=two",
   ]);
   assert.equal(node("baseline-bill").options.length, 4);
   assert.equal(node("baseline-bill").value, "one");
   assert.equal(node("more-comparison-bills").hidden, true);
+});
+
+test("failed load more preserves the chosen pair and retries the same cursor", async () => {
+  const { context, node, run } = setup();
+  const calls = [];
+  context.fetch = async (url) => {
+    calls.push(url);
+    if (calls.length === 2) throw new Error("offline");
+    return {
+      ok: true,
+      json: async () => ({
+        items: (calls.length === 1 ? ["one", "two"] : ["three"]).map((id) => ({
+          id,
+        })),
+        next_before_bill_id: calls.length === 1 ? "two" : null,
+      }),
+    };
+  };
+  await run("loadComparisonBills()");
+  node("baseline-bill").value = "one";
+  node("comparison-bill").value = "two";
+  node("same-household").checked = true;
+  await run("loadComparisonBills(true)");
+  assert.equal(node("baseline-bill").disabled, false);
+  assert.equal(node("comparison-bill").disabled, false);
+  assert.equal(node("run-comparison").disabled, false);
+  assert.equal(node("more-comparison-bills").hidden, false);
+  assert.match(node("compare-picker-state").textContent, /Could not connect/);
+  assert.equal(node("baseline-bill").value, "one");
+  assert.equal(node("comparison-bill").value, "two");
+  await run("loadComparisonBills(true)");
+  assert.equal(calls[1], calls[2]);
+  assert.equal(node("baseline-bill").options.length, 4);
+  assert.equal(node("more-comparison-bills").hidden, true);
+});
+
+test("failed initial picker load stays disabled until a successful refresh", async () => {
+  const { context, node, run } = setup();
+  context.fetch = async () => {
+    throw new Error("offline");
+  };
+  await run("loadComparisonBills()");
+  assert.equal(node("baseline-bill").disabled, true);
+  assert.equal(node("run-comparison").disabled, true);
+  context.fetch = async () => ({
+    ok: true,
+    json: async () => ({
+      items: [{ id: "one" }, { id: "two" }],
+      next_before_bill_id: null,
+    }),
+  });
+  await run("loadComparisonBills()");
+  assert.equal(node("baseline-bill").disabled, false);
+  assert.equal(node("run-comparison").disabled, true);
 });
 
 test("comparison formats large decimals and tiny changes without binary floats", () => {
